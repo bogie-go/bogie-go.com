@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://bogie-go.com/</loc><lastmod>2026-10-03</lastmod><priority>1.0</priority></url>
+  <url><loc>https://bogie-go.com/docs/authentication.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://bogie-go.com/docs/commands.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://bogie-go.com/docs/configuration.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://bogie-go.com/docs/controllers.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://bogie-go.com/docs/conventions.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://bogie-go.com/docs/deploying.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://bogie-go.com/docs/from-rails.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://bogie-go.com/docs/getting-started.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://bogie-go.com/docs/</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://bogie-go.com/docs/jobs.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://bogie-go.com/docs/models.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://bogie-go.com/docs/services.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+  <url><loc>https://bogie-go.com/docs/testing.html</loc><lastmod>2026-10-03</lastmod><priority>0.8</priority></url>
+</urlset>

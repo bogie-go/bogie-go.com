@@ -222,3 +222,8 @@ tr:last-child td { border-bottom: 0; }
 .guide-nav .label { display: block; font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
 .guide-nav a { font-weight: 600; text-decoration: none; color: var(--ink); }
 .guide-nav a:hover { color: var(--rust); }
+
+/* questions, for people and answer engines */
+.faq { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr)); gap: 32px 48px; }
+.qa h3 { margin: 0 0 8px; font-size: 20px; font-weight: 600; }
+.qa p { margin: 0; font-size: 16px; line-height: 1.6; color: var(--ink-2); }

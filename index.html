@@ -4,13 +4,24 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bogie: Rails conventions, laid on Go track</title>
-<meta name="description" content="Rails-style generators for Go. Bogie scaffolds an API-only, Postgres-only service out of tools Go already ships, wires the code in, and leaves plain Go you can read and own.">
+<meta name="description" content="Rails-style generators for Go. Bogie scaffolds an API-only, Postgres-only service from tools Go already ships, wires the code in, and leaves plain Go you own.">
 <link rel="icon" type="image/png" href="favicon.png">
-<meta property="og:title" content="Bogie">
-<meta property="og:description" content="Rails conventions, laid on Go track. The Go service next to your Rails app.">
-<meta property="og:image" content="https://bogie-go.com/bogie.webp">
 <link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="style.css">
+<link rel="canonical" href="https://bogie-go.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Bogie">
+<meta property="og:title" content="Bogie: Rails conventions, laid on Go track">
+<meta property="og:description" content="Rails-style generators for Go. Bogie scaffolds an API-only, Postgres-only service from tools Go already ships, wires the code in, and leaves plain Go you own.">
+<meta property="og:url" content="https://bogie-go.com/">
+<meta property="og:image" content="https://bogie-go.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Bogie: Rails conventions, laid on Go track">
+<meta name="twitter:description" content="Rails-style generators for Go. Bogie scaffolds an API-only, Postgres-only service from tools Go already ships, wires the code in, and leaves plain Go you own.">
+<meta name="twitter:image" content="https://bogie-go.com/og.png">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebSite", "@id": "https://bogie-go.com/#site", "name": "Bogie", "url": "https://bogie-go.com/", "description": "Rails conventions, laid on Go track. The Go service next to your Rails app."}, {"@type": "SoftwareApplication", "@id": "https://bogie-go.com/#app", "name": "Bogie", "url": "https://bogie-go.com", "applicationCategory": "DeveloperApplication", "operatingSystem": "Linux, macOS, Windows", "softwareVersion": "0.1.0", "programmingLanguage": "Go", "license": "https://github.com/bogie-go/bogie/blob/main/LICENSE", "codeRepository": "https://github.com/bogie-go/bogie", "downloadUrl": "https://github.com/bogie-go/bogie/releases", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "A CLI that scaffolds an API-only, Postgres-only Go service with Rails-style generators that wire the code in. The generated app never imports Bogie."}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is Bogie?", "acceptedAnswer": {"@type": "Answer", "text": "A command-line tool that scaffolds an API-only, Postgres-only Go service with Rails-style generators: bogie new, g scaffold, g model, g controller, g job, g authentication. It writes plain Go on top of Gin, sqlc, goose, River and Kamal, and the generated app never imports Bogie."}}, {"@type": "Question", "name": "Is Bogie a Go web framework?", "acceptedAnswer": {"@type": "Answer", "text": "No. There is no runtime, no base class and no DSL. Bogie renders templates and shells out to tools the Go ecosystem already ships. Delete the tool and the app does not notice. For a Rails-like Go framework with views, see Andurel."}}, {"@type": "Question", "name": "Do I need Rails to use Bogie?", "acceptedAnswer": {"@type": "Answer", "text": "No. It is built for the Rails shop that needs one network-facing Go service beside its app, so the commands, layout and vocabulary follow Rails. A Go team can use it without ever having written Ruby."}}, {"@type": "Question", "name": "Which databases does Bogie support?", "acceptedAnswer": {"@type": "Answer", "text": "Postgres only, by design. Background jobs run on River, which uses the same Postgres, so there is no Redis. SQLite was considered and declined until River's SQLite driver is stable."}}, {"@type": "Question", "name": "How do I install Bogie?", "acceptedAnswer": {"@type": "Answer", "text": "go install github.com/bogie-go/bogie@latest, with Go 1.25 or newer. Postgres runs in Docker from the generated app's own compose file. There is no Homebrew tap and nothing prebuilt."}}, {"@type": "Question", "name": "How does a generated app get upgraded?", "acceptedAnswer": {"@type": "Answer", "text": "bogie app:update is a three-way merge: it renders what the recorded Bogie version generated, what the current version generates, and merges each template-owned file with your edits kept. Only a real overlap leaves conflict markers."}}, {"@type": "Question", "name": "Can an AI agent work in a Bogie app?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Every generated app ships an AGENTS.md with the six rules, every command and a recipe per task, and the generators register code above visible marker comments, so an agent's change is a diff a person can review."}}]}]}</script>
 </head>
 <body>
 
@@ -31,7 +42,7 @@
 
 <section class="wrap hero">
   <div class="copytext">
-    <div class="tags"><span class="pill">Pre-release</span><span>A generator for Go services · MIT</span></div>
+    <div class="tags"><span class="pill">v0.1.0</span><span>A generator for Go services · MIT</span></div>
     <h1 class="display">Rails conventions, laid on <span class="go">Go track.</span></h1>
     <p class="lead">Rails-style generators for Go. Scaffold an API service in minutes, and get plain Go code you can read and own. The service next to your Rails app, and it never imports Bogie.</p>
     <div class="terminal">
@@ -309,6 +320,22 @@ cd blog &amp;&amp; bogie db:prepare &amp;&amp; bogie server">Copy</button></head
   </div>
 </section>
 
+<div class="track"></div>
+
+<section class="wrap section" id="questions">
+  <p class="eyebrow">Questions</p>
+  <h2 class="display" style="max-width: 14em; margin-bottom: 48px">Short answers, before the long guides.</h2>
+  <div class="faq">
+    <div class="qa"><h3>What is Bogie?</h3><p>A command-line tool that scaffolds an API-only, Postgres-only Go service with Rails-style generators: bogie new, g scaffold, g model, g controller, g job, g authentication. It writes plain Go on top of Gin, sqlc, goose, River and Kamal, and the generated app never imports Bogie.</p></div>
+    <div class="qa"><h3>Is Bogie a Go web framework?</h3><p>No. There is no runtime, no base class and no DSL. Bogie renders templates and shells out to tools the Go ecosystem already ships. Delete the tool and the app does not notice. For a Rails-like Go framework with views, see Andurel.</p></div>
+    <div class="qa"><h3>Do I need Rails to use Bogie?</h3><p>No. It is built for the Rails shop that needs one network-facing Go service beside its app, so the commands, layout and vocabulary follow Rails. A Go team can use it without ever having written Ruby.</p></div>
+    <div class="qa"><h3>Which databases does Bogie support?</h3><p>Postgres only, by design. Background jobs run on River, which uses the same Postgres, so there is no Redis. SQLite was considered and declined until River&#x27;s SQLite driver is stable.</p></div>
+    <div class="qa"><h3>How do I install Bogie?</h3><p>go install github.com/bogie-go/bogie@latest, with Go 1.25 or newer. Postgres runs in Docker from the generated app&#x27;s own compose file. There is no Homebrew tap and nothing prebuilt.</p></div>
+    <div class="qa"><h3>How does a generated app get upgraded?</h3><p>bogie app:update is a three-way merge: it renders what the recorded Bogie version generated, what the current version generates, and merges each template-owned file with your edits kept. Only a real overlap leaves conflict markers.</p></div>
+    <div class="qa"><h3>Can an AI agent work in a Bogie app?</h3><p>Yes. Every generated app ships an AGENTS.md with the six rules, every command and a recipe per task, and the generators register code above visible marker comments, so an agent&#x27;s change is a diff a person can review.</p></div>
+  </div>
+</section>
+
 <section class="wrap aboard">
   <div class="copytext">
     <div class="title"><img src="bogie.webp" alt=""><h2 class="display">All aboard.</h2></div>
@@ -340,7 +367,7 @@ bin/ci">Copy</button></header>
   <div class="wrap inner">
     <div class="about">
       <a class="brand" href="/"><img src="favicon.png" alt=""><span>bogie</span></a>
-      <span>Rails conventions, laid on Go track. MIT licensed · pre-release.</span>
+      <span>Rails conventions, laid on Go track. MIT licensed · v0.1.0.</span>
     </div>
     <nav aria-label="Footer">
       <a href="/docs/">Guides</a>
