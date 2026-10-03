@@ -49,10 +49,10 @@
     <div class="terminal">
       <header><span>Install · new · run</span><button type="button" class="copy" data-copy="go install github.com/bogie-go/bogie@latest
 bogie new blog
-cd blog &amp;&amp; bogie db:prepare &amp;&amp; bogie server">Copy</button></header>
+cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server">Copy</button></header>
 <pre class="code"><span class="p">$</span> go install github.com/bogie-go/bogie@latest
 <span class="p">$</span> bogie new blog
-<span class="p">$</span> cd blog &amp;&amp; bogie db:prepare &amp;&amp; bogie server</pre>
+<span class="p">$</span> cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server</pre>
     </div>
     <div class="ctas">
       <a class="btn btn-primary" href="/docs/">Read the guides</a>
@@ -340,7 +340,7 @@ cd blog &amp;&amp; bogie db:prepare &amp;&amp; bogie server">Copy</button></head
 <section class="wrap aboard">
   <div class="copytext">
     <div class="title"><img src="bogie.webp" alt=""><h2 class="display">All aboard.</h2></div>
-    <p class="lead">Three commands to a running JSON API on Postgres, with migrations, tests and a deploy path already laid.</p>
+    <p class="lead">Three commands to a running JSON API on Postgres, with migrations, tests and a deploy path already laid. You need Go 1.26 or newer, and Docker for the local Postgres.</p>
     <div class="ctas">
       <a class="btn btn-primary" href="/docs/">Read the guides</a>
       <a class="btn btn-outline" href="https://github.com/bogie-go/bogie">Star on GitHub</a>
@@ -349,12 +349,12 @@ cd blog &amp;&amp; bogie db:prepare &amp;&amp; bogie server">Copy</button></head
   <div class="terminal">
     <header><span>Terminal</span><button type="button" class="copy" data-copy="go install github.com/bogie-go/bogie@latest
 bogie new blog
-cd blog &amp;&amp; bogie db:prepare &amp;&amp; bogie server
+cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server
 bogie g scaffold post title:string body:text
 bin/ci">Copy</button></header>
 <pre class="code"><span class="p">$</span> go install github.com/bogie-go/bogie@latest
 <span class="p">$</span> bogie new blog
-<span class="p">$</span> cd blog &amp;&amp; bogie db:prepare &amp;&amp; bogie server
+<span class="p">$</span> cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server
 <span class="c"># then</span>
 <span class="p">$</span> bogie g scaffold post title:string body:text
 <span class="p">$</span> bin/ci</pre>
