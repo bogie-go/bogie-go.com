@@ -73,7 +73,11 @@
     <span class="pre-release">Pre-release</span>
 <pre><code>go install github.com/bogie-go/bogie@latest
 bogie new blog
-cd blog &amp;&amp; bogie db:prepare &amp;&amp; bogie server</code></pre>
+cd blog
+make up
+bogie g scaffold post title:string body:text
+bogie db:prepare
+bogie s</code></pre>
   </div>
 </header>
 
