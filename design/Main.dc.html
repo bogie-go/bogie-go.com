@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bogie — Rails conventions on Go track</title>
+<script src="./vendor/react.js"></script>
+<script src="./vendor/react-dom.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&amp;family=Instrument+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F2EEE5}
+a{color:#16181D}a:hover{color:#B83A0B}
+.track{height:22px;background:
+  linear-gradient(#16181D,#16181D) 0 4px/100% 3px no-repeat,
+  linear-gradient(#16181D,#16181D) 0 15px/100% 3px no-repeat,
+  repeating-linear-gradient(90deg,#CFC6B4 0 10px,transparent 10px 34px) 0 0/100% 22px no-repeat}
+.vrail{background:
+  linear-gradient(#16181D,#16181D) 22px 0/3px 100% no-repeat,
+  linear-gradient(#16181D,#16181D) 37px 0/3px 100% no-repeat,
+  repeating-linear-gradient(180deg,#CFC6B4 0 8px,transparent 8px 30px) 16px 0/30px 100% no-repeat}
+pre{margin:0}
+.code{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:13.5px;line-height:1.65;color:#E9E4DA}
+.k{color:#FF9A5C}.t{color:#7FD1C7}.s{color:#C5D98A}.c{color:#8D929B}.f{color:#F3D27A}.p{color:#8D929B}
+.navlinks a{text-decoration:none;font-weight:500}
+.navlinks a:hover{text-decoration:underline;text-underline-offset:4px}
+table{border-collapse:collapse;width:100%}
+td,th{text-align:left;padding:14px 18px;border-bottom:1px solid #D6CDBB;vertical-align:top}
+th{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;color:#4A4E57}
+</style>
+</helmet>
+
+<div style="font-family: 'Instrument Sans', 'Helvetica Neue', system-ui, sans-serif; color: #16181D; background: #F2EEE5; min-height: 100px">
+
+  <!-- NAV -->
+  <header style="border-bottom: 1px solid #D6CDBB">
+    <nav aria-label="Main" style="max-width: 1200px; margin: 0 auto; padding: 18px 32px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
+      <a href="https://bogie-go.com" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #16181D">
+        <img src="./assets/8fdcaf79c3e96c37ecccbcc075152659.webp" alt="" style="width: 44px; height: 47px; display: block; object-fit: contain">
+        <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 900; font-size: 30px; letter-spacing: 0.01em; line-height: 1">bogie</span>
+      </a>
+      <div class="navlinks" style="display: flex; flex-wrap: wrap; align-items: center; gap: 28px; font-size: 15px">
+        <a href="https://bogie-go.com/docs/">Guides</a>
+        <a href="https://bogie-go.com/docs/from-rails.html">From Rails</a>
+        <a href="https://bogie-go.com/docs/commands.html">Commands</a>
+        <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">Design</a>
+        <a href="https://github.com/bogie-go/bogie" style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; min-height: 44px; box-sizing: border-box; border: 1.5px solid #16181D; border-radius: 4px">Source on GitHub</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section style="max-width: 1200px; margin: 0 auto; padding: 72px 32px 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(480px, 100%), 1fr)); gap: 56px; align-items: center">
+    <div style="display: flex; flex-direction: column; gap: 28px; min-width: 0">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12.5px; letter-spacing: 0.08em; text-transform: uppercase">
+        <span style="background: #16181D; color: #F2EEE5; padding: 6px 10px; border-radius: 3px">Pre-release</span>
+        <span style="color: #4A4E57">A generator for Go services · MIT</span>
+      </div>
+      <h1 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 900; font-size: clamp(64px, 8.4vw, 124px); line-height: 0.9; letter-spacing: -0.005em; text-transform: uppercase; text-wrap: balance">Rails conventions, laid on <span style="color: {{accent}}">Go track.</span></h1>
+      <p style="margin: 0; font-size: 20px; line-height: 1.55; max-width: 34em; color: #2B2E35; text-wrap: pretty">Rails-style generators for Go. Scaffold an API service in minutes, and get plain Go code you can read and own.</p>
+
+      <div style="background: #16181D; border-radius: 6px; overflow: hidden; max-width: 560px">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 8px 8px 18px; border-bottom: 1px solid #2E323A">
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #A9AEB7">Install · new · run</span>
+          <button type="button" onClick="{{copy}}" style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #F2EEE5; background: transparent; border: 1px solid #4A4E57; border-radius: 4px; min-height: 36px; min-width: 76px; padding: 0 14px; cursor: pointer">{{copyLabel}}</button>
+        </div>
+        <pre class="code" style="padding: 18px 20px; overflow-x: auto"><span class="p">$</span> go install github.com/bogie-go/bogie@latest
+<span class="p">$</span> bogie new blog
+<span class="p">$</span> cd blog &amp;&amp; bogie db:prepare &amp;&amp; bogie server</pre>
+      </div>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 14px">
+        <a href="https://bogie-go.com/docs/" style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 26px; background: #16181D; color: #F2EEE5; border-radius: 4px; text-decoration: none; font-weight: 600; font-size: 16px">Read the guides</a>
+        <a href="https://bogie-go.com/docs/from-rails.html" style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 26px; border: 1.5px solid #16181D; color: #16181D; border-radius: 4px; text-decoration: none; font-weight: 600; font-size: 16px">Coming from Rails?</a>
+      </div>
+    </div>
+
+    <figure style="margin: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 18px">
+      <div style="position: relative; width: 100%; max-width: 540px; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center">
+        <div aria-hidden="true" style="position: absolute; inset: 6% 4% 10% 4%; border-radius: 50%; background: #E4DCCB; border: 1.5px solid #D6CDBB"></div>
+        <img src="./assets/8fdcaf79c3e96c37ecccbcc075152659.webp" alt="The Bogie mascot: a gopher riding a mine cart on rails, with a ruby beside it" style="position: relative; width: 88%; height: auto; display: block">
+      </div>
+      <figcaption style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #4A4E57; letter-spacing: 0.02em; text-align: center">Go up front. Ruby’s best idea along for the ride.</figcaption>
+    </figure>
+  </section>
+
+  <div class="track" style="margin-top: 32px"></div>
+
+  <!-- UNDER THE CAR -->
+  <section style="max-width: 1200px; margin: 0 auto; padding: 104px 32px 96px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr)); gap: 56px; align-items: center">
+    <div style="display: flex; flex-direction: column; gap: 22px; min-width: 0">
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #B83A0B">Under the car</div>
+      <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 900; font-size: clamp(44px, 5.6vw, 80px); line-height: 0.95; text-transform: uppercase; text-wrap: balance">Built from tools Go already ships.</h2>
+      <p style="margin: 0; font-size: 18px; line-height: 1.6; color: #2B2E35; max-width: 30em">No new runtime to learn. Bogie picks one tool per job, wires them the same way in every app, and leaves the code where you can read it.</p>
+      <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px">
+        <li style="font-family: 'JetBrains Mono', monospace; font-size: 14px; padding: 8px 12px; border: 1.5px solid #16181D; border-radius: 4px">Gin</li>
+        <li style="font-family: 'JetBrains Mono', monospace; font-size: 14px; padding: 8px 12px; border: 1.5px solid #16181D; border-radius: 4px">sqlc + pgx</li>
+        <li style="font-family: 'JetBrains Mono', monospace; font-size: 14px; padding: 8px 12px; border: 1.5px solid #16181D; border-radius: 4px">goose</li>
+        <li style="font-family: 'JetBrains Mono', monospace; font-size: 14px; padding: 8px 12px; border: 1.5px solid #16181D; border-radius: 4px">River</li>
+        <li style="font-family: 'JetBrains Mono', monospace; font-size: 14px; padding: 8px 12px; border: 1.5px solid #16181D; border-radius: 4px">Kamal</li>
+        <li style="font-family: 'JetBrains Mono', monospace; font-size: 14px; padding: 8px 12px; border: 1.5px solid #16181D; border-radius: 4px">Postgres</li>
+      </ul>
+    </div>
+    <figure style="margin: 0; min-width: 0">
+      <svg viewBox="0 0 680 400" role="img" aria-label="Engineering drawing of a rail bogie, each part labelled with the Go tool it stands for" style="width: 100%; height: auto; display: block">
+        <g font-family="JetBrains Mono, monospace" font-size="11" fill="#16181D">
+          <rect x="170" y="70" width="340" height="70" rx="4" fill="none" stroke="#16181D" stroke-width="1.5" stroke-dasharray="6 5"></rect>
+          <text x="340" y="101" text-anchor="middle" font-family="Big Shoulders Display, Arial Narrow, sans-serif" font-weight="900" font-size="22">YOUR SERVICE</text>
+          <text x="340" y="122" text-anchor="middle" fill="#4A4E57">app/ · db/ · config/ · bin/</text>
+          <rect x="290" y="150" width="100" height="22" fill="#16181D"></rect>
+          <polyline points="310,172 302,177 318,182 302,187 318,192 310,200" fill="none" stroke="#16181D" stroke-width="2"></polyline>
+          <polyline points="370,172 362,177 378,182 362,187 378,192 370,200" fill="none" stroke="#16181D" stroke-width="2"></polyline>
+          <path d="M150 200 H530 V226 L500 238 H180 L150 226 Z" fill="#E4DCCB" stroke="#16181D" stroke-width="2"></path>
+          <circle cx="230" cy="270" r="52" fill="#F2EEE5" stroke="#16181D" stroke-width="2.5"></circle>
+          <circle cx="230" cy="270" r="40" fill="none" stroke="#16181D" stroke-width="1"></circle>
+          <circle cx="230" cy="270" r="12" fill="#16181D"></circle>
+          <circle cx="450" cy="270" r="52" fill="#F2EEE5" stroke="#16181D" stroke-width="2.5"></circle>
+          <circle cx="450" cy="270" r="40" fill="none" stroke="#16181D" stroke-width="1"></circle>
+          <circle cx="450" cy="270" r="12" fill="#16181D"></circle>
+          <rect x="212" y="232" width="36" height="22" rx="3" fill="#E4DCCB" stroke="#16181D" stroke-width="2"></rect>
+          <rect x="432" y="232" width="36" height="22" rx="3" fill="#E4DCCB" stroke="#16181D" stroke-width="2"></rect>
+          <g fill="#CFC6B4">
+            <rect x="40" y="327" width="22" height="9"></rect><rect x="84" y="327" width="22" height="9"></rect><rect x="128" y="327" width="22" height="9"></rect><rect x="172" y="327" width="22" height="9"></rect><rect x="216" y="327" width="22" height="9"></rect><rect x="260" y="327" width="22" height="9"></rect><rect x="304" y="327" width="22" height="9"></rect><rect x="348" y="327" width="22" height="9"></rect><rect x="392" y="327" width="22" height="9"></rect><rect x="436" y="327" width="22" height="9"></rect><rect x="480" y="327" width="22" height="9"></rect><rect x="524" y="327" width="22" height="9"></rect><rect x="568" y="327" width="22" height="9"></rect><rect x="612" y="327" width="22" height="9"></rect>
+          </g>
+          <line x1="20" y1="323" x2="660" y2="323" stroke="{{accent}}" stroke-width="5"></line>
+          <g stroke="#16181D" stroke-width="1">
+            <line x1="302" y1="186" x2="130" y2="186"></line>
+            <line x1="178" y1="270" x2="130" y2="270"></line>
+            <line x1="530" y1="213" x2="560" y2="213"></line>
+            <line x1="502" y1="270" x2="560" y2="270"></line>
+            <line x1="340" y1="326" x2="340" y2="358"></line>
+            <line x1="340" y1="56" x2="340" y2="70"></line>
+          </g>
+          <circle cx="130" cy="186" r="2.5"></circle><circle cx="130" cy="270" r="2.5"></circle><circle cx="560" cy="213" r="2.5"></circle><circle cx="560" cy="270" r="2.5"></circle><circle cx="340" cy="358" r="2.5"></circle>
+          <text x="122" y="190" text-anchor="end">River · jobs</text>
+          <text x="122" y="274" text-anchor="end">sqlc + pgx</text>
+          <text x="568" y="217">Gin · routing</text>
+          <text x="568" y="274">goose · migrate</text>
+          <text x="340" y="378" text-anchor="middle">Postgres — the only database</text>
+          <text x="340" y="48" text-anchor="middle" fill="#4A4E57">Kamal ships it</text>
+        </g>
+      </svg>
+      <figcaption style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: #4A4E57; margin-top: 10px; letter-spacing: 0.02em">Fig. 1 — A bogie is the wheeled frame under a rail car. The car is yours; Bogie carries it.</figcaption>
+    </figure>
+  </section>
+
+  <div class="track"></div>
+
+  <!-- MANIFESTO -->
+  <section style="max-width: 1200px; margin: 0 auto; padding: 120px 32px 96px">
+    <div style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #B83A0B; margin-bottom: 20px">Convention without magic</div>
+    <h2 style="margin: 0 0 56px; font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 900; font-size: clamp(44px, 5.6vw, 80px); line-height: 0.95; text-transform: uppercase; max-width: 14em; text-wrap: balance">Nothing exists until it is written down and registered.</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 24px">
+      <div style="border: 1.5px solid #16181D; border-radius: 6px; padding: 32px; display: flex; flex-direction: column; gap: 18px; background: #F7F4EE">
+        <h3 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 800; font-size: 30px; text-transform: uppercase">What you keep from Rails</h3>
+        <ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; font-size: 17px; line-height: 1.5">
+          <li>Generators: <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.88em">new</code>, <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.88em">g scaffold</code>, <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.88em">d</code> to undo</li>
+          <li>A layout you already know: <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.88em">app/controllers</code>, <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.88em">db/migrate</code></li>
+          <li>The vocabulary: <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.88em">db:migrate</code>, <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.88em">credentials:edit</code></li>
+          <li>One way to do it, so reviews talk about the work</li>
+        </ul>
+      </div>
+      <div style="border: 1.5px solid #16181D; border-radius: 6px; padding: 32px; display: flex; flex-direction: column; gap: 18px; background: #16181D; color: #F2EEE5">
+        <h3 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 800; font-size: 30px; text-transform: uppercase">What Go keeps honest</h3>
+        <ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; font-size: 17px; line-height: 1.5">
+          <li>Generated code is yours: read it, change it, own it</li>
+          <li>Registration lands above marker comments you can see</li>
+          <li>Interfaces sit next to the code that uses them</li>
+          <li>Generators are idempotent; <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.88em">bogie d</code> removes exactly what <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.88em">g</code> made</li>
+        </ul>
+      </div>
+      <div style="border: 1.5px dashed #8A8578; border-radius: 6px; padding: 32px; display: flex; flex-direction: column; gap: 18px">
+        <h3 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 800; font-size: 30px; text-transform: uppercase">Out of scope, on purpose</h3>
+        <ul style="margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; font-size: 17px; line-height: 1.5; color: #2B2E35">
+          <li>Templates, sessions, CSRF: it serves JSON</li>
+          <li>Databases other than Postgres</li>
+          <li>An ORM, fixtures, factories or a console</li>
+          <li>Replacing Rails: it runs beside it just fine</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="track"></div>
+
+  <!-- ROUTE: FOUR STOPS -->
+  <section style="max-width: 1200px; margin: 0 auto; padding: 120px 32px 64px">
+    <div style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #B83A0B; margin-bottom: 20px">The line</div>
+    <h2 style="margin: 0 0 20px; font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 900; font-size: clamp(44px, 5.6vw, 80px); line-height: 0.95; text-transform: uppercase">Every request rides the same four stops.</h2>
+    <p style="margin: 0 0 64px; font-size: 19px; line-height: 1.55; max-width: 38em; color: #2B2E35">Rails gives you Active Record, Action Controller and friends. Bogie gives you the same separation, spelled out in plain Go. Here is what <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.88em">bogie g scaffold post</code> lays down.</p>
+
+    <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column">
+
+      <li class="vrail" style="display: grid; grid-template-columns: 62px minmax(0, 1fr); padding-bottom: 72px">
+        <div aria-hidden="true" style="position: relative"><div style="width: 30px; height: 30px; border-radius: 50%; background: #F2EEE5; border: 5px solid {{accent}}; margin-left: 11px; box-sizing: border-box"></div></div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(400px, 100%), 1fr)); gap: 32px 48px; align-items: start">
+          <div style="display: flex; flex-direction: column; gap: 14px">
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #4A4E57">01 · app/domain · db/queries · app/models</div>
+            <h3 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 800; font-size: 44px; line-height: 1; text-transform: uppercase">Models keep the SQL honest</h3>
+            <p style="margin: 0; font-size: 17px; line-height: 1.6; color: #2B2E35">A domain type with no third-party imports. Named queries in plain SQL, compiled by sqlc onto pgx. A store maps one to the other. When you want to know what hits the database, you open a <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.88em">.sql</code> file.</p>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 12px; min-width: 0">
+            <div style="background: #16181D; border-radius: 6px; overflow-x: auto"><pre class="code" style="padding: 20px 22px"><span class="c">// app/domain/post.go</span>
+<span class="k">type</span> <span class="t">Post</span> <span class="k">struct</span> {
+	ID          <span class="t">string</span>
+	Title       <span class="t">string</span>
+	Body        <span class="t">string</span>
+	Score       <span class="t">int32</span>
+	PublishedAt <span class="t">time.Time</span>
+	AuthorID    <span class="t">string</span>
+	CreatedAt   <span class="t">time.Time</span>
+	UpdatedAt   <span class="t">time.Time</span>
+}</pre></div>
+            <div style="background: #16181D; border-radius: 6px; overflow-x: auto"><pre class="code" style="padding: 20px 22px"><span class="c">-- db/queries/posts.sql</span>
+<span class="c">-- name: CreatePost :one</span>
+<span class="k">INSERT INTO</span> posts (title, body, score, published_at, author_id)
+<span class="k">VALUES</span> ($1, $2, $3, $4, $5) <span class="k">RETURNING</span> *;</pre></div>
+          </div>
+        </div>
+      </li>
+
+      <li class="vrail" style="display: grid; grid-template-columns: 62px minmax(0, 1fr); padding-bottom: 72px">
+        <div aria-hidden="true"><div style="width: 30px; height: 30px; border-radius: 50%; background: #F2EEE5; border: 5px solid {{accent}}; margin-left: 11px; box-sizing: border-box"></div></div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(400px, 100%), 1fr)); gap: 32px 48px; align-items: start">
+          <div style="display: flex; flex-direction: column; gap: 14px">
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #4A4E57">02 · app/controllers</div>
+            <h3 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 800; font-size: 44px; line-height: 1; text-transform: uppercase">Controllers convert and call</h3>
+            <p style="margin: 0; font-size: 17px; line-height: 1.6; color: #2B2E35">A handler converts HTTP into domain values, calls one method on a store interface declared next to it holding only what that controller needs, and converts the result back. <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.88em">*gin.Context</code> never leaves this folder.</p>
+          </div>
+          <div style="background: #16181D; border-radius: 6px; overflow-x: auto; min-width: 0"><pre class="code" style="padding: 20px 22px"><span class="c">// app/controllers/posts_controller.go</span>
+<span class="k">type</span> <span class="t">postsStore</span> <span class="k">interface</span> {
+	<span class="f">CreatePost</span>(ctx <span class="t">context.Context</span>, p <span class="t">domain.Post</span>) (<span class="t">domain.Post</span>, <span class="t">error</span>)
+	<span class="f">GetPost</span>(ctx <span class="t">context.Context</span>, id <span class="t">string</span>) (<span class="t">domain.Post</span>, <span class="t">error</span>)
+	<span class="f">ListPosts</span>(ctx <span class="t">context.Context</span>, limit <span class="t">int32</span>) ([]<span class="t">domain.Post</span>, <span class="t">error</span>)
+	<span class="f">UpdatePost</span>(ctx <span class="t">context.Context</span>, p <span class="t">domain.Post</span>) (<span class="t">domain.Post</span>, <span class="t">error</span>)
+	<span class="f">DeletePost</span>(ctx <span class="t">context.Context</span>, id <span class="t">string</span>) <span class="t">error</span>
+}</pre></div>
+        </div>
+      </li>
+
+      <li class="vrail" style="display: grid; grid-template-columns: 62px minmax(0, 1fr); padding-bottom: 72px">
+        <div aria-hidden="true"><div style="width: 30px; height: 30px; border-radius: 50%; background: #F2EEE5; border: 5px solid {{accent}}; margin-left: 11px; box-sizing: border-box"></div></div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(400px, 100%), 1fr)); gap: 32px 48px; align-items: start">
+          <div style="display: flex; flex-direction: column; gap: 14px">
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #4A4E57">03 · app/views</div>
+            <h3 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 800; font-size: 44px; line-height: 1; text-transform: uppercase">Views are the wire contract</h3>
+            <p style="margin: 0; font-size: 17px; line-height: 1.6; color: #2B2E35">A domain type never doubles as a wire type, so a field added to the database does not silently appear on the wire. Requests and responses are their own structs.</p>
+          </div>
+          <div style="background: #16181D; border-radius: 6px; overflow-x: auto; min-width: 0"><pre class="code" style="padding: 20px 22px"><span class="c">// app/views/posts.go</span>
+<span class="k">type</span> <span class="t">PostResponse</span> <span class="k">struct</span> {
+	ID          <span class="t">string</span>    <span class="s">`json:"id"`</span>
+	Title       <span class="t">string</span>    <span class="s">`json:"title"`</span>
+	Body        <span class="t">string</span>    <span class="s">`json:"body"`</span>
+	PublishedAt <span class="t">time.Time</span> <span class="s">`json:"published_at"`</span>
+}</pre></div>
+        </div>
+      </li>
+
+      <li class="vrail" style="display: grid; grid-template-columns: 62px minmax(0, 1fr)">
+        <div aria-hidden="true"><div style="width: 30px; height: 30px; border-radius: 50%; background: #16181D; border: 5px solid {{accent}}; margin-left: 11px; box-sizing: border-box"></div></div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(400px, 100%), 1fr)); gap: 32px 48px; align-items: start">
+          <div style="display: flex; flex-direction: column; gap: 14px">
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #4A4E57">04 · app/jobs · bogie new --jobs</div>
+            <h3 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 800; font-size: 44px; line-height: 1; text-transform: uppercase">Jobs commit with the row</h3>
+            <p style="margin: 0; font-size: 17px; line-height: 1.6; color: #2B2E35">River runs on the same Postgres as the app: no Redis, no second system to keep up. <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.88em">bogie g job</code> registers the worker above the <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.88em">bogie:jobs</code> marker.</p>
+          </div>
+          <div style="background: #16181D; border-radius: 6px; overflow-x: auto; min-width: 0"><pre class="code" style="padding: 20px 22px"><span class="k">type</span> <span class="t">SendWelcomeArgs</span> <span class="k">struct</span>{}
+
+<span class="k">func</span> (<span class="t">SendWelcomeArgs</span>) <span class="f">Kind</span>() <span class="t">string</span> { <span class="k">return</span> <span class="s">"send_welcome"</span> }
+
+<span class="k">type</span> <span class="t">SendWelcomeWorker</span> <span class="k">struct</span> {
+	river.<span class="t">WorkerDefaults</span>[<span class="t">SendWelcomeArgs</span>]
+	Log *<span class="t">slog.Logger</span>
+}
+
+<span class="k">func</span> (w *<span class="t">SendWelcomeWorker</span>) <span class="f">Work</span>(ctx <span class="t">context.Context</span>,
+	job *<span class="t">river.Job</span>[<span class="t">SendWelcomeArgs</span>]) <span class="t">error</span> {
+	w.Log.<span class="f">InfoContext</span>(ctx, <span class="s">"send_welcome: not implemented yet"</span>, <span class="s">"job"</span>, job.ID)
+	<span class="k">return</span> nil
+}</pre></div>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- SIX RULES -->
+  <section style="background: #16181D; color: #F2EEE5">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 112px 32px">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 56px">
+        <div>
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #FF9A5C; margin-bottom: 20px">The rulebook</div>
+          <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 900; font-size: clamp(44px, 5.6vw, 80px); line-height: 0.95; text-transform: uppercase">Six rules. Every app.</h2>
+        </div>
+        <p style="margin: 0; font-size: 17px; line-height: 1.55; max-width: 26em; color: #C9CDD3">Small enough to memorise, strict enough that two Bogie apps read the same. <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.88em">bogie doctor</code> checks the wiring.</p>
+      </div>
+      <ol style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr)); gap: 1px; background: #3A3E46; border: 1px solid #3A3E46">
+        <li style="background: #16181D; padding: 32px; display: flex; flex-direction: column; gap: 14px"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 900; font-size: 56px; line-height: 1; color: {{accent}}">1</span><span style="font-size: 19px; line-height: 1.45; font-weight: 500"><code style="font-family: 'JetBrains Mono', monospace; font-size: 0.85em">ctx</code> comes first on anything that does I/O.</span></li>
+        <li style="background: #16181D; padding: 32px; display: flex; flex-direction: column; gap: 14px"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 900; font-size: 56px; line-height: 1; color: {{accent}}">2</span><span style="font-size: 19px; line-height: 1.45; font-weight: 500">Interfaces are declared where they are consumed.</span></li>
+        <li style="background: #16181D; padding: 32px; display: flex; flex-direction: column; gap: 14px"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 900; font-size: 56px; line-height: 1; color: {{accent}}">3</span><span style="font-size: 19px; line-height: 1.45; font-weight: 500">The domain layer imports nothing third-party.</span></li>
+        <li style="background: #16181D; padding: 32px; display: flex; flex-direction: column; gap: 14px"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 900; font-size: 56px; line-height: 1; color: {{accent}}">4</span><span style="font-size: 19px; line-height: 1.45; font-weight: 500">Constructors return <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.85em">(T, error)</code>.</span></li>
+        <li style="background: #16181D; padding: 32px; display: flex; flex-direction: column; gap: 14px"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 900; font-size: 56px; line-height: 1; color: {{accent}}">5</span><span style="font-size: 19px; line-height: 1.45; font-weight: 500">The HTTP context never leaves the controllers.</span></li>
+        <li style="background: #16181D; padding: 32px; display: flex; flex-direction: column; gap: 14px"><span style="font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 900; font-size: 56px; line-height: 1; color: {{accent}}">6</span><span style="font-size: 19px; line-height: 1.45; font-weight: 500">No <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.85em">utils</code>, <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.85em">helpers</code> or <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.85em">common</code> packages.</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- SPEAKS RAILS -->
+  <section style="max-width: 1200px; margin: 0 auto; padding: 120px 32px 96px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr)); gap: 56px; align-items: start">
+    <div style="display: flex; flex-direction: column; gap: 22px">
+      <div style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #B83A0B">Change at this station</div>
+      <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 900; font-size: clamp(44px, 5.6vw, 80px); line-height: 0.95; text-transform: uppercase">Already speak Rails? You speak Bogie.</h2>
+      <p style="margin: 0; font-size: 18px; line-height: 1.6; color: #2B2E35">Rails shops are Bogie’s first passengers: when the team needs one fast, network-facing Go service, the commands and folders are already in their fingers. Go teams get the same thing without ever having written Ruby.</p>
+      <a href="https://bogie-go.com/docs/from-rails.html" style="align-self: start; display: inline-flex; align-items: center; min-height: 48px; font-weight: 600; font-size: 16px; text-underline-offset: 5px">Read the From Rails guide →</a>
+    </div>
+    <div style="border: 1.5px solid #16181D; border-radius: 6px; overflow-x: auto; background: #F7F4EE; min-width: 0">
+      <table style="font-size: 15px">
+        <thead><tr><th scope="col">Rails</th><th scope="col">Bogie</th></tr></thead>
+        <tbody style="font-family: 'JetBrains Mono', ui-monospace, monospace">
+          <tr><td style="color: #4A4E57">rails new blog</td><td>bogie new blog</td></tr>
+          <tr><td style="color: #4A4E57">rails server</td><td>bogie s</td></tr>
+          <tr><td style="color: #4A4E57">rails g scaffold</td><td>bogie g scaffold</td></tr>
+          <tr><td style="color: #4A4E57">rails g job</td><td>bogie g job</td></tr>
+          <tr><td style="color: #4A4E57">rails db:migrate</td><td>bogie db:migrate</td></tr>
+          <tr><td style="color: #4A4E57">rails credentials:edit</td><td>bogie credentials:edit</td></tr>
+          <tr><td style="color: #4A4E57">rails test</td><td>bogie t</td></tr>
+          <tr><td style="color: #4A4E57">config/routes.rb</td><td>app/controllers/routes.go</td></tr>
+          <tr><td style="color: #4A4E57; border-bottom: 0">app/models/post.rb</td><td style="border-bottom: 0">app/domain/post.go<br>app/models/posts.go<br>db/queries/posts.sql</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div class="track"></div>
+
+  <!-- SHIPS WITH -->
+  <section style="max-width: 1200px; margin: 0 auto; padding: 112px 32px 96px">
+    <div style="font-family: 'JetBrains Mono', monospace; font-size: 12.5px; letter-spacing: 0.1em; text-transform: uppercase; color: #B83A0B; margin-bottom: 20px">In the box</div>
+    <h2 style="margin: 0 0 56px; font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 900; font-size: clamp(44px, 5.6vw, 80px); line-height: 0.95; text-transform: uppercase; max-width: 14em">From first commit to production, on one track.</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr)); gap: 48px 40px">
+      <div style="display: flex; flex-direction: column; gap: 10px; border-top: 3px solid #16181D; padding-top: 20px">
+        <code style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #B83A0B; font-weight: 500">AGENTS.md · CLAUDE.md</code>
+        <h3 style="margin: 0; font-size: 22px; font-weight: 600">Written for agents and humans</h3>
+        <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #2B2E35">Every app ships the six rules, every command and a recipe per generator. Because nothing is implicit, an agent’s change is a diff you can actually review.</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px; border-top: 3px solid #16181D; padding-top: 20px">
+        <code style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #B83A0B; font-weight: 500">bin/ci</code>
+        <h3 style="margin: 0; font-size: 22px; font-weight: 600">CI runs on your machine</h3>
+        <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #2B2E35"><code style="font-family: 'JetBrains Mono', monospace; font-size: 0.88em">bin/ci</code> is the whole pipeline: tests with race detection, gofmt, vet and golangci-lint. No hosted runner to wait on.</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px; border-top: 3px solid #16181D; padding-top: 20px">
+        <code style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #B83A0B; font-weight: 500">Kamal</code>
+        <h3 style="margin: 0; font-size: 22px; font-weight: 600">Deploys like your Rails app</h3>
+        <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #2B2E35">A container, a server, one deploy tool. The service migrates at boot, so shipping is one command.</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px; border-top: 3px solid #16181D; padding-top: 20px">
+        <code style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #B83A0B; font-weight: 500">bogie d</code>
+        <h3 style="margin: 0; font-size: 22px; font-weight: 600">Undo is a command</h3>
+        <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #2B2E35">Destroy removes what a generator made, registration included. <code style="font-family: 'JetBrains Mono', monospace; font-size: 0.88em">--pretend</code> shows the change before it happens.</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px; border-top: 3px solid #16181D; padding-top: 20px">
+        <code style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #B83A0B; font-weight: 500">bogie app:update</code>
+        <h3 style="margin: 0; font-size: 22px; font-weight: 600">Upgrades that respect your edits</h3>
+        <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #2B2E35">A three-way merge brings new layout into an app you have already changed, instead of overwriting it.</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px; border-top: 3px solid #16181D; padding-top: 20px">
+        <code style="font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #B83A0B; font-weight: 500">credentials:edit</code>
+        <h3 style="margin: 0; font-size: 22px; font-weight: 600">Secrets, encrypted in the repo</h3>
+        <p style="margin: 0; font-size: 16px; line-height: 1.6; color: #2B2E35">Per-environment encrypted settings, edited and read the way Rails taught you.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROOF -->
+  <section style="border-top: 1px solid #D6CDBB; border-bottom: 1px solid #D6CDBB; background: #EBE5D8">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 104px 32px; display: flex; flex-direction: column; gap: 24px">
+      <p style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 800; font-size: clamp(40px, 5vw, 72px); line-height: 1; text-transform: uppercase; max-width: 16em; text-wrap: balance">Extracted from a service in production, <span style="color: {{accent}}">not designed on a whiteboard.</span></p>
+      <p style="margin: 0; font-size: 17px; line-height: 1.6; color: #2B2E35; max-width: 40em">Every convention earned its place on a running system first. [ADD ONE LINE ON THE ORIGINAL SERVICE, IF YOU CAN SHARE IT]</p>
+    </div>
+  </section>
+
+  <!-- FINAL CTA -->
+  <section style="max-width: 1200px; margin: 0 auto; padding: 120px 32px 112px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 48px; align-items: center">
+    <div style="display: flex; flex-direction: column; gap: 20px">
+      <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 20px">
+        <img src="./assets/8fdcaf79c3e96c37ecccbcc075152659.webp" alt="" style="width: 150px; height: auto; display: block">
+        <h2 style="margin: 0; font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 900; font-size: clamp(72px, 10vw, 148px); line-height: 0.85; text-transform: uppercase">All aboard.</h2>
+      </div>
+      <p style="margin: 0; font-size: 19px; line-height: 1.55; color: #2B2E35; max-width: 26em">Three commands to a running JSON API on Postgres, with migrations, tests and a deploy path already laid.</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 14px">
+        <a href="https://bogie-go.com/docs/" style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 26px; background: #16181D; color: #F2EEE5; border-radius: 4px; text-decoration: none; font-weight: 600; font-size: 16px">Read the guides</a>
+        <a href="https://github.com/bogie-go/bogie" style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 26px; border: 1.5px solid #16181D; color: #16181D; border-radius: 4px; text-decoration: none; font-weight: 600; font-size: 16px">Star on GitHub</a>
+      </div>
+    </div>
+    <div style="background: #16181D; border-radius: 6px; overflow: hidden; min-width: 0">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 8px 8px 18px; border-bottom: 1px solid #2E323A">
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: #A9AEB7">Terminal</span>
+        <button type="button" onClick="{{copy}}" style="font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #F2EEE5; background: transparent; border: 1px solid #4A4E57; border-radius: 4px; min-height: 36px; min-width: 76px; padding: 0 14px; cursor: pointer">{{copyLabel}}</button>
+      </div>
+      <pre class="code" style="padding: 22px 22px; overflow-x: auto"><span class="p">$</span> go install github.com/bogie-go/bogie@latest
+<span class="p">$</span> bogie new blog
+<span class="p">$</span> cd blog &amp;&amp; bogie db:prepare &amp;&amp; bogie server
+<span class="c"># then</span>
+<span class="p">$</span> bogie g scaffold post
+<span class="p">$</span> bin/ci</pre>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer style="background: #16181D; color: #C9CDD3">
+    <div class="track" style="filter: invert(1) hue-rotate(180deg); opacity: 0.5"></div>
+    <div style="max-width: 1200px; margin: 0 auto; padding: 48px 32px 56px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 32px">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <img src="./assets/8fdcaf79c3e96c37ecccbcc075152659.webp" alt="" style="width: 44px; height: 47px; display: block; object-fit: contain">
+          <span style="font-family: 'Big Shoulders Display', 'Arial Narrow', sans-serif; font-weight: 900; font-size: 34px; color: #F2EEE5; line-height: 1">bogie</span>
+        </div>
+        <span style="font-size: 14px">Rails conventions, laid on Go track. MIT licensed · pre-release.</span>
+      </div>
+      <nav aria-label="Footer" style="display: flex; flex-wrap: wrap; gap: 12px 28px; font-size: 14px; align-items: center">
+        <a href="https://bogie-go.com/docs/" style="color: #F2EEE5">Guides</a>
+        <a href="https://bogie-go.com/docs/from-rails.html" style="color: #F2EEE5">From Rails</a>
+        <a href="https://bogie-go.com/docs/commands.html" style="color: #F2EEE5">Commands</a>
+        <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md" style="color: #F2EEE5">Design</a>
+        <a href="https://github.com/bogie-go/bogie" style="color: #F2EEE5">Source</a>
+      </nav>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#E2531F","options":["#E2531F","#D9A21B","#1F8A70","#2F6FD6"]},"$preview":{"width":1440,"height":7500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var self = this;
+    var copied = !!(this.state && this.state.copied);
+    return {
+      accent: this.props.accent ?? '#E2531F',
+      copyLabel: copied ? 'Copied' : 'Copy',
+      copy: function () {
+        var cmd = 'go install github.com/bogie-go/bogie@latest\nbogie new blog\ncd blog && bogie db:prepare && bogie server';
+        try { navigator.clipboard.writeText(cmd); } catch (e) {}
+        self.setState({ copied: true });
+        clearTimeout(self._t);
+        self._t = setTimeout(function () { self.setState({ copied: false }); }, 1600);
+      }
+    };
+  }
+  componentWillUnmount() { clearTimeout(this._t); }
+}
+</script>
+</body>
+</html>

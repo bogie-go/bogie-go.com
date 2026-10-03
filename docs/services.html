@@ -6,21 +6,22 @@
 <title>Services: Bogie</title>
 <meta name="description" content="Give logic that is not CRUD a package of its own, with no HTTP in it.">
 <link rel="icon" type="image/png" href="../favicon.png">
+<link rel="stylesheet" href="../fonts.css">
 <link rel="stylesheet" href="../style.css">
 </head>
 <body>
-<div class="wrap">
 <header class="topnav">
-  <a class="brand" href="/"><img src="../favicon.png" width="24" height="24" alt=""> Bogie</a>
-  <nav>
-    <a href="/docs/">Guides</a>
-    <a href="/docs/from-rails.html">From Rails</a>
-    <a href="/docs/commands.html">Commands</a>
-    <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">Design</a>
-    <a href="https://github.com/bogie-go/bogie">Source</a>
+  <nav aria-label="Main">
+    <a class="brand" href="/"><img src="../favicon.png" alt=""><span>bogie</span></a>
+    <div class="navlinks">
+      <a href="/docs/">Guides</a>
+      <a href="/docs/from-rails.html">From Rails</a>
+      <a href="/docs/commands.html">Commands</a>
+      <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">Design</a>
+      <a class="ghost" href="https://github.com/bogie-go/bogie">Source on GitHub</a>
+    </div>
   </nav>
 </header>
-</div>
 
 <div class="measure">
 <article>
@@ -73,12 +74,24 @@ if err := svc.Run(ctx); err != nil { ... }</code></pre>
 </footer>
 </div>
 
-<div class="wrap">
-<footer>
-  <p><a href="/docs/">Guides</a> &middot; <a href="/docs/from-rails.html">From Rails</a> &middot; <a href="/docs/commands.html">Commands</a> &middot; <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">Design</a> &middot; <a href="https://github.com/bogie-go/bogie/blob/main/docs/STATUS.md">Status</a> &middot; <a href="https://github.com/bogie-go/bogie">Source</a> &middot; <a href="https://github.com/bogie-go/bogie/blob/main/LICENSE">License</a></p>
-  <p>MIT licensed. Extracted from a service in production, not designed on a whiteboard. Not a Rails replacement; the one network-facing service a Rails shop eventually needs.</p>
+<footer class="foot">
+  <div class="track dim"></div>
+  <div class="wrap inner">
+    <div class="about">
+      <a class="brand" href="/"><img src="../favicon.png" alt=""><span>bogie</span></a>
+      <span>Rails conventions, laid on Go track. MIT licensed · pre-release.</span>
+    </div>
+    <nav aria-label="Footer">
+      <a href="/docs/">Guides</a>
+      <a href="/docs/from-rails.html">From Rails</a>
+      <a href="/docs/commands.html">Commands</a>
+      <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">Design</a>
+      <a href="https://github.com/bogie-go/bogie/blob/main/docs/STATUS.md">Status</a>
+      <a href="https://github.com/bogie-go/bogie">Source</a>
+      <a href="https://github.com/bogie-go/bogie/blob/main/LICENSE">License</a>
+    </nav>
+  </div>
 </footer>
-</div>
 
 </body>
 </html>
