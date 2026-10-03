@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Authentication: Bogie</title>
+<meta name="description" content="Guard a route group with a middleware: a shared secret, a bearer token, or a machine client's key.">
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<header class="topnav">
+  <a class="brand" href="/"><img src="../favicon.png" width="24" height="24" alt=""> Bogie</a>
+  <nav>
+    <a href="/docs/">Guides</a>
+    <a href="/docs/from-rails.html">From Rails</a>
+    <a href="/docs/commands.html">Commands</a>
+    <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">Design</a>
+    <a href="https://github.com/bogie-go/bogie">Source</a>
+  </nav>
+</header>
+</div>
+
+<div class="measure">
+<article>
+<p class="guide-eyebrow">Guide 4 of 12</p>
+<h1>Authentication</h1>
+
+<p>Rails 8 has <code>rails g authentication</code>. Bogie's takes a shape, because every caller a Go service next to Rails has to answer is a different kind of caller, and all three turned out to be a middleware on a route group, the Go form of <code>before_action</code>.</p>
+
+<pre><code>bogie g authentication secret      # the Rails app calls this service
+bogie g authentication token       # a user presents a bearer token
+bogie g authentication api_key     # a machine client presents a key</code></pre>
+
+<h2>Three shapes, one mechanism</h2>
+<p>Each shape comes from one of the two services Bogie was extracted from, each of which needed a different caller answered:</p>
+<ul>
+  <li><strong>secret</strong>: the Rails app next door calls this service directly, over the private network. One shared secret, checked on every request.</li>
+  <li><strong>token</strong>: a user, already signed in to Rails, presents a bearer token so this service knows who is asking without asking Rails again.</li>
+  <li><strong>api_key</strong>: a machine client, a script or another system, presents a key made for it ahead of time and can be revoked without touching anyone's session.</li>
+</ul>
+<p>Whichever shape, the mechanism is the same: a function that checks the request and either calls <code>c.Next()</code> or aborts with 401, mounted on a <code>*gin.RouterGroup</code> instead of the whole router, so only the routes in that group are guarded.</p>
+
+<h2>What every shape writes</h2>
+<p>Three things, every time: the middleware and its test under <code>app/middlewares</code>, a group helper on the root <code>Server</code> in <code>app/controllers/authentication_&lt;shape&gt;.go</code>, and the setting itself, three lines inserted above three markers in <code>config/config.go</code>. Here is <code>secret</code>:</p>
+<pre><code>      create  app/middlewares/require_secret.go
+      create  app/middlewares/require_secret_test.go
+      create  app/controllers/authentication_secret.go
+      insert  config/config.go: ControlSecret string `mapstructure:"control_secret"`
+      insert  config/config.go: a.ControlSecret = envOr("BLOG_CONTROL_SECRET", a.ControlSecret)
+      insert  config/config.go: requireSecret(c.Env, "BLOG_CONTROL_SECRET", a.ControlSecret, 32),
+      insert  config/credentials.yml.enc: control_secret
+        next  mount the routes it guards in app/controllers/routes.go: s.Posts.SetupRoutes(s.WithSecret(&amp;r.RouterGroup))</code></pre>
+<p>The three lines in <code>config/config.go</code> are the field (above <code>// bogie:config</code>), its environment override (above <code>// bogie:env</code>), and a check that runs at boot (above <code>// bogie:validate</code>):</p>
+<pre><code>ControlSecret string `mapstructure:"control_secret"`
+TokenSecret   string `mapstructure:"token_secret"`
+// bogie:config</code></pre>
+<pre><code>a.ControlSecret = envOr("BLOG_CONTROL_SECRET", a.ControlSecret)
+a.TokenSecret = envOr("BLOG_TOKEN_SECRET", a.TokenSecret)
+// bogie:env</code></pre>
+<pre><code>requireSecret(c.Env, "BLOG_CONTROL_SECRET", a.ControlSecret, 32),
+requireSecret(c.Env, "BLOG_TOKEN_SECRET", a.TokenSecret, 32),
+// bogie:validate</code></pre>
+<p>The generator also writes a random development value into <code>config/credentials.yml.enc</code>, so the app keeps booting in development exactly as before. Staging and production get theirs by hand, with <code>make credentials ENV=staging</code> or <code>ENV=production</code>, each its own file and key. <code>requireSecret</code> is the check behind the third marker: in production it refuses to boot if the secret is shorter than 32 characters; everywhere else, the generated development value or the test's own is enough, so nothing is enforced until it has to be.</p>
+
+<h2>Mounting the guard</h2>
+<p>The generator stops short of one edit, on purpose: mounting a controller on the guarded group instead of the plain router, in <code>app/controllers/routes.go</code>. That line is the exposure boundary, and it belongs where it can be read, not written by a tool that cannot see what the group should protect:</p>
+<pre><code>func (s *Server) SetupRoutes() {
+	r := s.Router
+
+	r.Use(middlewares.RequestID(), middlewares.Recover(s.Log), middlewares.Logger(s.Log))
+
+	// Unauthenticated, no side effects: what a load balancer polls.
+	r.GET("/healthz", func(c *gin.Context) { c.String(http.StatusOK, "ok") })
+
+	// Guarded: every route Posts mounts needs the shared secret.
+	s.Posts.SetupRoutes(s.WithSecret(&amp;r.RouterGroup))
+
+	// bogie:routes
+}</code></pre>
+<p>A second guarded group reads the same way with <code>s.WithUser(&amp;r.RouterGroup)</code> or <code>s.WithAPIKey(&amp;r.RouterGroup)</code>; a controller that needs no guard at all stays on <code>&amp;r.RouterGroup</code> directly, as <code>/healthz</code> does above.</p>
+
+<h2>secret</h2>
+<p>A shared secret in the <code>X-&lt;App&gt;-Secret</code> header (the constant <code>middlewares.SecretHeader</code>), compared with <code>crypto/subtle.ConstantTimeCompare</code> so a wrong guess cannot be timed into a right one. A Basic auth fallback lets a browser open a guarded page too, since a browser cannot send a custom header; any username works and the password is the secret. On the Rails side, it is one header on the client:</p>
+<pre><code>Faraday.new(url: ENV["BLOG_URL"], headers: { "X-Blog-Secret" => Rails.application.credentials.blog_secret })</code></pre>
+
+<h2>token</h2>
+<p>A bearer token, JWT, HS256, signed with one shared secret: <code>&lt;app&gt;.token_secret</code> in the credentials file, <code>&lt;APP&gt;_TOKEN_SECRET</code> in the environment. The Rails app mints a token for its own user with the <code>jwt</code> gem and the same secret, and this service only ever verifies:</p>
+<pre><code>JWT.encode({ iss: "blog", sub: user.id.to_s, iat: Time.now.to_i, exp: 15.minutes.from_now.to_i, jti: SecureRandom.uuid },
+           Rails.application.credentials.blog_token_secret, "HS256")</code></pre>
+<p>In a handler behind <code>WithUser</code>, <code>middlewares.Subject(c)</code> is the token's subject, a Rails user id usually; nothing is loaded for you, because who the subject is is for the caller and the handler to agree on. A service that signs users in itself, rather than trusting Rails's token, mints its own with <code>s.Tokens().Mint(subject, ttl)</code>.</p>
+<p><code>Verify</code> refuses a token that is expired, signed with another secret, issued for another issuer, or signed with any algorithm but HS256, so a token claiming <code>"none"</code> or an asymmetric algorithm never reaches the key at all.</p>
+
+<h2>api_key</h2>
+<p>A machine client presents a key rather than a session. The generator adds an <code>api_keys</code> table (<code>name</code>, a public <code>prefix</code>, and a bcrypt <code>digest</code>, never the key itself) and a subcommand:</p>
+<pre><code>bogie api_keys:create NAME</code></pre>
+<p>which prints the key once, as <code>&lt;prefix&gt;.&lt;secret&gt;</code>; there is no way to see it again, only to verify it or make another. The client sends it as a bearer token, the same header shape as <code>token</code>, and a handler behind <code>WithAPIKey</code> reads <code>middlewares.APIKeyName(c)</code> to see which key the request presented. Because this shape adds a migration, run <code>bogie db:migrate</code> (or restart the app, since it migrates at boot) before <code>api_keys:create</code> works.</p>
+
+<h2>Removing</h2>
+<p><code>bogie d authentication &lt;shape&gt;</code> removes the middleware, its test, and the group helper, and reverses the three insertions in <code>config/config.go</code>. The development value stays behind in the credentials file; it guards nothing once the field that read it is gone, so it is harmless left in place.</p>
+</article>
+
+<footer class="guide-nav">
+  <div class="prev"><span class="label">Previous</span><a href="controllers.html">Resources, controllers and routing</a></div>
+  <div class="next"><span class="label">Next</span><a href="services.html">Services</a></div>
+</footer>
+</div>
+
+<div class="wrap">
+<footer>
+  <p><a href="/docs/">Guides</a> &middot; <a href="/docs/from-rails.html">From Rails</a> &middot; <a href="/docs/commands.html">Commands</a> &middot; <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">Design</a> &middot; <a href="https://github.com/bogie-go/bogie/blob/main/docs/STATUS.md">Status</a> &middot; <a href="https://github.com/bogie-go/bogie">Source</a> &middot; <a href="https://github.com/bogie-go/bogie/blob/main/LICENSE">License</a></p>
+  <p>MIT licensed. Extracted from a service in production, not designed on a whiteboard. Not a Rails replacement; the one network-facing service a Rails shop eventually needs.</p>
+</footer>
+</div>
+
+</body>
+</html>

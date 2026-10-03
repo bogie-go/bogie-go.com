@@ -24,7 +24,7 @@
 
 <div class="measure">
 <article>
-<p class="guide-eyebrow">Guide 10 of 11</p>
+<p class="guide-eyebrow">Guide 11 of 12</p>
 <h1>From Rails</h1>
 
 <p>A dictionary for the Rails developer reading or extending a Bogie app: what each Rails thing is called here, where it lives, and what has no equivalent. When Rails has a word for something, Bogie uses it; this guide is for the places the word is the same but the thing underneath is not, and for the places there is no word because there is no thing.</p>
@@ -43,6 +43,7 @@
 <tr><td><code>rails g controller admin/reports</code></td><td><code>bogie g controller admin/reports</code></td><td>A namespace is a package, <code>app/controllers/admin_controller/</code>.</td></tr>
 <tr><td><code>rails g migration add_slug_to_posts slug:string</code></td><td><code>bogie g migration add_slug_to_posts slug:string</code></td><td>SQL, not Ruby; <code>create_</code>, <code>add_x_to_</code>, <code>remove_x_from_</code> get their SQL written.</td></tr>
 <tr><td><code>rails g job send_welcome</code></td><td><code>bogie g job send_welcome</code></td><td>A River worker, registered; apps made with <code>--jobs</code>.</td></tr>
+<tr><td><code>rails g authentication</code></td><td><code>bogie g authentication secret</code>, <code>token</code> or <code>api_key</code></td><td>A middleware on a route group; the shape says who the caller is. See <a href="authentication.html">Authentication</a>.</td></tr>
 <tr><td>(a service object, by hand)</td><td><code>bogie g service publish_post</code></td><td>A package with a <code>Run(ctx)</code>, not wired anywhere.</td></tr>
 <tr><td><code>rails destroy ...</code>, <code>rails d</code></td><td><code>bogie destroy ...</code>, <code>bogie d</code></td><td>Removes the registration lines too.</td></tr>
 <tr><td><code>rails db:create</code> &#8230; <code>db:rollback</code></td><td>the same words</td><td><code>db:prepare</code>, <code>db:reset</code>, <code>db:seed</code>, <code>db:migrate:status</code>, <code>db:migrate:redo</code>, <code>db:version</code>.</td></tr>
@@ -109,7 +110,8 @@
 <tr><td><code>head :no_content</code></td><td><code>c.Status(http.StatusNoContent)</code></td></tr>
 <tr><td><code>validates :title, presence: true</code></td><td><code>func (p Post) Validate() error { ... return fmt.Errorf("%w: title is required", ErrInvalid) }</code> in <code>app/domain</code>; runs on save</td></tr>
 <tr><td><code>rescue_from ActiveRecord::RecordNotFound</code></td><td><code>ctl.fail(c, err)</code>: <code>ErrNotFound</code> is 404, <code>ErrInvalid</code> is 422, anything else is a logged 500</td></tr>
-<tr><td><code>before_action :authenticate</code></td><td>middleware on the group, in <code>routes.go</code>, so the exposure boundary is visible in one place</td></tr>
+<tr><td><code>before_action :authenticate</code></td><td>middleware on the group, in <code>routes.go</code>, so the exposure boundary is visible in one place; <code>bogie g authentication</code> writes it and a <code>WithUser</code> group helper. See <a href="authentication.html">Authentication</a>.</td></tr>
+<tr><td><code>Current.user</code></td><td><code>middlewares.Subject(c)</code>, the verified token's subject; load the record if you need it</td></tr>
 <tr><td><code>Post.find(id)</code></td><td><code>ctl.Store.GetPost(ctx, id)</code></td></tr>
 <tr><td><code>post.save</code></td><td><code>store.CreatePost(ctx, post)</code> or <code>store.UpdatePost(ctx, post)</code>; validation runs inside</td></tr>
 <tr><td><code>SendWelcomeJob.perform_later(id)</code></td><td><code>app.Jobs.Insert(ctx, jobs.SendWelcomeArgs{ID: id}, nil)</code>; <code>InsertTx</code> inside a transaction</td></tr>

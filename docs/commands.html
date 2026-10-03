@@ -24,7 +24,7 @@
 
 <div class="measure">
 <article>
-<p class="guide-eyebrow">Guide 11 of 11</p>
+<p class="guide-eyebrow">Guide 12 of 12</p>
 <h1>Command reference</h1>
 
 <p>Every command is spelled the way Rails spells it. <code>bogie help</code> prints the authoritative short version of this page from inside an app.</p>
@@ -44,7 +44,7 @@
 <div class="table-wrap">
 <table>
 <tr><th>Command</th><th>Does</th></tr>
-<tr><td><code>bogie generate GENERATOR NAME</code>, <code>bogie g</code></td><td>Runs a generator: <code>scaffold</code>, <code>model</code>, <code>migration</code>, <code>controller</code>, <code>service</code>, <code>job</code>. <code>bogie g -h</code> for its own usage.</td></tr>
+<tr><td><code>bogie generate GENERATOR NAME</code>, <code>bogie g</code></td><td>Runs a generator: <code>scaffold</code>, <code>model</code>, <code>migration</code>, <code>controller</code>, <code>service</code>, <code>job</code>, <code>authentication</code>. <code>bogie g -h</code> for its own usage.</td></tr>
 <tr><td><code>bogie destroy GENERATOR NAME</code>, <code>bogie d</code></td><td>Removes what a generator made, registration included.</td></tr>
 <tr><td><code>bogie doctor</code></td><td>Checks markers, pinned tools and layout files; confirms every controller is constructed and mounted.</td></tr>
 <tr><td><code>bogie app:update [--pretend]</code></td><td>Moves the app to the installed Bogie's layout: a three-way merge between what the recorded version generated, what this version generates, and the file on disk. Refuses on a dirty git tree; a real overlap leaves conflict markers.</td></tr>
@@ -81,10 +81,12 @@
 <tr><td><code>controller</code></td><td><code>NAME [action ...]</code></td><td><code>app/controllers/&lt;name&gt;_controller.go</code>, one Rails controller in one file, registered: a field, a wire line and a mount above each marker. Name a resource in the plural. <code>admin/NAME</code> puts it in the admin namespace, <code>app/controllers/admin_controller/</code>, made on first use and registered the same way.</td></tr>
 <tr><td><code>service</code></td><td><code>NAME</code></td><td><code>app/services/&lt;name&gt;/</code>, <code>ctx</code> first, no HTTP, not wired anywhere.</td></tr>
 <tr><td><code>job</code></td><td><code>NAME</code></td><td><code>app/jobs/&lt;name&gt;.go</code>, a River job, registered above <code>bogie:jobs</code> (apps made with <code>--jobs</code>).</td></tr>
+<tr><td><code>authentication</code></td><td><code>SHAPE</code></td><td>A middleware on a route group, its config key with a development value written to the credentials, and a <code>WithX</code> group helper on the root <code>Server</code>. <code>SHAPE</code> is <code>secret</code> (the Rails app calls this service), <code>token</code> (bearer JWT a user presents) or <code>api_key</code> (keys for machine clients, with a table and <code>api_keys:create</code>).</td></tr>
 </table>
 </div>
 <p>Flags: <code>--pretend</code> reports without writing, <code>--force</code> overwrites a file that differs, <code>--skip-sqlc</code> skips the sqlc run. Attributes are <code>field:type</code>, with <code>:index</code> or <code>:uniq</code> after the type: <code>string text integer bigint boolean datetime uuid jsonb references</code>. A <code>references</code> field names the other model: <code>post:references</code> is <code>post_id</code>.</p>
-<p><code>bogie d GENERATOR NAME</code> removes what the generator of the same name created: its files, and for a controller the three lines that registered it. A namespaced controller's package goes too once it holds no controller.</p>
+<p><code>bogie d GENERATOR NAME</code> removes what the generator of the same name created: its files, and for a controller the three lines that registered it. A namespaced controller's package goes too once it holds no controller; <code>bogie d authentication token</code> also reverses its three lines in <code>config/config.go</code>, leaving the development value harmless in the credentials file.</p>
+<p><code>api_key</code> registers a subcommand on the app's own binary, not on <code>bogie</code>: <code>bogie api_keys:create NAME</code> reaches it through the same proxy rule as <code>db:*</code>, any colon task <code>bogie</code> does not know itself is shorthand for the binary's own, so it runs <code>blog api_keys create NAME</code>.</p>
 
 <h2>The app binary itself</h2>
 <p>A plain Go CLI with spaces, the form <code>bogie</code> accepts too (<code>bogie db prepare</code> works from outside, since the colon tasks above are shorthand for exactly these):</p>

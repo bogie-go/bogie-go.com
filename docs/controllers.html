@@ -24,7 +24,7 @@
 
 <div class="measure">
 <article>
-<p class="guide-eyebrow">Guide 3 of 11</p>
+<p class="guide-eyebrow">Guide 3 of 12</p>
 <h1>Resources, controllers and routing</h1>
 
 <h2>A whole resource</h2>
@@ -140,7 +140,7 @@ func (ctl *PostsController) Show(c *gin.Context) {
       insert  app/controllers/admin_controller/server.go: Reports *ReportsController
       insert  app/application.go: server.Admin.Reports = admin_controller.NewReportsController(log)
       insert  app/controllers/admin_controller/routes.go: s.Reports.SetupRoutes(admin)</code></pre>
-<p>A Rails namespace (<code>namespace :admin</code>, <code>Admin::ReportsController</code>) is a Go package, <code>app/controllers/admin_controller/</code>, written on first use: its own <code>server.go</code> with its own <code>// bogie:controllers</code> marker, and its own <code>routes.go</code> mounting the <code>/admin</code> group above its own <code>// bogie:routes</code>. The package is registered at the root with the same three lines a controller gets; each controller inside it then gets two more, into the namespace's own files. Middleware the whole namespace shares, an auth check or a shared secret, goes on that group in <code>routes.go</code>, so the exposure boundary is visible in one place. One level of namespace is supported; a version such as <code>v1</code> is a route group inside the namespace's <code>routes.go</code>, not a nested namespace. <code>bogie d controller admin/reports</code> removes the controller, and the package too once it holds no controller.</p>
+<p>A Rails namespace (<code>namespace :admin</code>, <code>Admin::ReportsController</code>) is a Go package, <code>app/controllers/admin_controller/</code>, written on first use: its own <code>server.go</code> with its own <code>// bogie:controllers</code> marker, and its own <code>routes.go</code> mounting the <code>/admin</code> group above its own <code>// bogie:routes</code>. The package is registered at the root with the same three lines a controller gets; each controller inside it then gets two more, into the namespace's own files. Middleware the whole namespace shares, an auth check or a shared secret, goes on that group in <code>routes.go</code>, so the exposure boundary is visible in one place; <code>bogie g authentication</code> writes that middleware, covered in <a href="authentication.html">Authentication</a>. One level of namespace is supported; a version such as <code>v1</code> is a route group inside the namespace's <code>routes.go</code>, not a nested namespace. <code>bogie d controller admin/reports</code> removes the controller, and the package too once it holds no controller.</p>
 
 <h2>Views: wire structs, never the domain type</h2>
 <p><code>app/views/posts.go</code> holds <code>PostRequest</code> and <code>PostResponse</code>; a domain type never doubles as a wire type, so a field added to the database does not silently appear on the wire, and <code>params.permit</code>'s job is done by the request struct only having the fields it has:</p>
@@ -155,7 +155,7 @@ func (ctl *PostsController) Show(c *gin.Context) {
 
 <footer class="guide-nav">
   <div class="prev"><span class="label">Previous</span><a href="models.html">Models and migrations</a></div>
-  <div class="next"><span class="label">Next</span><a href="services.html">Services</a></div>
+  <div class="next"><span class="label">Next</span><a href="authentication.html">Authentication</a></div>
 </footer>
 </div>
 
