@@ -145,8 +145,8 @@ cd blog &amp;&amp; bogie db:prepare &amp;&amp; bogie server">Copy</button></head
 
 <section class="wrap section tight">
   <p class="eyebrow">The line</p>
-  <h2 class="display" style="margin-bottom: 20px">Every request rides the same four stops.</h2>
-  <p class="lead" style="max-width: 38em; font-size: 19px; margin-bottom: 64px">Rails gives you Active Record, Action Controller and friends. Bogie gives you the same separation, spelled out in plain Go. Here is what <code>bogie g scaffold post</code> lays down.</p>
+  <h2 class="display" style="margin-bottom: 20px">Every app rides the same four stops.</h2>
+  <p class="lead" style="max-width: 38em; font-size: 19px; margin-bottom: 64px">Rails gives you Active Record, Action Controller and friends. Bogie gives you the same separation, spelled out in plain Go. Here is what <code>bogie g scaffold post</code> lays down, plus a job from <code>bogie g job</code>.</p>
 
   <ol class="stops">
     <li class="stop">
@@ -219,8 +219,8 @@ cd blog &amp;&amp; bogie db:prepare &amp;&amp; bogie server">Copy</button></head
       <div class="body">
         <div class="text">
           <div class="where">04 · app/jobs · bogie new --jobs</div>
-          <h3>Jobs commit with the row</h3>
-          <p>River runs on the same Postgres as the app: no Redis, no second system to keep up. <code>bogie g job</code> registers the worker above the <code>bogie:jobs</code> marker.</p>
+          <h3>Jobs can commit with the row</h3>
+          <p>River runs on the same Postgres as the app: no Redis, no second system to keep up. Enqueue with <code>InsertTx</code> inside a transaction and the job commits with the row or not at all. <code>bogie g job</code> registers the worker above the <code>bogie:jobs</code> marker.</p>
         </div>
         <div class="panel"><pre class="code"><span class="k">type</span> <span class="t">SendWelcomeArgs</span> <span class="k">struct</span>{}
 
@@ -297,15 +297,15 @@ cd blog &amp;&amp; bogie db:prepare &amp;&amp; bogie server">Copy</button></head
     <div class="feature"><code>bin/ci</code><h3>CI runs on your machine</h3><p><code>bin/ci</code> is the whole pipeline: tests with race detection, gofmt, vet and golangci-lint. No hosted runner to wait on.</p></div>
     <div class="feature"><code>Kamal</code><h3>Deploys like your Rails app</h3><p>A container, a server, one deploy tool. The service migrates at boot, so shipping is one command.</p></div>
     <div class="feature"><code>bogie d</code><h3>Undo is a command</h3><p>Destroy removes what a generator made, registration included. <code>--pretend</code> shows the change before it happens.</p></div>
-    <div class="feature"><code>bogie app:update</code><h3>Upgrades that respect your edits</h3><p>A three-way merge brings new layout into an app you have already changed, instead of overwriting it.</p></div>
+    <div class="feature"><code>bogie app:update</code><h3>Upgrades that respect your edits</h3><p>A three-way merge brings a newer layout into an app you have already changed, instead of overwriting it.</p></div>
     <div class="feature"><code>credentials:edit</code><h3>Secrets, encrypted in the repo</h3><p>Per-environment encrypted settings, edited and read the way Rails taught you.</p></div>
   </div>
 </section>
 
 <section class="proof">
   <div class="wrap inner">
-    <p class="display">Extracted from a service in production, <span>not designed on a whiteboard.</span></p>
-    <p>Every convention earned its place on a running system first: an omnichannel chat service beside a Rails app, taking webhooks from two messaging platforms, holding the agents' sockets, and working the queue between them. Bogie is that service's skeleton, with the parts that were wrong fixed on the way out.</p>
+    <p class="display">One Go service next to your Rails app, <span>not a rewrite.</span></p>
+    <p>We moved the parts of our system that needed heavy concurrency and high load to Go, and kept the rest in Rails. Go handles that work well, but it gives you so many choices that building the app itself became the hard part. Bogie brings Rails's convention over configuration to that one service.</p>
   </div>
 </section>
 
