@@ -32,7 +32,8 @@
 
 <h2>Install</h2>
 <pre><code>go install github.com/bogie-go/bogie@latest</code></pre>
-<p>Bogie is pre-release: there is no tagged release yet, so <code>@latest</code> through the module proxy can lag behind <code>main</code>. Until the first tag, install from a clone instead:</p>
+<p>You need Go 1.26 or newer, and Docker with Compose v2 for the local Postgres.</p>
+<p>Bogie is pre-release, and v0.1.0 is not tagged yet. Until it is, <code>@latest</code> installs a recent commit from <code>main</code> through the module proxy, which can be a few commits behind (<code>bogie version</code> prints which one). Once v0.1.0 is tagged, the same line installs that release. To be exactly on <code>main</code> before then, install from a clone:</p>
 <pre><code>git clone https://github.com/bogie-go/bogie
 cd bogie &amp;&amp; go install .</code></pre>
 

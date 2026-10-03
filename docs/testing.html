@@ -36,9 +36,11 @@ BLOG_ENV=test go test -race -cover ./...</code></pre>
 <p>Either runs the whole suite with the race detector and coverage, in the test environment.</p>
 
 <h2>Store tests</h2>
-<p>A store test opens the real, test database, migrates it, and truncates every table (CASCADE, across the foreign keys between them) before the test runs, so each one starts from nothing. There is no in-memory substitute on purpose: a store test that never touches the database tests nothing. That means store tests need Postgres up first:</p>
+<p>A store test opens the real, test database, migrates it, and truncates every table (CASCADE, across the foreign keys between them) before the test runs, so each one starts from nothing. There is no in-memory substitute on purpose: a store test that never touches the database tests nothing. That means store tests need Postgres up and the test database prepared once first:</p>
 <pre><code>make up
+BLOG_ENV=test bogie db:prepare
 bogie test</code></pre>
+<p><code>bogie db:prepare</code> on its own prepares only the development database. The variable's prefix is the app's name upper-cased (<code>bogie new shop</code> gives <code>SHOP_ENV</code>). <code>bin/ci</code> rebuilds the test database itself.</p>
 <p>goose's version tables and River's schema are left alone by the truncation, so migration and job state survive between tests.</p>
 
 <h2>Controller tests</h2>
