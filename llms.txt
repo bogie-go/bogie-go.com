@@ -1,0 +1,33 @@
+# Bogie
+
+> The Go service next to your Rails app. Bogie is a command-line tool that scaffolds an API-only, Postgres-only Go service with Rails-style generators (new, g scaffold, g model, g controller, g job, g authentication) that also wire the code in. It builds on Gin, sqlc with pgx, goose, River and Kamal. The generated app never imports Bogie. MIT licensed, v0.1.0, Go 1.25 or newer.
+
+Install: `go install github.com/bogie-go/bogie@latest`. Then `bogie new blog && cd blog && bogie db:prepare && bogie server`.
+
+Every generated app follows six rules: ctx first on anything doing I/O; interfaces declared where they are consumed; the domain package imports nothing third-party; constructors return (T, error); *gin.Context never travels below the controllers; no util, helpers or common packages. Each app ships an AGENTS.md with the rules, the commands and a recipe per task.
+
+## Guides
+
+- [Getting started](https://bogie-go.com/docs/getting-started.html): Install Bogie, generate a new service, and get it migrating, seeded and serving.
+- [Models and migrations](https://bogie-go.com/docs/models.html): Add a table with g model, change one with g migration, and run it through db:*.
+- [Resources, controllers and routing](https://bogie-go.com/docs/controllers.html): Scaffold a whole resource or write a controller by hand, and see how either gets registered.
+- [Authentication](https://bogie-go.com/docs/authentication.html): Guard a route group with a middleware: a shared secret, a bearer token, or a machine client's key.
+- [Services](https://bogie-go.com/docs/services.html): Give logic that is not CRUD a package of its own, with no HTTP in it.
+- [Background jobs](https://bogie-go.com/docs/jobs.html): Add River to an app made with --jobs and write a worker that runs beside it.
+- [Configuration and credentials](https://bogie-go.com/docs/configuration.html): The environment variables, the encrypted settings file, and what staging means here.
+- [Testing and CI](https://bogie-go.com/docs/testing.html): Where tests live, what bin/ci runs, and what doctor checks before either does.
+- [Deploying](https://bogie-go.com/docs/deploying.html): One Docker image, every role, shipped with Kamal 2 to staging and production.
+- [Conventions and agents](https://bogie-go.com/docs/conventions.html): The six rules every generated app keeps, and why the layout is Rails-shaped on purpose.
+- [From Rails](https://bogie-go.com/docs/from-rails.html): A dictionary: what each Rails thing is called here, where it lives, and what has no equivalent.
+- [Command reference](https://bogie-go.com/docs/commands.html): Every bogie command, every generator and every make target, in one place.
+
+## Source and design
+
+- [Repository](https://github.com/bogie-go/bogie): the tool, MIT
+- [DESIGN.md](https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md): every decision and its reasoning
+- [STATUS.md](https://github.com/bogie-go/bogie/blob/main/docs/STATUS.md): what works today and what is next
+- [FROM_RAILS.md](https://github.com/bogie-go/bogie/blob/main/docs/FROM_RAILS.md): the Rails-to-Bogie dictionary
+
+## Not
+
+Not a framework, not full-stack (API-only, no views), Postgres only, not a Rails replacement: it runs beside the Rails app.
