@@ -44,6 +44,7 @@
   .pre-release { display: inline-block; font-size: .8rem; font-weight: 600; color: var(--accent); background: var(--accent-soft);
                  border-radius: 999px; padding: .15rem .7rem; margin-bottom: 1rem; }
 
+  p.needs { margin: .6rem 0 0; font-size: .9rem; color: var(--muted); }
   section { padding: 2.5rem 0; border-top: 1px solid var(--line); }
   h2 { font-size: 1.35rem; margin: 0 0 1rem; letter-spacing: -.01em; }
   .grid { display: grid; grid-template-columns: 1fr; gap: 1.25rem 2.5rem; }
@@ -78,6 +79,7 @@ make up
 bogie g scaffold post title:string body:text
 bogie db:prepare
 bogie s</code></pre>
+    <p class="needs">Needs Docker with Compose v2 and Go 1.26+. Tests use their own database: <code>BLOG_ENV=test bogie db:prepare</code> once before <code>bogie test</code>.</p>
   </div>
 </header>
 
