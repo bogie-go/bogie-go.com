@@ -195,10 +195,12 @@ tr:last-child td { border-bottom: 0; }
 .foot nav a:hover { text-decoration: underline; text-underline-offset: 4px; }
 
 /* guides: the same nav and footer, a reading measure inside the 1200px frame */
-.measure { max-width: 46rem; margin: 0 auto; padding: 56px 32px 72px; }
+.measure { max-width: 1200px; margin: 0 auto; padding: 56px 32px 72px; }
+.measure > article { max-width: none; }
 @media (max-width: 600px) { .measure { padding: 40px 20px 56px; } }
 .guide-eyebrow { font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rust); margin: 0 0 14px; }
 .measure h1 { font-family: var(--display); font-weight: 900; font-size: clamp(48px, 7vw, 84px); line-height: 0.92; text-transform: uppercase; margin: 0 0 24px; letter-spacing: -0.005em; }
+.measure p, .measure li { max-width: 54rem; }
 .measure h2 { font-family: var(--display); font-weight: 800; font-size: 34px; line-height: 1; text-transform: uppercase; margin: 48px 0 14px; }
 .measure h3 { font-size: 20px; font-weight: 600; margin: 32px 0 10px; }
 .measure p, .measure li { font-size: 17px; line-height: 1.65; color: var(--ink-2); }
