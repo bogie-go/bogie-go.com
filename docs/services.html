@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Services: Bogie</title>
+<meta name="description" content="Give logic that is not CRUD a package of its own, with no HTTP in it.">
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<header class="docheader">
+  <a class="site" href="/">Bogie</a>
+  <nav><a href="./">Guides</a></nav>
+</header>
+</div>
+
+<div class="measure">
+<article>
+<p class="guide-eyebrow">Guide 4 of 11</p>
+<h1>Services</h1>
+
+<p>A scaffolded resource is CRUD over the store, and most of a Rails app's logic is not CRUD: it is "publish this post", not "update this row". Rails developers reach for a plain Ruby object; here that is <code>bogie g service</code>.</p>
+
+<pre><code>bogie g service publish_post</code></pre>
+<pre><code>      create  app/services/publish_post/publish_post.go
+      create  app/services/publish_post/publish_post_test.go</code></pre>
+
+<pre><code>package publish_post
+
+type store interface{}
+
+type Service struct {
+	store store
+	log   *slog.Logger
+}
+
+func New(store store, log *slog.Logger) *Service {
+	return &amp;Service{store: store, log: log}
+}
+
+func (s *Service) Run(ctx context.Context) error {
+	s.log.InfoContext(ctx, "publish_post: not implemented yet")
+	return nil
+}</code></pre>
+
+<p>One package per service, named after what it does. <code>ctx</code> is the first parameter of <code>Run</code> (rule 1), and the package knows nothing about HTTP, so a controller, a background job and a test can all call the same function with the same values. The <code>store</code> interface is declared here, next to the code that calls it (rule 2), empty until you list the methods it actually needs:</p>
+<pre><code>type store interface {
+	GetPost(ctx context.Context, id string) (domain.Post, error)
+}</code></pre>
+<p><code>*models.Store</code> satisfies whatever you write without this package ever being imported by <code>models</code>, and the fake in the test stays a few lines. Rename <code>Run</code> to say what it does; that is the only thing the generator cannot name for you.</p>
+
+<h2>Not wired anywhere</h2>
+<p>Unlike a controller or a job, a service is never registered above a marker. The thing that needs it declares the dependency and constructs it:</p>
+<pre><code>svc := publish_post.New(store, log)
+if err := svc.Run(ctx); err != nil { ... }</code></pre>
+<p><code>bogie d service publish_post</code> removes the package. There is no equivalent step to undo in <code>app/application.go</code>, because there was never a step to do there in the first place.</p>
+
+<h2>When to reach for one</h2>
+<p>A plain resource needs no service: a scaffolded controller calling the store directly is the whole story. Reach for <code>g service</code> when an action does more than one thing to the database, calls another system, or is logic a background job and an HTTP handler both need to run identically. If it is CRUD, it belongs in the store; if it is a verb, it belongs in a service.</p>
+</article>
+
+<footer class="guide-nav">
+  <div class="prev"><span class="label">Previous</span><a href="controllers.html">Resources, controllers and routing</a></div>
+  <div class="next"><span class="label">Next</span><a href="jobs.html">Background jobs</a></div>
+</footer>
+</div>
+</body>
+</html>

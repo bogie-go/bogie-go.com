@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Testing and CI: Bogie</title>
+<meta name="description" content="Where tests live, what bin/ci runs, and what doctor checks before either does.">
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<header class="docheader">
+  <a class="site" href="/">Bogie</a>
+  <nav><a href="./">Guides</a></nav>
+</header>
+</div>
+
+<div class="measure">
+<article>
+<p class="guide-eyebrow">Guide 7 of 11</p>
+<h1>Testing and CI</h1>
+
+<h2>Where tests live</h2>
+<p>Beside the code they test, <code>*_test.go</code>, stdlib <code>testing</code> only: no factories, no fixtures, no <code>spec/</code> directory. A generator writes the test file next to the file it tests every time it writes one.</p>
+<pre><code>bogie test
+bogie t
+BLOG_ENV=test go test -race -cover ./...</code></pre>
+<p>Either runs the whole suite with the race detector and coverage, in the test environment.</p>
+
+<h2>Store tests</h2>
+<p>A store test opens the real, test database, migrates it, and truncates every table (CASCADE, across the foreign keys between them) before the test runs, so each one starts from nothing. There is no in-memory substitute on purpose: a store test that never touches the database tests nothing. That means store tests need Postgres up first:</p>
+<pre><code>make up
+bogie test</code></pre>
+<p>goose's version tables and River's schema are left alone by the truncation, so migration and job state survive between tests.</p>
+
+<h2>Controller tests</h2>
+<p>With a fake that satisfies the small interface declared beside the controller (see <a href="controllers.html">Resources, controllers and routing</a>): no database, no real store, just a struct that records what it was asked for and answers with what the test chose. A test mounts the controller alone on <code>gin.New()</code>, so it sees the controller and nothing else: no middleware, no other routes.</p>
+
+<h2>Domain and service tests</h2>
+<p>A domain test is a plain function call: <code>Validate</code> and whatever rules live in <code>app/domain</code>, nothing to set up. A service test fakes the <code>store</code> interface the service itself declared, the same pattern as a controller test.</p>
+
+<h2>Adding a query</h2>
+<p>There is no <code>where</code> builder; a query is SQL with a name, in <code>db/queries/&lt;table&gt;.sql</code>:</p>
+<pre><code>-- name: ListCommentsForPost :many
+SELECT * FROM comments WHERE post_id = $1 ORDER BY created_at DESC;</code></pre>
+<p>then <code>make sqlc</code>, which writes <code>ListCommentsForPost</code> into <code>app/models/comments.sql.go</code> with typed parameters, or fails if a column is misspelled. A store method in <code>app/models/comments.go</code> then calls it and converts the rows, as the generated methods do. Annotations: <code>:one</code>, <code>:many</code>, <code>:exec</code>, <code>:execrows</code>. The generated file is committed; <code>bin/ci</code> fails if it is stale.</p>
+
+<h2>bin/ci</h2>
+<p>The whole pipeline, run locally rather than on a hosted runner, the way Rails 8.1's <code>bin/ci</code> does. Every step runs even if an earlier one failed, so one run reports everything:</p>
+<pre><code>bin/ci
+bogie ci
+make ci</code></pre>
+<ol>
+  <li>Setup: modules. Downloads and verifies the module graph.</li>
+  <li>Setup: database. Brings up the compose stack, drops the test database, and prepares it fresh from the migrations.</li>
+  <li>Schema: down and up. Migrates all the way down to zero and back up, so a migration with a broken Down is caught before anyone else hits it.</li>
+  <li>Schema: models current. Runs <code>sqlc diff</code>: a generated model that does not match its query is a failure here, not a silent drift.</li>
+  <li>Style: gofmt. Fails if any file is not gofmt-clean.</li>
+  <li>Style: go vet.</li>
+  <li>Style: golangci-lint, against <code>.golangci.yml</code>.</li>
+  <li>Build. <code>go build ./...</code>.</li>
+  <li>Tests. <code>go test -race -cover ./...</code>.</li>
+  <li>Worker: boots and drains (apps made with <code>--jobs</code> only). Builds the binary and runs it as <code>worker</code> for six seconds, to prove it starts.</li>
+</ol>
+<p>A green run on a clean tree ends with one more step, <strong>Signoff</strong>: <code>gh signoff</code> records a status on the commit, if the <code>basecamp/gh-signoff</code> extension is installed; without it, the run is still green but says so. A failing run never signs off, and never should be merged or deployed.</p>
+
+<h2>bogie lint</h2>
+<pre><code>bogie lint</code></pre>
+<p>gofmt check, <code>go vet</code>, then golangci-lint, the three style steps of <code>bin/ci</code> on their own, useful while iterating without waiting for the database steps.</p>
+
+<h2>bogie doctor</h2>
+<pre><code>bogie doctor</code></pre>
+<p>Checks the things the generators rely on, since Rails never needed to check them (it autoloads):</p>
+<ul>
+  <li><code>bogie.toml</code> exists.</li>
+  <li>Every marker (<code>bogie:controllers</code>, <code>bogie:wire</code>, <code>bogie:routes</code>, and <code>bogie:jobs</code> if the app has jobs) is present exactly once, in the root files and in every namespace package's own <code>server.go</code> and <code>routes.go</code>.</li>
+  <li>The pinned tools (goose, sqlc, credentials) are still under the <code>tool</code> directive in <code>go.mod</code>.</li>
+  <li>The layout files generators depend on exist: <code>db/sqlc.yaml</code>, <code>db/db.go</code>, <code>bin/ci</code>, <code>docker-compose.yml</code>, <code>AGENTS.md</code>, <code>config/master.key</code>.</li>
+  <li>Every controller it finds, plain or namespaced, is both constructed in <code>app/application.go</code> and mounted in the right <code>routes.go</code>. A mount with no construction is a nil controller whose first request panics; a construction with no mount serves nothing, and both are caught here rather than at runtime.</li>
+</ul>
+<p>It prints one line per check and exits non-zero if anything failed, which is also how a generator test for a removed marker is written: expect the named error, never a partial write.</p>
+</article>
+
+<footer class="guide-nav">
+  <div class="prev"><span class="label">Previous</span><a href="configuration.html">Configuration and credentials</a></div>
+  <div class="next"><span class="label">Next</span><a href="deploying.html">Deploying</a></div>
+</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deploying: Bogie</title>
+<meta name="description" content="One Docker image, every role, shipped with Kamal 2 to staging and production.">
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<header class="docheader">
+  <a class="site" href="/">Bogie</a>
+  <nav><a href="./">Guides</a></nav>
+</header>
+</div>
+
+<div class="measure">
+<article>
+<p class="guide-eyebrow">Guide 8 of 11</p>
+<h1>Deploying</h1>
+
+<h2>One image, every role</h2>
+<p>The Dockerfile builds one binary that serves, works the queue (apps made with <code>--jobs</code>) and moves the schema, so a web container and a job container are always the same artifact, never built from different commits:</p>
+<pre><code>FROM golang:1.27-alpine AS builder
+...
+RUN CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o /out/blog .
+
+FROM alpine:3.21
+RUN apk add --no-cache ca-certificates tzdata &amp;&amp; adduser -D -u 10001 blog
+USER blog
+
+COPY --from=builder /src/config /app/config
+COPY --from=builder /out/blog /usr/local/bin/blog
+EXPOSE 8080
+ENTRYPOINT ["blog"]</code></pre>
+<p>The encrypted credentials travel in the image; the keys never do. <code>.dockerignore</code> keeps every <code>*.key</code> out of the build context, so an image cannot carry both halves of the pair. With no arguments the image serves, reading <code>&lt;NAME&gt;_ENV</code> and <code>&lt;NAME&gt;_CREDENTIALS</code> from the environment; <code>migrate</code> is compiled in, so the same image also inspects and rolls back the schema:</p>
+<pre><code>docker exec &lt;container&gt; blog migrate status
+docker exec &lt;container&gt; blog migrate down --yes</code></pre>
+
+<h2>Staging is the base, production is the overlay</h2>
+<p><code>config/deploy.yml</code> <strong>is</strong> staging; a bare <code>kamal deploy</code> targets it:</p>
+<pre><code>kamal deploy</code></pre>
+<p>Production is reached only through <code>-d production</code>, which overlays <code>config/deploy.production.yml</code> on top:</p>
+<pre><code>kamal deploy -d production</code></pre>
+<p>Hashes in the overlay deep-merge with staging's; arrays (<code>env.secret</code>, <code>proxy.hosts</code>) replace wholesale rather than appending, which is why production restates <code>proxy.hosts</code> with its own domain but says nothing about <code>env.secret</code>: the list is identical, only the value Kamal substitutes differs.</p>
+
+<h3>Three things to fill in before the first deploy</h3>
+<ul>
+  <li><strong>The server.</strong> <code>servers.web</code> in <code>config/deploy.yml</code>, marked <code>CHANGE-ME.example.com</code>.</li>
+  <li><strong>The host name.</strong> <code>proxy.hosts</code>, marked the same way, staging and production each with their own.</li>
+  <li><strong>The registry.</strong> <code>image: CHANGE-ME/blog</code> and <code>registry.username</code>.</li>
+</ul>
+<p>Kamal's healthcheck points at <code>/healthz</code> rather than its own default <code>/up</code>, since this service has no such route and <code>/healthz</code> touches nothing and allocates nothing.</p>
+
+<h2>.kamal/secrets</h2>
+<p>What Kamal substitutes into <code>deploy.yml</code>'s <code>secret:</code> lists. Everything else lives in the encrypted credentials; only the decryption key stays on disk, gitignored, copied between machines by hand:</p>
+<pre><code>BLOG_MASTER_KEY=$(cat config/credentials/staging.key)
+KAMAL_REGISTRY_PASSWORD=$(go tool credentials get -e staging kamal.registry_password)</code></pre>
+<p><code>.kamal/secrets.production</code> is the same shape, reading <code>config/credentials/production.key</code> instead; Kamal picks whichever file matches the destination. <code>make credentials ENV=staging</code> makes the credentials file and its key the first time, before the first deploy to that environment can work; the service refuses to boot without a database URL in it.</p>
+
+<h2>Migrate at boot</h2>
+<p>On by default: the container applies pending migrations before it starts serving, so the database only has to exist, not already match the code. <code>&lt;NAME&gt;_MIGRATE_AT_BOOT=false</code> turns it off, for a deployment that migrates from one place on purpose.</p>
+
+<h2>The job role</h2>
+<p>Apps made with <code>--jobs</code> get a <code>job</code> role in both <code>deploy.yml</code> and the production overlay: the same image, started as <code>blog worker</code> instead of serving. Same host as <code>web</code> until the queue needs one of its own.</p>
+
+<h2>The database</h2>
+<p>Not an accessory by default. The premise is a service next to a Rails app that already runs Postgres, so <code>blog.database_url</code> in the credentials points at that server, as a separate database on it. Uncommenting an <code>accessories.db</code> block in <code>deploy.yml</code> gives the service its own Postgres container instead, resolved by container name on Kamal's network; the schema is still applied by the container itself at boot.</p>
+</article>
+
+<footer class="guide-nav">
+  <div class="prev"><span class="label">Previous</span><a href="testing.html">Testing and CI</a></div>
+  <div class="next"><span class="label">Next</span><a href="conventions.html">Conventions and agents</a></div>
+</footer>
+</div>
+</body>
+</html>

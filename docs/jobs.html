@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Background jobs: Bogie</title>
+<meta name="description" content="Add River to an app made with --jobs and write a worker that runs beside it.">
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<header class="docheader">
+  <a class="site" href="/">Bogie</a>
+  <nav><a href="./">Guides</a></nav>
+</header>
+</div>
+
+<div class="measure">
+<article>
+<p class="guide-eyebrow">Guide 5 of 11</p>
+<h1>Background jobs</h1>
+
+<p>Jobs are opt-in, added when the app is generated:</p>
+<pre><code>bogie new blog --jobs</code></pre>
+<p>This runs <a href="https://riverqueue.com/">River</a> on the same Postgres the app already has: no Redis, a transactional enqueue, typed args. It adds a worker role, <code>app/jobs</code>, and <code>g job</code>. An app made without <code>--jobs</code> refuses the generator with a clear error:</p>
+<pre><code>bogie: generate job: this app has no app/jobs; it was generated without --jobs (AGENTS.md says what --jobs adds, if you want to add it by hand)</code></pre>
+
+<h2>Writing one</h2>
+<pre><code>bogie g job send_welcome</code></pre>
+<pre><code>      create  app/jobs/send_welcome.go
+      create  app/jobs/send_welcome_test.go
+      insert  app/jobs/jobs.go: registered += add(workers, &amp;SendWelcomeWorker{Log: log})</code></pre>
+<pre><code>type SendWelcomeArgs struct {
+	// ID string `json:"id"`
+}
+
+func (SendWelcomeArgs) Kind() string { return "send_welcome" }
+
+type SendWelcomeWorker struct {
+	river.WorkerDefaults[SendWelcomeArgs]
+	Log *slog.Logger
+}
+
+func (w *SendWelcomeWorker) Work(ctx context.Context, job *river.Job[SendWelcomeArgs]) error {
+	w.Log.InfoContext(ctx, "send_welcome: not implemented yet", "job", job.ID)
+	return nil
+}</code></pre>
+<p>An <code>Args</code> type with a <code>Kind</code>, and a <code>Worker</code> with <code>Work(ctx, job)</code>. Args are stored as JSON in the job row, so keep them to ids and small values; the worker loads whatever else it needs. Never change <code>Kind</code> once jobs of it have been queued: a queued job of the old kind would have no worker to run it. Dependencies go on the worker as fields, the smallest interface it needs (rule 2), passed on the registration line.</p>
+
+<h2>The marker</h2>
+<p>The generator registers the worker above <code>// bogie:jobs</code> in <code>app/jobs/jobs.go</code>, the same idempotent, checked-before-written insertion every generator uses:</p>
+<pre><code>registered += add(workers, &amp;SendWelcomeWorker{Log: log})
+// bogie:jobs</code></pre>
+
+<h2>Enqueuing</h2>
+<p>From anywhere that holds the application, including inside a transaction so the job commits with the row it depends on or not at all:</p>
+<pre><code>app.Jobs.Insert(ctx, jobs.SendWelcomeArgs{}, nil)
+
+// or, so the enqueue commits with the row:
+app.Jobs.InsertTx(ctx, tx, jobs.SendWelcomeArgs{}, nil)</code></pre>
+
+<h2>Running the worker</h2>
+<pre><code>bogie worker</code></pre>
+<p>Or <code>make worker</code>. It is its own process, separate from <code>bogie server</code>, so a backlog in the queue never slows a request. River's own schema (the tables it needs to track jobs) is applied by <code>migrate</code>, through <code>rivermigrate</code>, not copied into <code>db/migrate</code>: it arrives the same way the app's own migrations do, at boot or with <code>bogie db:migrate</code>.</p>
+
+<h2>Removing one</h2>
+<pre><code>bogie d job send_welcome</code></pre>
+<p>Removes the file and the registration line.</p>
+</article>
+
+<footer class="guide-nav">
+  <div class="prev"><span class="label">Previous</span><a href="services.html">Services</a></div>
+  <div class="next"><span class="label">Next</span><a href="configuration.html">Configuration and credentials</a></div>
+</footer>
+</div>
+</body>
+</html>

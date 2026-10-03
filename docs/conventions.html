@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Conventions and agents: Bogie</title>
+<meta name="description" content="The six rules every generated app keeps, and why the layout is Rails-shaped on purpose.">
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<header class="docheader">
+  <a class="site" href="/">Bogie</a>
+  <nav><a href="./">Guides</a></nav>
+</header>
+</div>
+
+<div class="measure">
+<article>
+<p class="guide-eyebrow">Guide 9 of 11</p>
+<h1>Conventions and agents</h1>
+
+<p>Rails has autoload and <code>method_missing</code>; Go has neither. Nothing exists until it is written down and registered, so every "magic" Rails step has a visible line in a Bogie app, and the six rules below are what keep that visible shape consistent as the app grows.</p>
+
+<h2>The six rules</h2>
+<ol class="rules">
+  <li><strong><code>ctx context.Context</code> is the first parameter of anything doing I/O.</strong> No <code>context.TODO()</code>. Cancellation, deadlines and tracing travel in it, so a request that is abandoned stops its query instead of finishing work nobody will read.</li>
+  <li><strong>Interfaces are declared where they are consumed</strong>, next to the code that uses them, holding only the methods that code actually calls, never exported from the package that implements them. A controller's store interface lists five methods, not the whole store, which is why a controller test needs no database and there is no mocking library anywhere in a generated app.</li>
+  <li><strong><code>app/domain</code> imports nothing third-party.</strong> The type and its <code>Validate</code> can be read, and called from a test, without pulling in a database driver or an HTTP framework.</li>
+  <li><strong>Constructors return <code>(T, error)</code>.</strong> Only <code>main</code> exits. A bad configuration fails at boot with a message, never with a panic in the middle of a handler.</li>
+  <li><strong><code>*gin.Context</code> never travels below <code>app/controllers</code>.</strong> A handler converts HTTP into domain values, calls one function, and converts the result back. Everything below that line can be called from a job, a CLI, or a test, not only from a request.</li>
+  <li><strong>No <code>util/</code>, <code>helpers/</code> or <code>common/</code>.</strong> A package is named for what it provides, which is a required prefix at every call site, so the name has to say something.</li>
+</ol>
+
+<h2>The layout is Rails-shaped on purpose</h2>
+<p><code>app/controllers</code>, <code>app/services</code>, <code>app/models</code>, <code>db/migrate</code>: a Rails developer finds things where they expect them, and the generators keep it that way deliberately. Do not "fix" this into a more idiomatic Go layout; it is not an oversight, it is the point. There is no <code>spec/</code> directory, though: Go tests sit beside the code they test, stdlib <code>testing</code>, no factories.</p>
+
+<h2>Underscored namespace packages</h2>
+<p>A Rails namespace (<code>namespace :admin</code>) becomes a Go package, <code>admin_controller</code>, one per namespace. Go style would spell that <code>admincontroller</code> or move it under a different name entirely; <code>.golangci.yml</code> disables the ST1003 naming check for exactly this, and nothing else, so the Rails-shaped name can stand without the linter fighting the layout it was asked to keep.</p>
+
+<h2>AGENTS.md and CLAUDE.md, and why generators are the deterministic path</h2>
+<p>Every generated app ships an <code>AGENTS.md</code> (with <code>CLAUDE.md</code> as the same content) holding the six rules above, every command, and a recipe per generator. It exists because an agent working on a Bogie app has the same problem a new hire does: nothing autoloads, so a controller that is written but not registered compiles, lints clean, and serves nothing. Running <code>bogie g controller</code> instead of writing the file by hand gets the registration right every time, in the same three places, whether the hand on the keyboard is a person's or an agent's; <code>bogie doctor</code> is the check that confirms it actually happened.</p>
+</article>
+
+<footer class="guide-nav">
+  <div class="prev"><span class="label">Previous</span><a href="deploying.html">Deploying</a></div>
+  <div class="next"><span class="label">Next</span><a href="from-rails.html">From Rails</a></div>
+</footer>
+</div>
+</body>
+</html>

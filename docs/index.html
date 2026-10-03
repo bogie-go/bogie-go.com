@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Guides: Bogie</title>
+<meta name="description" content="Guides to working on a Bogie app: models, controllers, services, jobs, configuration, testing, deploying and the conventions behind them.">
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<header class="docheader">
+  <a class="site" href="/">Bogie</a>
+  <nav><a href="./">Guides</a></nav>
+</header>
+</div>
+
+<div class="measure">
+<article>
+<p class="guide-eyebrow">Guides</p>
+<h1>Working on a Bogie app</h1>
+<p>One guide per feature: the commands to run, in order, and what they produce. Read <a href="getting-started.html">Getting started</a> first; the rest stand on their own after that.</p>
+
+<ul class="guide-list">
+  <li><a href="getting-started.html">Getting started</a><p>Install Bogie, generate a new service, and get it migrating, seeded and serving.</p></li>
+  <li><a href="models.html">Models and migrations</a><p>Add a table with <code>g model</code>, change one with <code>g migration</code>, and run it through <code>db:*</code>.</p></li>
+  <li><a href="controllers.html">Resources, controllers and routing</a><p>Scaffold a whole resource or write a controller by hand, and see how either gets registered.</p></li>
+  <li><a href="services.html">Services</a><p>Give logic that is not CRUD a package of its own, with no HTTP in it.</p></li>
+  <li><a href="jobs.html">Background jobs</a><p>Add River to an app made with <code>--jobs</code> and write a worker that runs beside it.</p></li>
+  <li><a href="configuration.html">Configuration and credentials</a><p>The environment variables, the encrypted settings file, and what staging means here.</p></li>
+  <li><a href="testing.html">Testing and CI</a><p>Where tests live, what <code>bin/ci</code> runs, and what <code>doctor</code> checks before either does.</p></li>
+  <li><a href="deploying.html">Deploying</a><p>One Docker image, every role, shipped with Kamal 2 to staging and production.</p></li>
+  <li><a href="conventions.html">Conventions and agents</a><p>The six rules every generated app keeps, and why the layout is Rails-shaped on purpose.</p></li>
+  <li><a href="from-rails.html">From Rails</a><p>A dictionary: what each Rails thing is called here, where it lives, and what has no equivalent.</p></li>
+  <li><a href="commands.html">Command reference</a><p>Every <code>bogie</code> command, every generator and every <code>make</code> target, in one place.</p></li>
+</ul>
+</article>
+</div>
+
+<div class="wrap">
+<footer>
+  <p><a href="/">Bogie</a> · <a href="https://github.com/bogie-go/bogie">Source on GitHub</a></p>
+</footer>
+</div>
+</body>
+</html>

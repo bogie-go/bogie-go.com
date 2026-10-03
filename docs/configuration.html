@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Configuration and credentials: Bogie</title>
+<meta name="description" content="The environment variables, the encrypted settings file, and what staging means here.">
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<header class="docheader">
+  <a class="site" href="/">Bogie</a>
+  <nav><a href="./">Guides</a></nav>
+</header>
+</div>
+
+<div class="measure">
+<article>
+<p class="guide-eyebrow">Guide 6 of 11</p>
+<h1>Configuration and credentials</h1>
+
+<p>Two sources, in order: an encrypted credentials file if one exists, then environment variables, which always win. No globals, no <code>init()</code>: <code>config.Load()</code> returns a struct once, at startup, and every field is validated then, so a missing setting is a refusal to boot rather than a nil a request trips over an hour later.</p>
+
+<h2>The environment variables</h2>
+<p>Named after the app: a service called <code>blog</code> reads <code>BLOG_*</code>.</p>
+<div class="table-wrap">
+<table>
+<tr><th>Variable</th><th>What it selects</th></tr>
+<tr><td><code>&lt;NAME&gt;_ENV</code></td><td>A closed set: <code>development</code>, <code>test</code> or <code>production</code>. Selects behaviour.</td></tr>
+<tr><td><code>&lt;NAME&gt;_CREDENTIALS</code></td><td>Any name; selects which credentials file to read. Defaults to <code>&lt;NAME&gt;_ENV</code>.</td></tr>
+<tr><td><code>&lt;NAME&gt;_MASTER_KEY</code></td><td>The decryption key, handed in by a deployment so no key file has to exist in the image.</td></tr>
+<tr><td><code>&lt;NAME&gt;_ADDR</code></td><td>The listen address, default <code>:8080</code>.</td></tr>
+<tr><td><code>&lt;NAME&gt;_DATABASE_URL</code></td><td>The database. Development and test default to the compose stack on :5440; production has no default and must be given.</td></tr>
+<tr><td><code>&lt;NAME&gt;_LOG_LEVEL</code></td><td><code>debug</code>, <code>info</code>, <code>warn</code> or <code>error</code>.</td></tr>
+<tr><td><code>&lt;NAME&gt;_MIGRATE_AT_BOOT</code></td><td><code>true</code> by default; set to <code>false</code> only for a deployment that migrates from one place on purpose.</td></tr>
+</table>
+</div>
+<p>(There is also <code>&lt;NAME&gt;_SHUTDOWN_GRACE</code>, how long the server waits for in-flight requests on <code>SIGTERM</code>, and <code>&lt;NAME&gt;_CONFIG_DIR</code> for running the binary from somewhere other than the app root. Both have sensible defaults.)</p>
+
+<p><code>&lt;NAME&gt;_ENV</code> and <code>&lt;NAME&gt;_CREDENTIALS</code> are deliberately separate. <code>&lt;NAME&gt;_ENV</code> is a closed set with no "staging" member on purpose, because every behavioural switch in the app reads it, and a typo there should fail loudly rather than fall through to production behaviour silently. A staging deployment is:</p>
+<pre><code>BLOG_ENV=production BLOG_CREDENTIALS=staging</code></pre>
+<p>production strictness, staging secrets, which is what "staging" means here: not a third environment, but production behaviour reading a different credentials file.</p>
+
+<h2>The credentials files</h2>
+<p>The Rails pattern: committed ciphertext, a key that is never committed.</p>
+<pre><code>config/credentials.yml.enc            + config/master.key              development
+config/credentials/staging.yml.enc    + config/credentials/staging.key
+config/credentials/production.yml.enc + config/credentials/production.key</code></pre>
+<p>Each file is flat, one section named after the app, whose keys give the environment-variable names: <code>blog.addr</code> is overridden by <code>BLOG_ADDR</code>, so a value can move between the file and the environment without renaming anything.</p>
+<pre><code>bogie credentials:edit
+bogie credentials:edit -e production
+make credentials ENV=staging</code></pre>
+<p><code>bogie credentials:edit</code> opens development's file with its key; <code>-e production</code> (or <code>make credentials ENV=production</code>) opens that environment's own file, making it and its key the first time. A key opens only the file it was made for: development's key can never read production's file.</p>
+
+<p><strong>Test never reads a credentials file.</strong> It runs from defaults and the environment only, so tests need nobody's secrets and can never accidentally open the development database.</p>
+
+<h2>In a container</h2>
+<p>The encrypted files travel in the image; the keys never do. At runtime the key for whichever credentials file is selected arrives as <code>&lt;NAME&gt;_MASTER_KEY</code>, read directly with no file to write and no permissions to get wrong. See <a href="deploying.html">Deploying</a> for where that value comes from.</p>
+</article>
+
+<footer class="guide-nav">
+  <div class="prev"><span class="label">Previous</span><a href="jobs.html">Background jobs</a></div>
+  <div class="next"><span class="label">Next</span><a href="testing.html">Testing and CI</a></div>
+</footer>
+</div>
+</body>
+</html>

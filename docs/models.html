@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Models and migrations: Bogie</title>
+<meta name="description" content="Add a table with g model, change one with g migration, and run it through db:*.">
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<header class="docheader">
+  <a class="site" href="/">Bogie</a>
+  <nav><a href="./">Guides</a></nav>
+</header>
+</div>
+
+<div class="measure">
+<article>
+<p class="guide-eyebrow">Guide 2 of 11</p>
+<h1>Models and migrations</h1>
+
+<p>Rails's <code>Post</code> is one class that is a table, a type and a query builder. Here that is three files, each with one job, plus the migration and a test. One command writes all five:</p>
+<pre><code>bogie g model post title:string body:text</code></pre>
+<pre><code>      create  db/migrate/20261003053152_create_posts.sql
+      create  db/queries/posts.sql
+      create  app/domain/post.go
+      create  app/models/posts.go
+      create  app/models/posts_test.go
+         run  sqlc generate</code></pre>
+
+<h2>The migration</h2>
+<p>goose SQL, timestamped, embedded in the binary:</p>
+<pre><code>-- +goose Up
+CREATE TABLE posts (
+    id         uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+    title      text        NOT NULL DEFAULT '',
+    body       text        NOT NULL DEFAULT '',
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- +goose Down
+DROP TABLE posts;</code></pre>
+<p>Every generated column is <code>NOT NULL</code> with a type-appropriate default, so sqlc emits plain Go types rather than pointers. A column that truly needs null is one edit to the migration, by hand.</p>
+
+<h2>The queries</h2>
+<p><code>db/queries/posts.sql</code>, named statements that sqlc compiles:</p>
+<pre><code>-- name: GetPost :one
+SELECT * FROM posts WHERE id = $1;
+
+-- name: ListPosts :many
+SELECT * FROM posts ORDER BY created_at DESC, id DESC LIMIT $1;
+
+-- name: CreatePost :one
+INSERT INTO posts (title, body) VALUES ($1, $2) RETURNING *;
+
+-- name: UpdatePost :one
+UPDATE posts SET title = $2, body = $3, updated_at = now() WHERE id = $1 RETURNING *;
+
+-- name: DeletePost :execrows
+DELETE FROM posts WHERE id = $1;</code></pre>
+<p>A query that names a column which does not exist fails at <code>make sqlc</code>, not in production.</p>
+
+<h2>The domain type</h2>
+<p><code>app/domain/post.go</code> imports nothing third-party (rule 3). Ids are strings here; the store turns them into uuids:</p>
+<pre><code>type Post struct {
+	ID        string
+	Title     string
+	Body      string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+}
+
+// Validate is the model's validations, as Rails would put them. Wrap every
+// failure in ErrInvalid so a controller can answer 422 without knowing the
+// rule:
+//
+//	return fmt.Errorf("%w: title is required", ErrInvalid)
+func (p Post) Validate() error {
+	return nil
+}</code></pre>
+<p><code>Validate</code> starts empty; fill it in as Rails's <code>validates</code> would. It runs on both create and update, inside the store, so every caller gets it and none can forget it.</p>
+
+<h2>The store</h2>
+<p><code>app/models/posts.go</code> converts between the domain type and sqlc's row type, maps "no rows" to <code>domain.ErrNotFound</code>, and runs <code>Validate</code> before writing:</p>
+<pre><code>func (s *Store) CreatePost(ctx context.Context, p domain.Post) (domain.Post, error) {
+	if err := p.Validate(); err != nil {
+		return domain.Post{}, err
+	}
+	row, err := s.q.CreatePost(ctx, CreatePostParams{Title: p.Title, Body: p.Body})
+	if err != nil {
+		return domain.Post{}, fmt.Errorf("models: create post: %w", err)
+	}
+	return postFromRow(row), nil
+}</code></pre>
+<p><code>GetPost</code>, <code>ListPosts</code>, <code>UpdatePost</code> and <code>DeletePost</code> follow the same shape. <code>app/models/posts_test.go</code> starts with one test, that an unknown id is <code>ErrNotFound</code> whatever it looks like, and a <code>TODO</code> for the round trip. Store tests run against the real database, so they need it up: <code>make up</code> first.</p>
+
+<h2>Attribute types</h2>
+<p><code>string text integer bigint boolean datetime uuid jsonb references</code>, each optionally followed by <code>:index</code> or <code>:uniq</code>:</p>
+<pre><code>bogie g model comment body:text post:references score:integer</code></pre>
+<p><code>post:references</code> writes the column <code>post_id</code> as <code>uuid NOT NULL REFERENCES posts (id)</code>, with its own index. <code>slug:string:uniq</code> adds a unique constraint.</p>
+
+<h2>Changing a table</h2>
+<pre><code>bogie g migration add_slug_to_posts slug:string:uniq
+bogie g migration remove_draft_from_posts draft:boolean</code></pre>
+<p>Three migration name shapes get their SQL written automatically; any other name gets an empty Up and Down to fill in by hand:</p>
+<ul>
+  <li><code>create_&lt;table&gt;</code>: the table and its columns.</li>
+  <li><code>add_&lt;x&gt;_to_&lt;table&gt;</code>: <code>ALTER TABLE ... ADD COLUMN</code> for each attribute, reversed on the way down.</li>
+  <li><code>remove_&lt;x&gt;_from_&lt;table&gt;</code>: <code>ALTER TABLE ... DROP COLUMN</code>, with the Down able to re-add it.</li>
+</ul>
+<pre><code>-- +goose Up
+ALTER TABLE posts ADD COLUMN slug text NOT NULL DEFAULT '' UNIQUE;
+
+-- +goose Down
+ALTER TABLE posts DROP COLUMN slug;</code></pre>
+<p>The migration generator runs sqlc immediately too, so <code>app/models/*.sql.go</code> changes before the migration is ever applied, and a renamed column shows up as a compile error right away.</p>
+
+<h2>Running them</h2>
+<pre><code>bogie db:migrate
+bogie db:rollback
+bogie db:migrate:status
+bogie db:reset
+bogie db:seed
+bogie db:version</code></pre>
+<p>All through the app's own binary, never the goose CLI directly, so development runs exactly what a deployed container runs. <code>db:reset</code> drops the database and rebuilds it from the migrations; there is no <code>schema.rb</code> to load instead. A seed is authored the same way a migration is, with its own make target:</p>
+<pre><code>make g_seed_add_demo_posts</code></pre>
+<p>which writes a timestamped file under <code>db/seeds</code>, versioned in its own table, applied by <code>bogie db:seed</code>.</p>
+
+<h2>Taking it out</h2>
+<pre><code>bogie d model post</code></pre>
+<p>Removes the migration, the queries, the domain type and the store, the same way <code>bogie g model</code> wrote them.</p>
+</article>
+
+<footer class="guide-nav">
+  <div class="prev"><span class="label">Previous</span><a href="getting-started.html">Getting started</a></div>
+  <div class="next"><span class="label">Next</span><a href="controllers.html">Resources, controllers and routing</a></div>
+</footer>
+</div>
+</body>
+</html>

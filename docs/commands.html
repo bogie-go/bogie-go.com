@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Command reference: Bogie</title>
+<meta name="description" content="Every bogie command, every generator and every make target, in one place.">
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<header class="docheader">
+  <a class="site" href="/">Bogie</a>
+  <nav><a href="./">Guides</a></nav>
+</header>
+</div>
+
+<div class="measure">
+<article>
+<p class="guide-eyebrow">Guide 11 of 11</p>
+<h1>Command reference</h1>
+
+<p>Every command is spelled the way Rails spells it. <code>bogie help</code> prints the authoritative short version of this page from inside an app.</p>
+
+<h2>bogie, outside an app</h2>
+<div class="table-wrap">
+<table>
+<tr><th>Command</th><th>Does</th></tr>
+<tr><td><code>bogie new NAME [--module=PATH] [--jobs]</code></td><td>Generates a new service in <code>./NAME</code>.</td></tr>
+<tr><td><code>bogie version</code></td><td>Prints the version.</td></tr>
+<tr><td><code>bogie help</code></td><td>This text.</td></tr>
+</table>
+</div>
+
+<h2>bogie, inside an app</h2>
+<p>Found by its <code>bogie.toml</code>, from any subdirectory.</p>
+<div class="table-wrap">
+<table>
+<tr><th>Command</th><th>Does</th></tr>
+<tr><td><code>bogie generate GENERATOR NAME</code>, <code>bogie g</code></td><td>Runs a generator: <code>scaffold</code>, <code>model</code>, <code>migration</code>, <code>controller</code>, <code>service</code>, <code>job</code>. <code>bogie g -h</code> for its own usage.</td></tr>
+<tr><td><code>bogie destroy GENERATOR NAME</code>, <code>bogie d</code></td><td>Removes what a generator made, registration included.</td></tr>
+<tr><td><code>bogie doctor</code></td><td>Checks markers, pinned tools and layout files; confirms every controller is constructed and mounted.</td></tr>
+<tr><td><code>bogie app:update [--pretend]</code></td><td>Moves the app to the installed Bogie's layout: a three-way merge between what the recorded version generated, what this version generates, and the file on disk. Refuses on a dirty git tree; a real overlap leaves conflict markers.</td></tr>
+<tr><td><code>bogie server</code>, <code>bogie s</code></td><td>Runs the app; migrates at boot.</td></tr>
+<tr><td><code>bogie worker</code></td><td>Works the job queue (apps made with <code>--jobs</code>).</td></tr>
+<tr><td><code>bogie test [PKGS]</code>, <code>bogie t</code></td><td><code>go test -race -cover ./...</code>.</td></tr>
+<tr><td><code>bogie lint</code></td><td>gofmt check, <code>go vet</code>, golangci-lint.</td></tr>
+<tr><td><code>bogie ci</code></td><td>Every check, locally, then sign off: <code>bin/ci</code>.</td></tr>
+<tr><td><code>bogie db:create</code></td><td>Creates the database for the current environment.</td></tr>
+<tr><td><code>bogie db:drop</code></td><td>Drops it, with <code>--yes</code> added for you.</td></tr>
+<tr><td><code>bogie db:prepare</code> (<code>db:setup</code>)</td><td>Create, migrate, seed.</td></tr>
+<tr><td><code>bogie db:reset</code></td><td>Drop then prepare.</td></tr>
+<tr><td><code>bogie db:migrate</code></td><td>Applies pending migrations.</td></tr>
+<tr><td><code>bogie db:migrate:status</code></td><td>Which migrations have run, which are pending.</td></tr>
+<tr><td><code>bogie db:migrate:redo</code></td><td>Rolls the last migration back and re-applies it.</td></tr>
+<tr><td><code>bogie db:rollback</code></td><td>Rolls back the most recent migration.</td></tr>
+<tr><td><code>bogie db:version</code></td><td>The current schema version.</td></tr>
+<tr><td><code>bogie db:seed</code></td><td>Applies pending seeds from <code>db/seeds</code>.</td></tr>
+<tr><td><code>bogie db:seed:rollback</code></td><td>Rolls back the most recent seed.</td></tr>
+<tr><td><code>bogie credentials:edit [-e ENV]</code></td><td>Opens the encrypted settings for editing.</td></tr>
+<tr><td><code>bogie credentials:show [-e ENV]</code></td><td>Prints the decrypted file.</td></tr>
+<tr><td><code>bogie credentials:get [-e ENV] KEY</code></td><td>Prints one value.</td></tr>
+</table>
+</div>
+<p>Tasks that destroy pass <code>--yes</code> on your behalf here, the way a laptop command should; the app's own binary in a deployed container keeps asking. <code>bogie db:migrate:up</code> or any other near-miss points at the nearest real task rather than printing the whole usage.</p>
+
+<h2>Generators: bogie g / bogie d</h2>
+<div class="table-wrap">
+<table>
+<tr><th>Generator</th><th>Arguments</th><th>Writes</th></tr>
+<tr><td><code>migration</code></td><td><code>NAME [field:type ...]</code></td><td><code>db/migrate/&lt;stamp&gt;_NAME.sql</code>. <code>create_&lt;table&gt;</code>, <code>add_&lt;x&gt;_to_&lt;table&gt;</code> and <code>remove_&lt;x&gt;_from_&lt;table&gt;</code> write their SQL.</td></tr>
+<tr><td><code>model</code></td><td><code>NAME [field:type ...]</code></td><td>The migration, <code>db/queries/&lt;table&gt;.sql</code>, <code>app/domain/&lt;name&gt;.go</code> and the store's <code>app/models/&lt;table&gt;.go</code>; then runs sqlc.</td></tr>
+<tr><td><code>scaffold</code></td><td><code>NAME [field:type ...]</code></td><td>The model, plus <code>app/views/&lt;table&gt;.go</code> and a <code>&lt;Table&gt;Controller</code> with real handlers over the store, registered. The model is singular, the rest plural, as Rails names them.</td></tr>
+<tr><td><code>controller</code></td><td><code>NAME [action ...]</code></td><td><code>app/controllers/&lt;name&gt;_controller.go</code>, one Rails controller in one file, registered: a field, a wire line and a mount above each marker. Name a resource in the plural. <code>admin/NAME</code> puts it in the admin namespace, <code>app/controllers/admin_controller/</code>, made on first use and registered the same way.</td></tr>
+<tr><td><code>service</code></td><td><code>NAME</code></td><td><code>app/services/&lt;name&gt;/</code>, <code>ctx</code> first, no HTTP, not wired anywhere.</td></tr>
+<tr><td><code>job</code></td><td><code>NAME</code></td><td><code>app/jobs/&lt;name&gt;.go</code>, a River job, registered above <code>bogie:jobs</code> (apps made with <code>--jobs</code>).</td></tr>
+</table>
+</div>
+<p>Flags: <code>--pretend</code> reports without writing, <code>--force</code> overwrites a file that differs, <code>--skip-sqlc</code> skips the sqlc run. Attributes are <code>field:type</code>, with <code>:index</code> or <code>:uniq</code> after the type: <code>string text integer bigint boolean datetime uuid jsonb references</code>. A <code>references</code> field names the other model: <code>post:references</code> is <code>post_id</code>.</p>
+<p><code>bogie d GENERATOR NAME</code> removes what the generator of the same name created: its files, and for a controller the three lines that registered it. A namespaced controller's package goes too once it holds no controller.</p>
+
+<h2>The app binary itself</h2>
+<p>A plain Go CLI with spaces, the form <code>bogie</code> accepts too (<code>bogie db prepare</code> works from outside, since the colon tasks above are shorthand for exactly these):</p>
+<div class="table-wrap">
+<table>
+<tr><th>Command</th><th>Does</th></tr>
+<tr><td><code>blog serve</code></td><td>Runs the HTTP server.</td></tr>
+<tr><td><code>blog worker</code></td><td>Works the job queue (apps made with <code>--jobs</code>).</td></tr>
+<tr><td><code>blog db create</code></td><td>Creates the database this environment points at.</td></tr>
+<tr><td><code>blog db drop --yes</code></td><td>Drops it; refused in production.</td></tr>
+<tr><td><code>blog db prepare</code></td><td>Create if needed, migrate, seed.</td></tr>
+<tr><td><code>blog db seed</code></td><td>Applies pending seeds.</td></tr>
+<tr><td><code>blog db seed-down --yes</code></td><td>Rolls back the most recent seed.</td></tr>
+<tr><td><code>blog migrate status</code></td><td>Which migrations have run, which are pending.</td></tr>
+<tr><td><code>blog migrate version</code></td><td>The current schema version.</td></tr>
+<tr><td><code>blog migrate up</code></td><td>Applies every pending migration (also done at boot).</td></tr>
+<tr><td><code>blog migrate down --yes</code></td><td>Rolls back the most recent migration.</td></tr>
+<tr><td><code>blog migrate down-to N --yes</code></td><td>Rolls back until the schema is at version N (0 = empty).</td></tr>
+</table>
+</div>
+<p>These run against whatever database the current <code>&lt;NAME&gt;_ENV</code> selects, including on a deployed host: <code>docker exec &lt;container&gt; blog migrate status</code>.</p>
+
+<h2>make targets</h2>
+<div class="table-wrap">
+<table>
+<tr><th>Target</th><th>Does</th></tr>
+<tr><td><code>make help</code></td><td>Every task.</td></tr>
+<tr><td><code>make up</code></td><td>Start Postgres (Compose) and wait until it is healthy.</td></tr>
+<tr><td><code>make down</code></td><td>Stop it, keeping the data.</td></tr>
+<tr><td><code>make reset</code></td><td>Stop it and destroy the data.</td></tr>
+<tr><td><code>make logs</code></td><td>Tail the containers.</td></tr>
+<tr><td><code>make psql</code></td><td>Open a shell on the development database.</td></tr>
+<tr><td><code>make credentials</code></td><td>Edit the encrypted settings (development); <code>ENV=production</code> for its own file and key.</td></tr>
+<tr><td><code>make build</code></td><td>Compile the binary.</td></tr>
+<tr><td><code>make server</code></td><td>Run the HTTP server.</td></tr>
+<tr><td><code>make worker</code></td><td>Work the job queue (apps made with <code>--jobs</code>).</td></tr>
+<tr><td><code>make test</code></td><td>Run the suite with coverage, in the test environment (needs <code>make up</code>).</td></tr>
+<tr><td><code>make sqlc</code></td><td>Regenerate <code>app/models</code> from <code>db/queries</code> against <code>db/migrate</code>.</td></tr>
+<tr><td><code>make vet</code></td><td>Stdlib static analysis.</td></tr>
+<tr><td><code>make fmt</code></td><td>Format.</td></tr>
+<tr><td><code>make lint</code></td><td>gofmt check + golangci-lint.</td></tr>
+<tr><td><code>make ci</code></td><td>Every check, locally; green ends with <code>gh signoff</code> (<code>bin/ci</code>).</td></tr>
+<tr><td><code>make tidy</code></td><td>Prune and verify the module graph.</td></tr>
+<tr><td><code>make db-create</code></td><td>Create the database, like <code>rails db:create</code>; an existing one is fine.</td></tr>
+<tr><td><code>make db-drop</code></td><td>Drop the database and every table in it, like <code>rails db:drop</code>.</td></tr>
+<tr><td><code>make db-prepare</code></td><td>Create if needed, migrate, seed, like <code>rails db:prepare</code>.</td></tr>
+<tr><td><code>make db-reset</code></td><td>Drop it and rebuild it from the migrations, like <code>rails db:reset</code>.</td></tr>
+<tr><td><code>make db-migrate</code></td><td>Apply pending migrations (deployed containers do this at boot).</td></tr>
+<tr><td><code>make db-migrate-down</code></td><td>Roll back the last migration; drops its tables.</td></tr>
+<tr><td><code>make db-rollback</code></td><td>Rails' name for <code>db-migrate-down</code>; the same task.</td></tr>
+<tr><td><code>make db-migrate-to V=&lt;version&gt;</code></td><td>Roll back to a version.</td></tr>
+<tr><td><code>make db-rollback-to</code></td><td>Rails' name for <code>db-migrate-to</code>; the same task.</td></tr>
+<tr><td><code>make db-migrate-status</code></td><td>Which migrations have run, and which are pending.</td></tr>
+<tr><td><code>make db-version</code></td><td>The current schema version.</td></tr>
+<tr><td><code>make db-migrate-redo</code></td><td>Roll the last migration back and re-apply it.</td></tr>
+<tr><td><code>make db-seed</code></td><td>Apply pending seeds from <code>db/seeds</code>, through the binary.</td></tr>
+<tr><td><code>make db-seed-down</code></td><td>Roll back the most recent seed.</td></tr>
+<tr><td><code>make g_migration_&lt;name&gt;</code></td><td>Author a migration (<code>go tool goose</code>).</td></tr>
+<tr><td><code>make g_seed_&lt;name&gt;</code></td><td>Author a seed (<code>go tool goose</code>).</td></tr>
+</table>
+</div>
+</article>
+
+<footer class="guide-nav">
+  <div class="prev"><span class="label">Previous</span><a href="from-rails.html">From Rails</a></div>
+  <div class="next"></div>
+</footer>
+</div>
+</body>
+</html>

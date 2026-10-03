@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Getting started: Bogie</title>
+<meta name="description" content="Install Bogie, generate a new service, and get it migrating, seeded and serving.">
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<header class="docheader">
+  <a class="site" href="/">Bogie</a>
+  <nav><a href="./">Guides</a></nav>
+</header>
+</div>
+
+<div class="measure">
+<article>
+<p class="guide-eyebrow">Guide 1 of 11</p>
+<h1>Getting started</h1>
+
+<p>Bogie is a CLI, not a library. It renders a new Go service onto disk and then gets out of the way: the app it generates never imports Bogie, so deleting the tool tomorrow does not touch the app.</p>
+
+<h2>Install</h2>
+<pre><code>go install github.com/bogie-go/bogie@latest</code></pre>
+<p>Bogie is pre-release: there is no tagged release yet, so <code>@latest</code> through the module proxy can lag behind <code>main</code>. Until the first tag, install from a clone instead:</p>
+<pre><code>git clone https://github.com/bogie-go/bogie
+cd bogie &amp;&amp; go install .</code></pre>
+
+<h2>Generate a service</h2>
+<pre><code>bogie new blog</code></pre>
+<p>This is <code>rails new</code>: it writes an API-only, Postgres-only Go service, runs <code>go mod tidy</code>, and makes the development credentials file. Two flags change what it writes:</p>
+<ul>
+  <li><code>--module=PATH</code> sets the Go module path, if it should not be the app's name.</li>
+  <li><code>--jobs</code> adds River on the same Postgres: a worker role, <code>app/jobs</code>, and <code>g job</code>. See <a href="jobs.html">Background jobs</a>.</li>
+</ul>
+
+<h2>The generated tree</h2>
+<p>Rails-shaped on purpose, so a Rails developer knows where to look:</p>
+<pre><code>main.go                dispatches: serve | migrate | db
+cli.go                 the migrate and db subcommands
+app/
+  application.go       wiring: migrate at boot, config, connections, controllers
+  controllers/
+    application.go     root Server, one NAMED field per controller
+    routes.go           the whole routing table
+    welcome.go           the development page at /; gone once a route claims /
+  middlewares/           request id · logging · recover
+  services/database/     db create and drop, through the maintenance database
+  services/migrate/      goose over the embedded migrations and seeds
+  models/                 sqlc output plus the store
+  views/                   wire contracts; domain structs never double as wire structs
+  domain/                  THE DOMAIN; imports nothing third-party
+config/                   credentials file + env → validated struct, no globals
+  deploy.yml               Kamal 2, staging; deploy.production.yml overlays it
+.kamal/secrets             what Kamal substitutes: the master key and the registry password
+Dockerfile                 one image, every role; keys never enter it
+db/
+  db.go                    go:embed of migrate/*.sql and seeds/*.sql
+  migrate/                 goose SQL, timestamped; g model writes the first
+  seeds/                   goose SQL in its own version table; development data
+lib/logger/</code></pre>
+<p>There is no table yet, as a fresh <code>rails new</code> has none either: <a href="models.html">Models and migrations</a> writes the first.</p>
+
+<h2>Bring up the database and serve</h2>
+<pre><code>cd blog
+make up
+bogie db:prepare
+bogie server</code></pre>
+<p><code>make up</code> starts Postgres under Docker Compose on port 5440 and waits until it answers. <code>bogie db:prepare</code> is <code>rails db:prepare</code>: create the database if it does not exist, migrate, seed. <code>bogie server</code> (or <code>bogie s</code>) runs the HTTP server; it migrates at boot, the way a deployed container does.</p>
+<p>Visit <code>/</code> in development for a welcome page with the environment, the listen address and the Go version, and <code>GET /healthz</code> for the plain text a load balancer checks. The welcome page disappears the moment any controller claims <code>/</code>; in every other environment <code>/</code> is a plain 404 until something is mounted there.</p>
+
+<h2>Check the app is sound</h2>
+<pre><code>bin/ci</code></pre>
+<p>The whole pipeline, run on the machine you already have: it rebuilds the test database from the migrations, rolls them down and back up, checks the generated models are current, runs gofmt, vet, golangci-lint, the build, and the test suite. A green run on a clean tree signs the commit off with <code>gh signoff</code>, if that extension is installed.</p>
+<p><code>bogie doctor</code> is worth running any time the app feels off: it checks every marker the generators write is intact exactly once, that the pinned tools are still in <code>go.mod</code>, that the layout files generators depend on exist, and that every controller is both constructed and mounted. See <a href="testing.html">Testing and CI</a> for what each step of <code>bin/ci</code> does.</p>
+</article>
+
+<footer class="guide-nav">
+  <div class="prev"></div>
+  <div class="next"><span class="label">Next</span><a href="models.html">Models and migrations</a></div>
+</footer>
+</div>
+</body>
+</html>
