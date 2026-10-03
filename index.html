@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bogie: the Go service next to your Rails app</title>
+<meta name="description" content="Bogie is a CLI that scaffolds an API-only, Postgres-only Go service out of tools the Go ecosystem already ships, with rails new-style generators that also wire the code in.">
+<link rel="icon" type="image/png" href="favicon.png">
+<meta property="og:title" content="Bogie">
+<meta property="og:description" content="The Go service next to your Rails app.">
+<meta property="og:image" content="https://bogie-go.com/bogie.webp">
+<style>
+  :root {
+    color-scheme: light dark;
+    --fg: #1c1b19; --muted: #6a675f; --line: #e4e1d8; --bg: #f8f6f1; --panel: #fffdf9;
+    --accent: #c0392b; --accent-soft: #fbe9e6; --glow: #bfe8f2;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --fg: #ecebe7; --muted: #9c9a93; --line: #2e2d2a; --bg: #151514; --panel: #1d1d1b;
+            --accent: #ea6e5f; --accent-soft: #3a2320; --glow: #1f3a42; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg);
+         font: 17px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent-soft); }
+  a:hover { border-bottom-color: var(--accent); }
+  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  code { font-size: .92em; background: var(--panel); border: 1px solid var(--line); border-radius: .3rem; padding: .05rem .35rem; }
+  pre { margin: 0; padding: 1rem 1.25rem; background: var(--panel); border: 1px solid var(--line); border-radius: .75rem;
+        overflow-x: auto; font-size: .95rem; line-height: 1.6; }
+  pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+  .wrap { max-width: 60rem; margin: 0 auto; padding: 0 1.25rem; }
+
+  header.hero { padding: 8vh 0 4rem; display: grid; grid-template-columns: 1fr; gap: 2rem; align-items: center; }
+  @media (min-width: 46rem) { header.hero { grid-template-columns: minmax(0, 1fr) 20rem; gap: 3.5rem; padding-top: 12vh; } .art { order: 2; } }
+  .art { display: grid; place-items: center; }
+  .art figure { margin: 0; position: relative; width: min(100%, 18rem); }
+  .art figure::before { content: ""; position: absolute; inset: 10% 5% 15%; border-radius: 50%;
+                        background: radial-gradient(closest-side, var(--glow), transparent); }
+  .art img { position: relative; display: block; width: 100%; height: auto; filter: drop-shadow(0 12px 18px rgba(0, 0, 0, .18)); }
+  .eyebrow { margin: 0; font-size: .78rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); }
+  h1 { font-size: clamp(2.1rem, 5vw, 3.1rem); line-height: 1.08; margin: .35rem 0 .75rem; letter-spacing: -.015em; }
+  p.lead { font-size: 1.15rem; color: var(--muted); margin: 0 0 1.5rem; max-width: 36rem; }
+  .pre-release { display: inline-block; font-size: .8rem; font-weight: 600; color: var(--accent); background: var(--accent-soft);
+                 border-radius: 999px; padding: .15rem .7rem; margin-bottom: 1rem; }
+
+  section { padding: 2.5rem 0; border-top: 1px solid var(--line); }
+  h2 { font-size: 1.35rem; margin: 0 0 1rem; letter-spacing: -.01em; }
+  .grid { display: grid; grid-template-columns: 1fr; gap: 1.25rem 2.5rem; }
+  @media (min-width: 46rem) { .grid { grid-template-columns: 1fr 1fr; } }
+  .grid h3 { font-size: 1rem; margin: 0 0 .25rem; }
+  .grid p { margin: 0; color: var(--muted); }
+  ol.rules { margin: 0; padding-left: 1.4rem; }
+  ol.rules li { margin: .35rem 0; }
+  table { border-collapse: collapse; width: 100%; font-size: .95rem; }
+  th, td { text-align: left; padding: .45rem .6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  footer { padding: 2.5rem 0 4rem; color: var(--muted); font-size: .9rem; border-top: 1px solid var(--line); }
+  footer p { margin: .25rem 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <div class="art">
+    <figure><img src="bogie.webp" width="720" height="768" alt="Bogie's mascot: a gopher and a ruby riding a mine cart on rails"></figure>
+  </div>
+  <div>
+    <p class="eyebrow">Bogie</p>
+    <h1>The Go service next to your Rails app.</h1>
+    <p class="lead">A CLI that scaffolds an API-only, Postgres-only Go service out of tools the Go ecosystem already ships, with <code>rails new</code>-style generators that also wire the code in. The generated app never imports Bogie.</p>
+    <span class="pre-release">Pre-release</span>
+<pre><code>go install github.com/bogie-go/bogie@latest
+bogie new blog
+cd blog &amp;&amp; bogie db:prepare &amp;&amp; bogie server</code></pre>
+  </div>
+</header>
+
+<section>
+  <h2>Why it exists</h2>
+  <p>Every Rails shop eventually needs one service that Rails is the wrong tool for: a webhook receiver that must answer in under a second while a platform retries at it, a socket gateway holding thousands of idle connections, a worker draining a queue against a rate-limited API. The web app stays in Rails. That one thing goes to Go, and the first attempt usually goes badly, not because of Go but because everything Rails decided for you is suddenly yours to decide.</p>
+  <p>A <strong>bogie</strong> is the wheeled frame under a rail car that carries it along the track. The car body, your application code, is yours.</p>
+</section>
+
+<section>
+  <h2>What it is, and is not</h2>
+  <div class="grid">
+    <div><h3>Glue, then gaps</h3><p>For every Rails concept, the ecosystem tool, wired once: Gin, sqlc with pgx, goose, River, Kamal. Only what has no equivalent gets built.</p></div>
+    <div><h3>Not a framework</h3><p>No <code>bogie.Application</code>, no base classes, no DSL. Bogie renders templates and shells out. Delete the tool tomorrow and the app does not notice.</p></div>
+    <div><h3>Rails spelling, Rails layout</h3><p><code>db:migrate</code>, <code>credentials:edit</code>, <code>g controller</code>, <code>app/controllers</code>, <code>db/migrate</code>. Everything is where a Rails developer would look for it.</p></div>
+    <div><h3>Generators that wire</h3><p>Go has no autoload. <code>bogie g controller posts index show</code> writes the controller and registers it in the three places it must be, above marker comments, idempotently. <code>bogie d</code> takes it out again.</p></div>
+    <div><h3>Written for agents as much as people</h3><p>The generated app ships an <code>AGENTS.md</code> with the rules, the commands and a recipe per task. An agent that runs the generators gets the registration right every time.</p></div>
+    <div><h3>CI on your machine</h3><p><code>bin/ci</code> is the whole pipeline, as in Rails 8.1, and a green run signs off the commit. The generated app ships one too. No hosted runner, no telemetry.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>From Rails</h2>
+  <table>
+    <tr><th>Rails</th><th>Bogie</th></tr>
+    <tr><td><code>rails new blog</code></td><td><code>bogie new blog</code>, add <code>--jobs</code> for River</td></tr>
+    <tr><td><code>rails g model post title:string</code></td><td><code>bogie g model post title:string</code>: migration, queries, domain type, store, then sqlc</td></tr>
+    <tr><td><code>rails g controller posts index show</code></td><td><code>bogie g controller posts index show</code>, registered as it is written</td></tr>
+    <tr><td><code>namespace :admin</code></td><td><code>bogie g controller admin/reports</code>, a package per namespace</td></tr>
+    <tr><td><code>rails g job send_welcome</code></td><td><code>bogie g job send_welcome</code>, a River worker on the same Postgres</td></tr>
+    <tr><td><code>rails db:migrate</code>, <code>db:rollback</code>, <code>db:seed</code></td><td>the same words, through the app's own binary</td></tr>
+    <tr><td><code>rails credentials:edit</code></td><td><code>bogie credentials:edit</code>, encrypted file, key never committed</td></tr>
+    <tr><td><code>bin/ci</code></td><td><code>bin/ci</code></td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>The six rules every generated app keeps</h2>
+  <ol class="rules">
+    <li><code>ctx context.Context</code> is the first parameter of anything doing I/O.</li>
+    <li>Interfaces are declared where they are consumed, holding only the methods used there.</li>
+    <li><code>app/domain</code> imports nothing third-party.</li>
+    <li>Constructors return <code>(T, error)</code>. Only <code>main</code> exits.</li>
+    <li><code>*gin.Context</code> never travels below <code>app/controllers</code>.</li>
+    <li>No <code>util/</code>, <code>helpers/</code> or <code>common/</code>.</li>
+  </ol>
+</section>
+
+<footer>
+  <p><a href="https://github.com/bogie-go/bogie">Source on GitHub</a> · <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">Design</a> · <a href="https://github.com/bogie-go/bogie/blob/main/docs/STATUS.md">Status</a></p>
+  <p>MIT licensed. Extracted from a service in production, not designed on a whiteboard. Not a Rails replacement; the one network-facing service a Rails shop eventually needs.</p>
+</footer>
+
+</div>
+</body>
+</html>
