@@ -125,6 +125,14 @@ figure.drawing figcaption { margin-top: 10px; }
 .card h3 { margin: 0; font-family: var(--display); font-weight: 800; font-size: 30px; text-transform: uppercase; line-height: 1; }
 .card ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 10px; font-size: 17px; line-height: 1.5; }
 
+/* team page */
+.person { display: flex; align-items: center; gap: 20px; }
+.person img.avatar { width: 72px; height: 72px; border-radius: 50%; border: 1.5px solid var(--ink); object-fit: cover; flex-shrink: 0; }
+.person .meta h3 { margin: 0; font-family: var(--display); font-weight: 800; font-size: 22px; text-transform: uppercase; line-height: 1.1; }
+.person .meta p { margin: 6px 0 0; font-size: 15px; line-height: 1.4; color: var(--ink-2); }
+.person .meta a { color: var(--rust); text-decoration: none; }
+.person .meta a:hover { text-decoration: underline; }
+
 /* the line: four stops on a vertical rail */
 .stops { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
 .stop { display: grid; grid-template-columns: 62px minmax(0, 1fr); padding-bottom: 72px; background:

@@ -23,6 +23,7 @@ Every generated app follows six rules: ctx first on anything doing I/O; interfac
 
 ## Source and design
 
+- [Team](https://bogie-go.com/team.html): who builds and maintains Bogie
 - [Repository](https://github.com/bogie-go/bogie): the tool, MIT
 - [DESIGN.md](https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md): every decision and its reasoning
 - [STATUS.md](https://github.com/bogie-go/bogie/blob/main/docs/STATUS.md): what works today and what is next
