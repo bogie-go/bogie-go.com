@@ -10,9 +10,15 @@
 </head>
 <body>
 <div class="wrap">
-<header class="docheader">
-  <a class="site" href="/">Bogie</a>
-  <nav><a href="./">Guides</a></nav>
+<header class="topnav">
+  <a class="brand" href="/"><img src="../favicon.png" width="24" height="24" alt=""> Bogie</a>
+  <nav>
+    <a href="/docs/">Guides</a>
+    <a href="/docs/from-rails.html">From Rails</a>
+    <a href="/docs/commands.html">Commands</a>
+    <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">Design</a>
+    <a href="https://github.com/bogie-go/bogie">Source</a>
+  </nav>
 </header>
 </div>
 
@@ -74,5 +80,13 @@ app.Jobs.InsertTx(ctx, tx, jobs.SendWelcomeArgs{}, nil)</code></pre>
   <div class="next"><span class="label">Next</span><a href="configuration.html">Configuration and credentials</a></div>
 </footer>
 </div>
+
+<div class="wrap">
+<footer>
+  <p><a href="/docs/">Guides</a> &middot; <a href="/docs/from-rails.html">From Rails</a> &middot; <a href="/docs/commands.html">Commands</a> &middot; <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">Design</a> &middot; <a href="https://github.com/bogie-go/bogie/blob/main/docs/STATUS.md">Status</a> &middot; <a href="https://github.com/bogie-go/bogie">Source</a> &middot; <a href="https://github.com/bogie-go/bogie/blob/main/LICENSE">License</a></p>
+  <p>MIT licensed. Extracted from a service in production, not designed on a whiteboard. Not a Rails replacement; the one network-facing service a Rails shop eventually needs.</p>
+</footer>
+</div>
+
 </body>
 </html>

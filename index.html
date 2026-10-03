@@ -13,15 +13,31 @@
 </head>
 <body>
 <div class="wrap">
+<header class="topnav">
+  <a class="brand" href="/"><img src="favicon.png" width="24" height="24" alt=""> Bogie</a>
+  <nav>
+    <a href="/docs/">Guides</a>
+    <a href="/docs/from-rails.html">From Rails</a>
+    <a href="/docs/commands.html">Commands</a>
+    <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">Design</a>
+    <a href="https://github.com/bogie-go/bogie">Source</a>
+  </nav>
+</header>
+</div>
+
+<div class="wrap">
 
 <header class="hero">
   <div class="art">
     <figure><img src="bogie.webp" width="720" height="768" alt="Bogie's mascot: a gopher and a ruby riding a mine cart on rails"></figure>
   </div>
   <div>
-    <p class="eyebrow">Bogie · <a href="docs/">Guides</a></p>
     <h1>The Go service next to your Rails app.</h1>
     <p class="lead">A CLI that scaffolds an API-only, Postgres-only Go service out of tools the Go ecosystem already ships, with <code>rails new</code>-style generators that also wire the code in. The generated app never imports Bogie.</p>
+    <p class="hero-ctas">
+      <a class="btn btn-primary" href="docs/getting-started.html">Get started</a>
+      <a class="btn btn-outline" href="docs/">Read the guides</a>
+    </p>
     <span class="pre-release">Pre-release</span>
 <pre><code>go install github.com/bogie-go/bogie@latest
 bogie new blog
@@ -49,6 +65,7 @@ cd blog &amp;&amp; bogie db:prepare &amp;&amp; bogie server</code></pre>
 
 <section>
   <h2>From Rails</h2>
+  <div class="table-wrap">
   <table>
     <tr><th>Rails</th><th>Bogie</th></tr>
     <tr><td><code>rails new blog</code></td><td><code>bogie new blog</code>, add <code>--jobs</code> for River</td></tr>
@@ -60,25 +77,196 @@ cd blog &amp;&amp; bogie db:prepare &amp;&amp; bogie server</code></pre>
     <tr><td><code>rails credentials:edit</code></td><td><code>bogie credentials:edit</code>, encrypted file, key never committed</td></tr>
     <tr><td><code>bin/ci</code></td><td><code>bin/ci</code></td></tr>
   </table>
+  </div>
+  <p><a href="docs/from-rails.html">The full dictionary</a>.</p>
+</section>
+
+<section class="features">
+  <h2>Everything you need</h2>
+
+  <div class="feature">
+    <div class="text">
+      <h3>Models keep the SQL honest</h3>
+      <p><code>bogie g model post title:string body:text</code> writes a domain type that imports nothing third-party, a store that converts it to and from a row, and a named query.</p>
+      <p>sqlc compiles that query against the migrations at generation time. Misspell a column and it fails at <code>make sqlc</code>, not in production.</p>
+      <p><a href="docs/models.html">Models and migrations &#8594;</a></p>
+    </div>
+    <div class="code">
+      <p class="code-label">app/domain/post.go</p>
+<pre><code>type Post struct {
+	ID          string
+	Title       string
+	Body        string
+	Score       int32
+	PublishedAt time.Time
+	AuthorID    string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+}</code></pre>
+      <p class="code-label">db/queries/posts.sql</p>
+<pre><code>-- name: CreatePost :one
+INSERT INTO posts (title, body, score, published_at, author_id) VALUES ($1, $2, $3, $4, $5) RETURNING *;</code></pre>
+    </div>
+  </div>
+
+  <div class="feature reverse">
+    <div class="text">
+      <h3>Controllers convert and call</h3>
+      <p>A handler converts HTTP into domain values, calls one method on a store interface declared next to it holding only what that controller needs, and converts the result back.</p>
+      <p><code>*gin.Context</code> never travels below <code>app/controllers</code> (rule 5), so everything it calls can be tested or reused without one.</p>
+      <p><a href="docs/controllers.html">Resources, controllers and routing &#8594;</a></p>
+    </div>
+    <div class="code">
+<pre><code>type postsStore interface {
+	CreatePost(ctx context.Context, p domain.Post) (domain.Post, error)
+	GetPost(ctx context.Context, id string) (domain.Post, error)
+	ListPosts(ctx context.Context, limit int32) ([]domain.Post, error)
+	UpdatePost(ctx context.Context, p domain.Post) (domain.Post, error)
+	DeletePost(ctx context.Context, id string) error
+}
+
+func (ctl *PostsController) SetupRoutes(router *gin.RouterGroup) {
+	posts := router.Group("/posts")
+	posts.GET("", ctl.Index)
+	posts.POST("", ctl.Create)
+	posts.GET("/:id", ctl.Show)
+	posts.PATCH("/:id", ctl.Update)
+	posts.DELETE("/:id", ctl.Destroy)
+}
+
+func (ctl *PostsController) Index(c *gin.Context) {
+	posts, err := ctl.Store.ListPosts(c.Request.Context(), postsListLimit)
+	if err != nil {
+		ctl.fail(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, postsView(posts))
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="feature">
+    <div class="text">
+      <h3>Views are the wire contract</h3>
+      <p><code>app/views/posts.go</code> holds <code>PostRequest</code> and <code>PostResponse</code>. A domain type never doubles as a wire type, so a field added to the database does not silently appear on the wire.</p>
+      <p><a href="docs/controllers.html">Views: wire structs, never the domain type &#8594;</a></p>
+    </div>
+    <div class="code">
+<pre><code>type PostRequest struct {
+	Title       string    `json:"title"`
+	Body        string    `json:"body"`
+	Score       int32     `json:"score"`
+	PublishedAt time.Time `json:"published_at"`
+	AuthorID    string    `json:"author_id"`
+}
+
+type PostResponse struct {
+	ID          string    `json:"id"`
+	Title       string    `json:"title"`
+	Body        string    `json:"body"`
+	Score       int32     `json:"score"`
+	PublishedAt time.Time `json:"published_at"`
+	AuthorID    string    `json:"author_id"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}</code></pre>
+    </div>
+  </div>
+
+  <div class="feature reverse">
+    <div class="text">
+      <h3>Routes are one file, registered by the generator</h3>
+      <p>Go has no autoload: a controller that compiles but is never mounted serves nothing. <code>bogie g controller</code> inserts these three lines above three <code>bogie:</code> markers, idempotently; <code>bogie d</code> removes them again.</p>
+      <p><a href="docs/controllers.html">How registration works &#8594;</a></p>
+    </div>
+    <div class="code">
+      <p class="code-label">app/controllers/application.go</p>
+<pre><code>Comments *CommentsController</code></pre>
+      <p class="code-label">app/application.go</p>
+<pre><code>server.Comments = controllers.NewCommentsController(log)</code></pre>
+      <p class="code-label">app/controllers/routes.go</p>
+<pre><code>s.Comments.SetupRoutes(&amp;r.RouterGroup)</code></pre>
+    </div>
+  </div>
+
+  <div class="feature">
+    <div class="text">
+      <h3>Jobs commit with the row</h3>
+      <p>River runs on the same Postgres as the app: no Redis, no second system to keep up. Enqueue inside the transaction that created the row with <code>InsertTx</code>, and the job commits with it or not at all.</p>
+      <p><a href="docs/jobs.html">Background jobs &#8594;</a></p>
+    </div>
+    <div class="code">
+<pre><code>type SendWelcomeArgs struct{}
+
+func (SendWelcomeArgs) Kind() string { return "send_welcome" }
+
+type SendWelcomeWorker struct {
+	river.WorkerDefaults[SendWelcomeArgs]
+	Log *slog.Logger
+}
+
+func (w *SendWelcomeWorker) Work(ctx context.Context, job *river.Job[SendWelcomeArgs]) error {
+	w.Log.InfoContext(ctx, "send_welcome: not implemented yet", "job", job.ID)
+	return nil
+}</code></pre>
+    </div>
+  </div>
 </section>
 
 <section>
-  <h2>The six rules every generated app keeps</h2>
-  <ol class="rules">
-    <li><code>ctx context.Context</code> is the first parameter of anything doing I/O.</li>
-    <li>Interfaces are declared where they are consumed, holding only the methods used there.</li>
-    <li><code>app/domain</code> imports nothing third-party.</li>
-    <li>Constructors return <code>(T, error)</code>. Only <code>main</code> exits.</li>
-    <li><code>*gin.Context</code> never travels below <code>app/controllers</code>.</li>
-    <li>No <code>util/</code>, <code>helpers/</code> or <code>common/</code>.</li>
+  <h2>Optimized for the Rails developer</h2>
+  <p>The generated app ships an <code>AGENTS.md</code> (<code>CLAUDE.md</code> included) holding these six rules, every command, and a recipe per generator, so the registration is right whether the hand on the keyboard is a person's or an agent's.</p>
+  <ol class="rules compact">
+    <li><a href="docs/conventions.html"><code>ctx context.Context</code> is the first parameter of anything doing I/O.</a></li>
+    <li><a href="docs/conventions.html">Interfaces are declared where they are consumed, holding only the methods used there.</a></li>
+    <li><a href="docs/conventions.html"><code>app/domain</code> imports nothing third-party.</a></li>
+    <li><a href="docs/conventions.html">Constructors return <code>(T, error)</code>. Only <code>main</code> exits.</a></li>
+    <li><a href="docs/conventions.html"><code>*gin.Context</code> never travels below <code>app/controllers</code>.</a></li>
+    <li><a href="docs/conventions.html">No <code>util/</code>, <code>helpers/</code> or <code>common/</code>.</a></li>
   </ol>
 </section>
 
-<footer>
-  <p><a href="docs/">Guides</a> · <a href="https://github.com/bogie-go/bogie">Source on GitHub</a> · <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">Design</a> · <a href="https://github.com/bogie-go/bogie/blob/main/docs/STATUS.md">Status</a></p>
-  <p>MIT licensed. Extracted from a service in production, not designed on a whiteboard. Not a Rails replacement; the one network-facing service a Rails shop eventually needs.</p>
-</footer>
+<section>
+  <h2>Let's get started</h2>
+  <div class="start-grid">
+    <div>
+      <h3>Learning</h3>
+      <ul>
+        <li><a href="docs/getting-started.html">Getting started</a></li>
+        <li><a href="docs/models.html">Models and migrations</a></li>
+        <li><a href="docs/controllers.html">Resources, controllers and routing</a></li>
+        <li><a href="docs/jobs.html">Background jobs</a></li>
+        <li><a href="docs/conventions.html">Conventions and agents</a></li>
+        <li><a href="docs/">All guides</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3>From Rails</h3>
+      <ul>
+        <li><a href="docs/from-rails.html">The dictionary: what each Rails thing is called here</a></li>
+        <li><a href="docs/commands.html">Command reference</a></li>
+      </ul>
+    </div>
+    <div>
+      <h3>Contributing</h3>
+      <ul>
+        <li><a href="https://github.com/bogie-go/bogie">The repository on GitHub</a></li>
+        <li><a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">docs/DESIGN.md, the reasoning</a></li>
+        <li><a href="https://github.com/bogie-go/bogie/blob/main/docs/STATUS.md">docs/STATUS.md, what is next</a></li>
+      </ul>
+      <p class="note">CI runs on your machine: <code>bin/ci</code> is the whole pipeline, no hosted runner to wait on.</p>
+    </div>
+  </div>
+</section>
 
 </div>
+
+<div class="wrap">
+<footer>
+  <p><a href="/docs/">Guides</a> &middot; <a href="/docs/from-rails.html">From Rails</a> &middot; <a href="/docs/commands.html">Commands</a> &middot; <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">Design</a> &middot; <a href="https://github.com/bogie-go/bogie/blob/main/docs/STATUS.md">Status</a> &middot; <a href="https://github.com/bogie-go/bogie">Source</a> &middot; <a href="https://github.com/bogie-go/bogie/blob/main/LICENSE">License</a></p>
+  <p>MIT licensed. Extracted from a service in production, not designed on a whiteboard. Not a Rails replacement; the one network-facing service a Rails shop eventually needs.</p>
+</footer>
+</div>
+
 </body>
 </html>
