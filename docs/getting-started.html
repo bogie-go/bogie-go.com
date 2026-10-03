@@ -32,9 +32,7 @@
 
 <h2>Install</h2>
 <pre><code>go install github.com/bogie-go/bogie@latest</code></pre>
-<p>Bogie is pre-release: there is no tagged release yet, so <code>@latest</code> through the module proxy can lag behind <code>main</code>. Until the first tag, install from a clone instead:</p>
-<pre><code>git clone https://github.com/bogie-go/bogie
-cd bogie &amp;&amp; go install .</code></pre>
+<p><code>@latest</code> is the newest tagged release, v0.1.0 at the time of writing, and <code>bogie version</code> prints it. Go 1.25 or newer is the one prerequisite; Postgres runs in Docker from the app's own compose file. For <code>main</code> as it stands, <code>go install github.com/bogie-go/bogie@main</code>; from a clone, <code>go install .</code>.</p>
 
 <h2>Generate a service</h2>
 <pre><code>bogie new blog</code></pre>
