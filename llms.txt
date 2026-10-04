@@ -1,6 +1,6 @@
 # Bogie
 
-> The Go service next to your Rails app. Bogie is a command-line tool that scaffolds an API-only, Postgres-only Go service with Rails-style generators (new, g scaffold, g model, g controller, g job, g authentication) that also wire the code in. It builds on Gin, sqlc with pgx, goose, River and Kamal. The generated app never imports Bogie. MIT licensed, v0.1.0, Go 1.25 or newer.
+> The Go service next to your Rails app. Bogie is a command-line tool that scaffolds an API-only, Postgres-only Go service with Rails-style generators (new, g scaffold, g model, g controller, g job, g authentication) that also wire the code in. It builds on Gin, sqlc with pgx, goose, River and Kamal. The generated app never imports Bogie. MIT licensed, v0.1.0, Go 1.26 or newer, and Docker for Postgres.
 
 Install: `go install github.com/bogie-go/bogie@latest`. Then `bogie new blog && cd blog && bogie db:prepare && bogie server`.
 
