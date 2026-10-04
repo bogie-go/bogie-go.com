@@ -21,7 +21,7 @@
 <meta name="twitter:title" content="Command reference: Bogie">
 <meta name="twitter:description" content="Every bogie command, every generator and every make target, in one place.">
 <meta name="twitter:image" content="https://bogie-go.com/og.png">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Command reference", "description": "Every bogie command, every generator and every make target, in one place.", "url": "https://bogie-go.com/docs/commands.html", "dateModified": "2026-10-03", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "Command reference", "item": "https://bogie-go.com/docs/commands.html"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Command reference", "description": "Every bogie command, every generator and every make target, in one place.", "url": "https://bogie-go.com/docs/commands.html", "dateModified": "2026-10-04", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "Command reference", "item": "https://bogie-go.com/docs/commands.html"}]}]}</script>
 </head>
 <body>
 <header class="topnav">
@@ -65,7 +65,7 @@
 <tr><td><code>bogie doctor</code></td><td>Checks markers, pinned tools and layout files; confirms every controller is constructed and mounted.</td></tr>
 <tr><td><code>bogie app:update [--pretend]</code></td><td>Moves the app to the installed Bogie's layout: a three-way merge between what the recorded version generated, what this version generates, and the file on disk. Refuses on a dirty git tree; a real overlap leaves conflict markers.</td></tr>
 <tr><td><code>bogie server</code>, <code>bogie s</code></td><td>Runs the app; migrates at boot.</td></tr>
-<tr><td><code>bogie worker</code></td><td>Works the job queue (apps made with <code>--jobs</code>).</td></tr>
+<tr><td><code>bogie worker</code></td><td>Works the job queue (apps with jobs; <code>g job</code> adds them to one that has none).</td></tr>
 <tr><td><code>bogie test [PKGS]</code>, <code>bogie t</code></td><td><code>go test -race -cover ./...</code>.</td></tr>
 <tr><td><code>bogie lint</code></td><td>gofmt check, <code>go vet</code>, golangci-lint.</td></tr>
 <tr><td><code>bogie ci</code></td><td>Every check, locally, then sign off: <code>bin/ci</code>.</td></tr>
@@ -96,7 +96,7 @@
 <tr><td><code>scaffold</code></td><td><code>NAME [field:type ...]</code></td><td>The model, plus <code>app/views/&lt;table&gt;.go</code> and a <code>&lt;Table&gt;Controller</code> with real handlers over the store, registered. The model is singular, the rest plural, as Rails names them.</td></tr>
 <tr><td><code>controller</code></td><td><code>NAME [action ...]</code></td><td><code>app/controllers/&lt;name&gt;_controller.go</code>, one Rails controller in one file, registered: a field, a wire line and a mount above each marker. Name a resource in the plural. <code>admin/NAME</code> puts it in the admin namespace, <code>app/controllers/admin_controller/</code>, made on first use and registered the same way.</td></tr>
 <tr><td><code>service</code></td><td><code>NAME</code></td><td><code>app/services/&lt;name&gt;/</code>, <code>ctx</code> first, no HTTP, not wired anywhere.</td></tr>
-<tr><td><code>job</code></td><td><code>NAME</code></td><td><code>app/jobs/&lt;name&gt;.go</code>, a River job, registered above <code>bogie:jobs</code> (apps made with <code>--jobs</code>).</td></tr>
+<tr><td><code>job</code></td><td><code>NAME</code></td><td><code>app/jobs/&lt;name&gt;.go</code>, a River job, registered above <code>bogie:jobs</code>; the first one on an app with no jobs adds them first, merged in like <code>app:update</code>.</td></tr>
 <tr><td><code>authentication</code></td><td><code>SHAPE</code></td><td>A middleware on a route group, its config key with a development value written to the credentials, and a <code>WithX</code> group helper on the root <code>Server</code>. <code>SHAPE</code> is <code>secret</code> (the Rails app calls this service), <code>token</code> (bearer JWT a user presents) or <code>api_key</code> (keys for machine clients, with a table and <code>api_keys:create</code>).</td></tr>
 </table>
 </div>
@@ -110,7 +110,7 @@
 <table>
 <tr><th>Command</th><th>Does</th></tr>
 <tr><td><code>blog serve</code></td><td>Runs the HTTP server.</td></tr>
-<tr><td><code>blog worker</code></td><td>Works the job queue (apps made with <code>--jobs</code>).</td></tr>
+<tr><td><code>blog worker</code></td><td>Works the job queue (apps with jobs enabled).</td></tr>
 <tr><td><code>blog db create</code></td><td>Creates the database this environment points at.</td></tr>
 <tr><td><code>blog db drop --yes</code></td><td>Drops it; refused in production.</td></tr>
 <tr><td><code>blog db prepare</code></td><td>Create if needed, migrate, seed.</td></tr>
@@ -138,7 +138,7 @@
 <tr><td><code>make credentials</code></td><td>Edit the encrypted settings (development); <code>ENV=production</code> for its own file and key.</td></tr>
 <tr><td><code>make build</code></td><td>Compile the binary.</td></tr>
 <tr><td><code>make server</code></td><td>Run the HTTP server.</td></tr>
-<tr><td><code>make worker</code></td><td>Work the job queue (apps made with <code>--jobs</code>).</td></tr>
+<tr><td><code>make worker</code></td><td>Work the job queue (apps with jobs enabled).</td></tr>
 <tr><td><code>make test</code></td><td>Run the suite with coverage, in the test environment (needs <code>make up</code>).</td></tr>
 <tr><td><code>make sqlc</code></td><td>Regenerate <code>app/models</code> from <code>db/queries</code> against <code>db/migrate</code>.</td></tr>
 <tr><td><code>make vet</code></td><td>Stdlib static analysis.</td></tr>

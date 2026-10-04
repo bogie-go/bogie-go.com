@@ -13,7 +13,7 @@ Every generated app follows six rules: ctx first on anything doing I/O; interfac
 - [Resources, controllers and routing](https://bogie-go.com/docs/controllers.html): Scaffold a whole resource or write a controller by hand, and see how either gets registered.
 - [Authentication](https://bogie-go.com/docs/authentication.html): Guard a route group with a middleware: a shared secret, a bearer token, or a machine client's key.
 - [Services](https://bogie-go.com/docs/services.html): Give logic that is not CRUD a package of its own, with no HTTP in it.
-- [Background jobs](https://bogie-go.com/docs/jobs.html): Add River to an app made with --jobs and write a worker that runs beside it.
+- [Background jobs](https://bogie-go.com/docs/jobs.html): Add River with --jobs at new time, or later with g job, and write a worker that runs beside it.
 - [Configuration and credentials](https://bogie-go.com/docs/configuration.html): The environment variables, the encrypted settings file, and what staging means here.
 - [Testing and CI](https://bogie-go.com/docs/testing.html): Where tests live, what bin/ci runs, and what doctor checks before either does.
 - [Deploying](https://bogie-go.com/docs/deploying.html): One Docker image, every role, shipped with Kamal 2 to staging and production.

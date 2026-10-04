@@ -230,7 +230,7 @@ cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server">
       <div aria-hidden="true"><div class="dot"></div></div>
       <div class="body">
         <div class="text">
-          <div class="where">04 · app/jobs · bogie new --jobs</div>
+          <div class="where">04 · app/jobs · bogie g job</div>
           <h3>Jobs can commit with the row</h3>
           <p>River runs on the same Postgres as the app: no Redis, no second system to keep up. Enqueue with <code>InsertTx</code> inside a transaction and the job commits with the row or not at all. <code>bogie g job</code> registers the worker above the <code>bogie:jobs</code> marker.</p>
         </div>
