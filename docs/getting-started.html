@@ -47,7 +47,7 @@
 
 <h2>Install</h2>
 <pre><code>go install github.com/bogie-go/bogie@latest</code></pre>
-<p><code>@latest</code> is the newest tagged release, v0.1.0 at the time of writing, and <code>bogie version</code> prints it. Go 1.25 or newer is the one prerequisite; Postgres runs in Docker from the app's own compose file. For <code>main</code> as it stands, <code>go install github.com/bogie-go/bogie@main</code>; from a clone, <code>go install .</code>.</p>
+<p><code>@latest</code> is the newest tagged release, v0.1.0 at the time of writing, and <code>bogie version</code> prints it. You need Go 1.26 or newer (the tool builds with 1.25, but the app it generates needs 1.26) and Docker with Compose v2, which runs Postgres from the app's own compose file. For <code>main</code> as it stands, <code>go install github.com/bogie-go/bogie@main</code>; from a clone, <code>go install .</code>.</p>
 
 <h2>Generate a service</h2>
 <pre><code>bogie new blog</code></pre>
