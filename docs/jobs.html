@@ -21,7 +21,7 @@
 <meta name="twitter:title" content="Background jobs: Bogie">
 <meta name="twitter:description" content="Add River with --jobs at new time, or later with g job, and write a worker that runs beside it.">
 <meta name="twitter:image" content="https://bogie-go.com/og.png">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Background jobs", "description": "Add River with --jobs at new time, or later with g job, and write a worker that runs beside it.", "url": "https://bogie-go.com/docs/jobs.html", "dateModified": "2026-10-04", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "Background jobs", "item": "https://bogie-go.com/docs/jobs.html"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Background jobs", "description": "Add River with --jobs at new time, or later with g job, and write a worker that runs beside it.", "url": "https://bogie-go.com/docs/jobs.html", "dateModified": "2026-10-06", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "Background jobs", "item": "https://bogie-go.com/docs/jobs.html"}]}]}</script>
 </head>
 <body>
 <header class="topnav">
@@ -117,7 +117,7 @@ app.Jobs.InsertTx(ctx, tx, jobs.SendWelcomeArgs{}, nil)</code></pre>
 
 <h2>Running the worker</h2>
 <pre><code>bogie worker</code></pre>
-<p>Or <code>make worker</code>. It is its own process, separate from <code>bogie server</code>, so a backlog in the queue never slows a request. River's own schema (the tables it needs to track jobs) is applied by <code>migrate</code>, through <code>rivermigrate</code>, not copied into <code>db/migrate</code>: it arrives the same way the app's own migrations do, at boot or with <code>bogie db:migrate</code>.</p>
+<p>Or <code>make worker</code>. It is its own process, separate from <code>bogie server</code>, so a backlog in the queue never slows a request. In development <code>bogie worker</code> runs under Air and builds to its own binary, so it rebuilds and restarts on save independently of the server; <code>make worker</code> is one boot, no reload. River's own schema (the tables it needs to track jobs) is applied by <code>migrate</code>, through <code>rivermigrate</code>, not copied into <code>db/migrate</code>: it arrives the same way the app's own migrations do, at boot or with <code>bogie db:migrate</code>.</p>
 
 <h2>Removing one</h2>
 <pre><code>bogie d job send_welcome</code></pre>
@@ -135,7 +135,7 @@ app.Jobs.InsertTx(ctx, tx, jobs.SendWelcomeArgs{}, nil)</code></pre>
   <div class="wrap inner">
     <div class="about">
       <a class="brand" href="/"><img src="../favicon.png" alt=""><span>Bogie</span></a>
-      <span>Rails conventions, laid on Go track. MIT licensed · v0.1.0.</span>
+      <span>Rails conventions, laid on Go track. MIT licensed · v0.2.1.</span>
     </div>
     <nav aria-label="Footer">
       <a href="/docs/">Guides</a>
