@@ -19,7 +19,7 @@ Every generated app follows six rules: ctx first on anything doing I/O; interfac
 - [Deploying](https://bogie-go.com/docs/deploying.html): One Docker image, every role, shipped with Kamal 2 to staging and production.
 - [Conventions and agents](https://bogie-go.com/docs/conventions.html): The six rules every generated app keeps, and why the layout is Rails-shaped on purpose.
 - [From Rails](https://bogie-go.com/docs/from-rails.html): A dictionary: what each Rails thing is called here, where it lives, and what has no equivalent.
-- [Command reference](https://bogie-go.com/docs/commands.html): Every bogie command, every generator and every make target, in one place.
+- [Command reference](https://bogie-go.com/docs/commands.html): Every Bogie command, every generator and every make target, in one place.
 
 ## Source and design
 
