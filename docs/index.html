@@ -22,11 +22,19 @@
 <meta name="twitter:description" content="Guides to working on a Bogie app: models, controllers, services, jobs, configuration, testing, deploying and the conventions behind them.">
 <meta name="twitter:image" content="https://bogie-go.com/og.png">
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "CollectionPage", "name": "Bogie Guides", "url": "https://bogie-go.com/docs/", "description": "Guides to working on a Bogie app: models, controllers, services, jobs, configuration, testing, deploying and the conventions behind them.", "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}]}]}</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-MPVQ83E1Z9');
+</script>
 </head>
 <body>
 <header class="topnav">
   <nav aria-label="Main">
-    <a class="brand" href="/"><img src="../favicon.png" alt=""><span>bogie</span></a>
+    <a class="brand" href="/"><img src="../favicon.png" alt=""><span>Bogie</span></a>
     <div class="navlinks">
       <a href="/docs/">Guides</a>
       <a href="/docs/from-rails.html">From Rails</a>
@@ -50,7 +58,7 @@
   <li><a href="controllers.html">Resources, controllers and routing</a><p>Scaffold a whole resource or write a controller by hand, and see how either gets registered.</p></li>
   <li><a href="authentication.html">Authentication</a><p>Guard a route group with a middleware: a shared secret, a bearer token, or a machine client's key.</p></li>
   <li><a href="services.html">Services</a><p>Give logic that is not CRUD a package of its own, with no HTTP in it.</p></li>
-  <li><a href="jobs.html">Background jobs</a><p>Add River to an app made with <code>--jobs</code> and write a worker that runs beside it.</p></li>
+  <li><a href="jobs.html">Background jobs</a><p>Add River with <code>--jobs</code> at <code>new</code> time, or later with <code>g job</code>, and write a worker that runs beside it.</p></li>
   <li><a href="configuration.html">Configuration and credentials</a><p>The environment variables, the encrypted settings file, and what staging means here.</p></li>
   <li><a href="testing.html">Testing and CI</a><p>Where tests live, what <code>bin/ci</code> runs, and what <code>doctor</code> checks before either does.</p></li>
   <li><a href="deploying.html">Deploying</a><p>One Docker image, every role, shipped with Kamal 2 to staging and production.</p></li>
@@ -65,8 +73,8 @@
   <div class="track dim"></div>
   <div class="wrap inner">
     <div class="about">
-      <a class="brand" href="/"><img src="../favicon.png" alt=""><span>bogie</span></a>
-      <span>Rails conventions, laid on Go track. MIT licensed · v0.1.0.</span>
+      <a class="brand" href="/"><img src="../favicon.png" alt=""><span>Bogie</span></a>
+      <span>Rails conventions, laid on Go track. MIT licensed · v0.2.1.</span>
     </div>
     <nav aria-label="Footer">
       <a href="/docs/">Guides</a>
