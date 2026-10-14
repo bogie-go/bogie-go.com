@@ -42,7 +42,7 @@
 <p>Rails has autoload and <code>method_missing</code>; Go has neither. Nothing exists until it is written down and registered, so every "magic" Rails step has a visible line in a Bogie app, and the six rules below are what keep that visible shape consistent as the app grows.</p>
 
 <h2>The six rules</h2>
-<ol class="rules">
+<ol class="guide-rules">
   <li><strong><code>ctx context.Context</code> is the first parameter of anything doing I/O.</strong> No <code>context.TODO()</code>. Cancellation, deadlines and tracing travel in it, so a request that is abandoned stops its query instead of finishing work nobody will read.</li>
   <li><strong>Interfaces are declared where they are consumed</strong>, next to the code that uses them, holding only the methods that code actually calls, never exported from the package that implements them. A controller's store interface lists five methods, not the whole store, which is why a controller test needs no database and there is no mocking library anywhere in a generated app.</li>
   <li><strong><code>app/domain</code> imports nothing third-party.</strong> The type and its <code>Validate</code> can be read, and called from a test, without pulling in a database driver or an HTTP framework.</li>
