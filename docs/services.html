@@ -32,23 +32,11 @@
 </script>
 </head>
 <body>
-<header class="topnav">
-  <nav aria-label="Main">
-    <a class="brand" href="/"><img src="../favicon.png" alt=""><span>Bogie</span></a>
-    <div class="navlinks">
-      <a href="/docs/">Guides</a>
-      <a href="/docs/from-rails.html">From Rails</a>
-      <a href="/docs/commands.html">Commands</a>
-      <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">Design</a>
-      <a href="/team.html">Team</a>
-      <a class="ghost" href="https://github.com/bogie-go/bogie">Source on GitHub</a>
-    </div>
-  </nav>
-</header>
+<!-- @header -->
 
-<div class="measure">
+<!-- @docs-start -->
 <article>
-<p class="guide-eyebrow">Guide 5 of 12</p>
+<p class="guide-eyebrow">{{SECTION}}</p>
 <h1>Services</h1>
 
 <p>A scaffolded resource is CRUD over the store, and most of a Rails app's logic is not CRUD: it is "publish this post", not "update this row". Rails developers reach for a plain Ruby object; here that is <code>bogie g service</code>.</p>
@@ -90,32 +78,9 @@ if err := svc.Run(ctx); err != nil { ... }</code></pre>
 <h2>When to reach for one</h2>
 <p>A plain resource needs no service: a scaffolded controller calling the store directly is the whole story. Reach for <code>g service</code> when an action does more than one thing to the database, calls another system, or is logic a background job and an HTTP handler both need to run identically. If it is CRUD, it belongs in the store; if it is a verb, it belongs in a service.</p>
 </article>
+<!-- @docs-end -->
 
-<footer class="guide-nav">
-  <div class="prev"><span class="label">Previous</span><a href="authentication.html">Authentication</a></div>
-  <div class="next"><span class="label">Next</span><a href="jobs.html">Background jobs</a></div>
-</footer>
-</div>
-
-<footer class="foot">
-  <div class="track dim"></div>
-  <div class="wrap inner">
-    <div class="about">
-      <a class="brand" href="/"><img src="../favicon.png" alt=""><span>Bogie</span></a>
-      <span>Rails conventions, laid on Go track. MIT licensed · v0.2.1.</span>
-    </div>
-    <nav aria-label="Footer">
-      <a href="/docs/">Guides</a>
-      <a href="/docs/from-rails.html">From Rails</a>
-      <a href="/docs/commands.html">Commands</a>
-      <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">Design</a>
-      <a href="/team.html">Team</a>
-      <a href="https://github.com/bogie-go/bogie/blob/main/docs/STATUS.md">Status</a>
-      <a href="https://github.com/bogie-go/bogie">Source</a>
-      <a href="https://github.com/bogie-go/bogie/blob/main/LICENSE">License</a>
-    </nav>
-  </div>
-</footer>
+<!-- @footer -->
 
 </body>
 </html>

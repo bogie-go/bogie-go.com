@@ -32,23 +32,11 @@
 </script>
 </head>
 <body>
-<header class="topnav">
-  <nav aria-label="Main">
-    <a class="brand" href="/"><img src="../favicon.png" alt=""><span>Bogie</span></a>
-    <div class="navlinks">
-      <a href="/docs/">Guides</a>
-      <a href="/docs/from-rails.html">From Rails</a>
-      <a href="/docs/commands.html">Commands</a>
-      <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">Design</a>
-      <a href="/team.html">Team</a>
-      <a class="ghost" href="https://github.com/bogie-go/bogie">Source on GitHub</a>
-    </div>
-  </nav>
-</header>
+<!-- @header -->
 
-<div class="measure">
+<!-- @docs-start -->
 <article>
-<p class="guide-eyebrow">Guide 10 of 12</p>
+<p class="guide-eyebrow">{{SECTION}}</p>
 <h1>Conventions and agents</h1>
 
 <p>Rails has autoload and <code>method_missing</code>; Go has neither. Nothing exists until it is written down and registered, so every "magic" Rails step has a visible line in a Bogie app, and the six rules below are what keep that visible shape consistent as the app grows.</p>
@@ -72,32 +60,9 @@
 <h2>AGENTS.md and CLAUDE.md, and why generators are the deterministic path</h2>
 <p>Every generated app ships an <code>AGENTS.md</code> (with <code>CLAUDE.md</code> as the same content) holding the six rules above, every command, and a recipe per generator. It exists because an agent working on a Bogie app has the same problem a new hire does: nothing autoloads, so a controller that is written but not registered compiles, lints clean, and serves nothing. Running <code>bogie g controller</code> instead of writing the file by hand gets the registration right every time, in the same three places, whether the hand on the keyboard is a person's or an agent's; <code>bogie doctor</code> is the check that confirms it actually happened.</p>
 </article>
+<!-- @docs-end -->
 
-<footer class="guide-nav">
-  <div class="prev"><span class="label">Previous</span><a href="deploying.html">Deploying</a></div>
-  <div class="next"><span class="label">Next</span><a href="from-rails.html">From Rails</a></div>
-</footer>
-</div>
-
-<footer class="foot">
-  <div class="track dim"></div>
-  <div class="wrap inner">
-    <div class="about">
-      <a class="brand" href="/"><img src="../favicon.png" alt=""><span>Bogie</span></a>
-      <span>Rails conventions, laid on Go track. MIT licensed · v0.2.1.</span>
-    </div>
-    <nav aria-label="Footer">
-      <a href="/docs/">Guides</a>
-      <a href="/docs/from-rails.html">From Rails</a>
-      <a href="/docs/commands.html">Commands</a>
-      <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">Design</a>
-      <a href="/team.html">Team</a>
-      <a href="https://github.com/bogie-go/bogie/blob/main/docs/STATUS.md">Status</a>
-      <a href="https://github.com/bogie-go/bogie">Source</a>
-      <a href="https://github.com/bogie-go/bogie/blob/main/LICENSE">License</a>
-    </nav>
-  </div>
-</footer>
+<!-- @footer -->
 
 </body>
 </html>
