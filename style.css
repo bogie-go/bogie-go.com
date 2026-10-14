@@ -235,3 +235,30 @@ tr:last-child td { border-bottom: 0; }
 .faq { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr)); gap: 32px 48px; }
 .qa h3 { margin: 0 0 8px; font-size: 20px; font-weight: 600; }
 .qa p { margin: 0; font-size: 16px; line-height: 1.6; color: var(--ink-2); }
+
+/* Header version pill, next to the brand */
+.brandwrap { display: flex; align-items: center; gap: 12px; }
+.verpill { font-family: var(--mono); font-weight: 500; font-size: 12px; line-height: 1; padding: 5px 9px; border: 1.5px solid var(--ink); border-radius: 999px; text-decoration: none; color: var(--ink); }
+.verpill:hover { background: var(--ink); color: var(--on-ink); }
+a.pill { text-decoration: none; color: inherit; }
+
+/* Docs: left sidebar + content */
+.doclayout { max-width: 1200px; margin: 0 auto; padding: 0 32px; display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 48px; }
+.doclayout .doc-main { margin: 0; max-width: 760px; }
+.docnav { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding: 40px 16px 40px 0; border-right: 1px solid var(--line); }
+.docnav-h { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 22px 0 6px; }
+.docnav ul { list-style: none; margin: 0; padding: 0; }
+.docnav a { display: block; padding: 5px 10px; font-size: 14.5px; text-decoration: none; color: var(--ink); border-left: 2px solid transparent; }
+.docnav a:hover { color: var(--rust); }
+.docnav a.current { border-left-color: var(--rust); font-weight: 600; }
+.docnav-home { font-weight: 600; }
+.docnav-toggle, .docnav-button { display: none; }
+@media (max-width: 860px) {
+  .doclayout { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 0 20px; }
+  .doclayout .doc-main { padding-left: 0; padding-right: 0; }
+  .docnav-button { display: block; margin: 16px 0 0; padding: 10px 14px; border: 1.5px solid var(--ink); border-radius: 4px; font-weight: 600; cursor: pointer; }
+  .docnav-button::after { content: " ▾"; }
+  .docnav-toggle:checked + .docnav-button::after { content: " ▴"; }
+  .docnav { display: none; position: static; max-height: none; border: 1px solid var(--line); border-top: 0; padding: 4px 14px 16px; }
+  .docnav-toggle:checked ~ .docnav { display: block; }
+}

@@ -32,23 +32,11 @@
 </script>
 </head>
 <body>
-<header class="topnav">
-  <nav aria-label="Main">
-    <a class="brand" href="/"><img src="../favicon.png" alt=""><span>Bogie</span></a>
-    <div class="navlinks">
-      <a href="/docs/">Guides</a>
-      <a href="/docs/from-rails.html">From Rails</a>
-      <a href="/docs/commands.html">Commands</a>
-      <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">Design</a>
-      <a href="/team.html">Team</a>
-      <a class="ghost" href="https://github.com/bogie-go/bogie">Source on GitHub</a>
-    </div>
-  </nav>
-</header>
+<!-- @header -->
 
-<div class="measure">
+<!-- @docs-start -->
 <article>
-<p class="guide-eyebrow">Guide 3 of 12</p>
+<p class="guide-eyebrow">{{SECTION}}</p>
 <h1>Resources, controllers and routing</h1>
 
 <h2>A whole resource</h2>
@@ -176,32 +164,9 @@ func (ctl *PostsController) Show(c *gin.Context) {
 <h2>Testing a controller</h2>
 <p>With a fake store, no database: the fake records what it was asked for and answers with what the test chose, so a 404 test, a 422 test and a 500-that-leaks-nothing test all run without Postgres. A namespaced controller's test mounts it on the namespace's own <code>Server</code> the same way.</p>
 </article>
+<!-- @docs-end -->
 
-<footer class="guide-nav">
-  <div class="prev"><span class="label">Previous</span><a href="models.html">Models and migrations</a></div>
-  <div class="next"><span class="label">Next</span><a href="authentication.html">Authentication</a></div>
-</footer>
-</div>
-
-<footer class="foot">
-  <div class="track dim"></div>
-  <div class="wrap inner">
-    <div class="about">
-      <a class="brand" href="/"><img src="../favicon.png" alt=""><span>Bogie</span></a>
-      <span>Rails conventions, laid on Go track. MIT licensed · v0.2.1.</span>
-    </div>
-    <nav aria-label="Footer">
-      <a href="/docs/">Guides</a>
-      <a href="/docs/from-rails.html">From Rails</a>
-      <a href="/docs/commands.html">Commands</a>
-      <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">Design</a>
-      <a href="/team.html">Team</a>
-      <a href="https://github.com/bogie-go/bogie/blob/main/docs/STATUS.md">Status</a>
-      <a href="https://github.com/bogie-go/bogie">Source</a>
-      <a href="https://github.com/bogie-go/bogie/blob/main/LICENSE">License</a>
-    </nav>
-  </div>
-</footer>
+<!-- @footer -->
 
 </body>
 </html>

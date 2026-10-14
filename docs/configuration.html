@@ -32,23 +32,11 @@
 </script>
 </head>
 <body>
-<header class="topnav">
-  <nav aria-label="Main">
-    <a class="brand" href="/"><img src="../favicon.png" alt=""><span>Bogie</span></a>
-    <div class="navlinks">
-      <a href="/docs/">Guides</a>
-      <a href="/docs/from-rails.html">From Rails</a>
-      <a href="/docs/commands.html">Commands</a>
-      <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">Design</a>
-      <a href="/team.html">Team</a>
-      <a class="ghost" href="https://github.com/bogie-go/bogie">Source on GitHub</a>
-    </div>
-  </nav>
-</header>
+<!-- @header -->
 
-<div class="measure">
+<!-- @docs-start -->
 <article>
-<p class="guide-eyebrow">Guide 7 of 12</p>
+<p class="guide-eyebrow">{{SECTION}}</p>
 <h1>Configuration and credentials</h1>
 
 <p>Two sources, in order: an encrypted credentials file if one exists, then environment variables, which always win. No globals, no <code>init()</code>: <code>config.Load()</code> returns a struct once, at startup, and every field is validated then, so a missing setting is a refusal to boot rather than a nil a request trips over an hour later.</p>
@@ -89,32 +77,9 @@ make credentials ENV=staging</code></pre>
 <h2>In a container</h2>
 <p>The encrypted files travel in the image; the keys never do. At runtime the key for whichever credentials file is selected arrives as <code>&lt;NAME&gt;_MASTER_KEY</code>, read directly with no file to write and no permissions to get wrong. See <a href="deploying.html">Deploying</a> for where that value comes from.</p>
 </article>
+<!-- @docs-end -->
 
-<footer class="guide-nav">
-  <div class="prev"><span class="label">Previous</span><a href="jobs.html">Background jobs</a></div>
-  <div class="next"><span class="label">Next</span><a href="testing.html">Testing and CI</a></div>
-</footer>
-</div>
-
-<footer class="foot">
-  <div class="track dim"></div>
-  <div class="wrap inner">
-    <div class="about">
-      <a class="brand" href="/"><img src="../favicon.png" alt=""><span>Bogie</span></a>
-      <span>Rails conventions, laid on Go track. MIT licensed · v0.2.1.</span>
-    </div>
-    <nav aria-label="Footer">
-      <a href="/docs/">Guides</a>
-      <a href="/docs/from-rails.html">From Rails</a>
-      <a href="/docs/commands.html">Commands</a>
-      <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">Design</a>
-      <a href="/team.html">Team</a>
-      <a href="https://github.com/bogie-go/bogie/blob/main/docs/STATUS.md">Status</a>
-      <a href="https://github.com/bogie-go/bogie">Source</a>
-      <a href="https://github.com/bogie-go/bogie/blob/main/LICENSE">License</a>
-    </nav>
-  </div>
-</footer>
+<!-- @footer -->
 
 </body>
 </html>

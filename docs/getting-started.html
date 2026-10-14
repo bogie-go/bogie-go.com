@@ -32,30 +32,18 @@
 </script>
 </head>
 <body>
-<header class="topnav">
-  <nav aria-label="Main">
-    <a class="brand" href="/"><img src="../favicon.png" alt=""><span>Bogie</span></a>
-    <div class="navlinks">
-      <a href="/docs/">Guides</a>
-      <a href="/docs/from-rails.html">From Rails</a>
-      <a href="/docs/commands.html">Commands</a>
-      <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">Design</a>
-      <a href="/team.html">Team</a>
-      <a class="ghost" href="https://github.com/bogie-go/bogie">Source on GitHub</a>
-    </div>
-  </nav>
-</header>
+<!-- @header -->
 
-<div class="measure">
+<!-- @docs-start -->
 <article>
-<p class="guide-eyebrow">Guide 1 of 12</p>
+<p class="guide-eyebrow">{{SECTION}}</p>
 <h1>Getting started</h1>
 
 <p>Bogie is a CLI, not a library. It renders a new Go service onto disk and then gets out of the way: the app it generates never imports Bogie, so deleting the tool tomorrow does not touch the app.</p>
 
 <h2>Install</h2>
 <pre><code>go install github.com/bogie-go/bogie@latest</code></pre>
-<p><code>@latest</code> is the newest tagged release, v0.2.1 at the time of writing, and <code>bogie version</code> prints it. Go 1.25 or newer is the one prerequisite; Postgres runs in Docker from the app's own compose file. For <code>main</code> as it stands, <code>go install github.com/bogie-go/bogie@main</code>; from a clone, <code>go install .</code>.</p>
+<p><code>@latest</code> is the newest tagged release, {{VERSION}} as of this build, and <code>bogie version</code> prints it. Go 1.25 or newer is the one prerequisite; Postgres runs in Docker from the app's own compose file. For <code>main</code> as it stands, <code>go install github.com/bogie-go/bogie@main</code>; from a clone, <code>go install .</code>.</p>
 
 <h2>Generate a service</h2>
 <pre><code>bogie new blog</code></pre>
@@ -105,32 +93,9 @@ bogie server</code></pre>
 <p>The whole pipeline, run on the machine you already have: it rebuilds the test database from the migrations, rolls them down and back up, checks the generated models are current, runs gofmt, vet, golangci-lint, the build, and the test suite. A green run on a clean tree signs the commit off with <code>gh signoff</code>, if that extension is installed.</p>
 <p><code>bogie doctor</code> is worth running any time the app feels off: it checks every marker the generators write is intact exactly once, that the pinned tools are still in <code>go.mod</code>, that the layout files generators depend on exist, and that every controller is both constructed and mounted. See <a href="testing.html">Testing and CI</a> for what each step of <code>bin/ci</code> does.</p>
 </article>
+<!-- @docs-end -->
 
-<footer class="guide-nav">
-  <div class="prev"></div>
-  <div class="next"><span class="label">Next</span><a href="models.html">Models and migrations</a></div>
-</footer>
-</div>
-
-<footer class="foot">
-  <div class="track dim"></div>
-  <div class="wrap inner">
-    <div class="about">
-      <a class="brand" href="/"><img src="../favicon.png" alt=""><span>Bogie</span></a>
-      <span>Rails conventions, laid on Go track. MIT licensed · v0.2.1.</span>
-    </div>
-    <nav aria-label="Footer">
-      <a href="/docs/">Guides</a>
-      <a href="/docs/from-rails.html">From Rails</a>
-      <a href="/docs/commands.html">Commands</a>
-      <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">Design</a>
-      <a href="/team.html">Team</a>
-      <a href="https://github.com/bogie-go/bogie/blob/main/docs/STATUS.md">Status</a>
-      <a href="https://github.com/bogie-go/bogie">Source</a>
-      <a href="https://github.com/bogie-go/bogie/blob/main/LICENSE">License</a>
-    </nav>
-  </div>
-</footer>
+<!-- @footer -->
 
 </body>
 </html>
