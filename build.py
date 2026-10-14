@@ -21,9 +21,7 @@ SKIP = {"_site", "_includes", "build.py", "README.md", ".git", ".github", ".clau
 
 # Sidebar order is also prev/next order.
 NAV = [
-    ("Getting Started", [("getting-started", "Getting started"),
-                         ("conventions", "Conventions and agents"),
-                         ("from-rails", "From Rails")]),
+    ("Getting Started", [("getting-started", "Getting started")]),
     ("The App", [("models", "Models and migrations"),
                  ("controllers", "Resources, controllers and routing"),
                  ("authentication", "Authentication"),
@@ -32,7 +30,9 @@ NAV = [
     ("Infra", [("configuration", "Configuration and credentials"),
                ("testing", "Testing and CI"),
                ("deploying", "Deploying")]),
-    ("Reference", [("commands", "Command reference")]),
+    ("Reference", [("conventions", "Conventions and agents"),
+                   ("from-rails", "From Rails"),
+                   ("commands", "Command reference")]),
 ]
 FLAT = [(slug, title, sec) for sec, items in NAV for slug, title in items]
 
