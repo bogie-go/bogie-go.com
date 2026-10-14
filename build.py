@@ -21,7 +21,7 @@ SKIP = {"_site", "_includes", "build.py", "README.md", ".git", ".github", ".clau
 
 # Sidebar order is also prev/next order.
 NAV = [
-    ("Getting Started", [("getting-started", "Getting started"),
+    ("The App", [("getting-started", "Getting started"),
                  ("models", "Models and migrations"),
                  ("controllers", "Resources, controllers and routing"),
                  ("authentication", "Authentication"),
