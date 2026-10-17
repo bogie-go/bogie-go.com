@@ -73,6 +73,7 @@ var Files embed.FS</code></pre>
   <li><strong>Not for uploads.</strong> <code>public/</code> is fixed when the binary is built. Files users upload at runtime need storage of their own and a controller that serves them.</li>
   <li><strong>Not a CDN.</strong> Embedded files carry no modification time, so no <code>Last-Modified</code> header is sent; put a cache or CDN in front if the files are large or hot.</li>
 </ul>
+<p><strong>Product images and other uploads.</strong> Because <code>public/</code> is fixed when the app is built, an image a user uploads, such as a product photo in a shop, cannot land there: it needs storage of its own, outside the binary. Uploads are out of the book's scope; <code>public/</code> is for the files you ship with the app.</p>
 
 <h2>Bringing it to an older app</h2>
 <p>Commit your work, then <code>bogie app:update</code>: it adds <code>public/</code> and <code>app/controllers/public.go</code>, and merges the updated <code>routes.go</code>, <code>welcome.go</code> and middlewares. See <a href="upgrading.html">Upgrading an app</a>.</p>
