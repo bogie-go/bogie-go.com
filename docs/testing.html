@@ -92,7 +92,7 @@ make ci</code></pre>
 <p>Checks the things the generators rely on, since Rails never needed to check them (it autoloads):</p>
 <ul>
   <li><code>bogie.toml</code> exists.</li>
-  <li>Every marker (<code>bogie:controllers</code>, <code>bogie:wire</code>, <code>bogie:routes</code>, and <code>bogie:jobs</code> if the app has jobs) is present exactly once, in the root files and in every namespace package's own <code>server.go</code> and <code>routes.go</code>.</li>
+  <li>Every marker (<code>bogie:controllers</code>, <code>bogie:wire</code>, <code>bogie:routes</code>, the three in <code>config/config.go</code>, <code>bogie:commands</code> in <code>main.go</code>, <code>bogie:seeds</code>, and <code>bogie:jobs</code> if the app has jobs) is present exactly once, in the root files and in every namespace package's own <code>server.go</code> and <code>routes.go</code>.</li>
   <li>The pinned tools (goose, sqlc, credentials) are still under the <code>tool</code> directive in <code>go.mod</code>.</li>
   <li>The layout files generators depend on exist: <code>db/sqlc.yaml</code>, <code>db/db.go</code>, <code>bin/ci</code>, <code>docker-compose.yml</code>, <code>AGENTS.md</code>, <code>config/master.key</code>.</li>
   <li>Every controller it finds, plain or namespaced, is both constructed in <code>app/application.go</code> and mounted in the right <code>routes.go</code>. A mount with no construction is a nil controller whose first request panics; a construction with no mount serves nothing, and both are caught here rather than at runtime.</li>

@@ -128,6 +128,10 @@ func (ctl *PostsController) Show(c *gin.Context) {
 </ol>
 <p><code>--pretend</code> reports what would be written without touching anything; <code>--force</code> overwrites a file that differs. A marker missing from a file is a named error with no partial write; the generator never guesses. <code>bogie d controller comments</code> removes the file and all three lines. <code>bogie doctor</code> checks every marker exists exactly once and that every controller it finds is both constructed and mounted.</p>
 
+<h2>Seeing what is mounted</h2>
+<pre><code>bogie routes</code></pre>
+<p>The <code>rails routes</code> of a Bogie app: method, path and handler for every route, in the order it was wired. It boots the app the way <code>serve</code> does and prints through Gin's own debug route hook, so the list is what is really mounted, not a guess read off the files. Like Gin's debug output, it prints only in development; in <code>test</code> or <code>production</code> it exits 0 with nothing. A request no route answers falls through to <code>public/</code> and then <code>public/404.html</code>: see <a href="static-files.html">Static files and error pages</a>.</p>
+
 <h2>Giving a controller a dependency</h2>
 <p>A freshly generated controller holds only a logger. Wiring in a store or a service is three edits, all in files you already own, with no generator for the step itself:</p>
 <ol>

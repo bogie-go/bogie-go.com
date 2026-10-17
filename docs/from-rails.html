@@ -55,6 +55,8 @@
 <tr><td><code>rails g controller posts index show</code></td><td><code>bogie g controller posts index show</code></td><td>Writes it <em>and</em> registers it. <code>new</code> and <code>edit</code> are refused.</td></tr>
 <tr><td><code>rails g controller admin/reports</code></td><td><code>bogie g controller admin/reports</code></td><td>A namespace is a package, <code>app/controllers/admin_controller/</code>.</td></tr>
 <tr><td><code>rails g migration add_slug_to_posts slug:string</code></td><td><code>bogie g migration add_slug_to_posts slug:string</code></td><td>SQL, not Ruby; <code>create_</code>, <code>add_x_to_</code>, <code>remove_x_from_</code> get their SQL written.</td></tr>
+<tr><td><code>rails routes</code></td><td><code>bogie routes</code></td><td>Method, path and handler for every mounted route, read from the booted app. Development only.</td></tr>
+<tr><td>(<code>db/seeds.rb</code>, by hand)</td><td><code>bogie g seed demo_posts</code></td><td><code>db/seeds/demo_posts.go</code>, registered above <code>// bogie:seeds</code>. See <a href="seeds.html">Seeds</a>.</td></tr>
 <tr><td><code>rails g job send_welcome</code></td><td><code>bogie g job send_welcome</code></td><td>A River worker, registered; the first one on an app with no jobs adds them first.</td></tr>
 <tr><td><code>rails g authentication</code></td><td><code>bogie g authentication secret</code>, <code>token</code> or <code>api_key</code></td><td>A middleware on a route group; the shape says who the caller is. See <a href="authentication.html">Authentication</a>.</td></tr>
 <tr><td>(a service object, by hand)</td><td><code>bogie g service publish_post</code></td><td>A package with a <code>Run(ctx)</code>, not wired anywhere.</td></tr>
@@ -89,7 +91,8 @@
 <tr><td><code>app/controllers/concerns/</code></td><td>none</td><td>Compose with plain functions and small interfaces.</td></tr>
 <tr><td><code>db/migrate/*.rb</code></td><td><code>db/migrate/*.sql</code></td><td>goose SQL with <code>-- +goose Up</code> and <code>Down</code>, embedded in the binary.</td></tr>
 <tr><td><code>db/schema.rb</code></td><td>none</td><td>The migrations are the schema; sqlc compiles the queries against them.</td></tr>
-<tr><td><code>db/seeds.rb</code></td><td><code>db/seeds/*.sql</code></td><td>Versioned like migrations, in their own table.</td></tr>
+<tr><td><code>db/seeds.rb</code></td><td><code>db/seeds/*.go</code></td><td>One function per file, registered above <code>// bogie:seeds</code>; <code>db seed</code> re-runs every one, so each must be safe to run twice, as <code>db/seeds.rb</code> already has to be.</td></tr>
+<tr><td><code>public/404.html</code>, <code>500.html</code>, <code>robots.txt</code></td><td><code>public/</code>, go:embedded</td><td>Served below the router for any request no route answered, API mode included. See <a href="static-files.html">Static files and error pages</a>.</td></tr>
 <tr><td><code>config/database.yml</code></td><td><code>DATABASE_URL</code> in credentials or the environment</td><td>One URL per environment; test never reads a credentials file.</td></tr>
 <tr><td><code>config/credentials.yml.enc</code>, <code>master.key</code></td><td>the same files</td><td>Same pattern, same names, same <code>-e production</code>.</td></tr>
 <tr><td><code>config/application.rb</code>, initializers</td><td><code>app/application.go</code></td><td>Where everything is constructed and wired, in order, with the markers.</td></tr>
@@ -152,8 +155,8 @@
 <h2>What has no equivalent</h2>
 <p>Honest list. Some are API-only by design; some are Rails features Go does not need; some are gaps.</p>
 <ul>
-  <li>Views, templates, assets, Turbo, sessions, flash, cookies, CSRF: the Rails app renders; this service is JSON.</li>
-  <li><code>rails console</code> and <code>rails routes</code>.</li>
+  <li>Views, templates, the asset pipeline (no fingerprinting or compilation; <code>public/</code> serves files as they are), Turbo, sessions, flash, cookies, CSRF: the Rails app renders; this service is JSON.</li>
+  <li><code>rails console</code>.</li>
   <li><code>ActiveRecord</code> associations, callbacks, scopes, <code>where</code> chains, N+1 helpers. SQL is written out and compiled.</li>
   <li><code>db/schema.rb</code> and <code>db:schema:load</code>; the migrations are the schema.</li>
   <li>Fixtures, factories, <code>test/test_helper.rb</code>. Store tests truncate the test database and insert what they need.</li>
