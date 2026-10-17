@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Releases: Bogie</title>
+<meta name="description" content="What each Bogie release added or changed, newest first, with breaking changes marked and what to do about them.">
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="stylesheet" href="../fonts.css">
+<link rel="stylesheet" href="../style.css">
+<link rel="canonical" href="https://bogie-go.com/docs/releases.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Bogie">
+<meta property="og:title" content="Releases: Bogie">
+<meta property="og:description" content="What each Bogie release added or changed, newest first, with breaking changes marked and what to do about them.">
+<meta property="og:url" content="https://bogie-go.com/docs/releases.html">
+<meta property="og:image" content="https://bogie-go.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Releases: Bogie">
+<meta name="twitter:description" content="What each Bogie release added or changed, newest first, with breaking changes marked and what to do about them.">
+<meta name="twitter:image" content="https://bogie-go.com/og.png">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Releases", "description": "Every Bogie release, newest first, with breaking changes marked.", "url": "https://bogie-go.com/docs/releases.html", "dateModified": "2026-10-17", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "Releases", "item": "https://bogie-go.com/docs/releases.html"}]}]}</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-MPVQ83E1Z9');
+</script>
+</head>
+<body>
+<!-- @header -->
+
+<!-- @docs-start -->
+<article>
+<p class="guide-eyebrow">{{SECTION}}</p>
+<h1>Releases</h1>
+<p>What each tagged release added or changed, newest first, in plain words. Each version links to its GitHub release, where the full notes and the commit list live. Changes marked <span class="badge-breaking">Breaking</span> can stop an existing app or setup working until you act; each one says what to do.</p>
+<pre><code>go install github.com/bogie-go/bogie@latest   # {{VERSION}} as of this build
+bogie version</code></pre>
+<section class="release" id="v0.2.8">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.2.8">v0.2.8</a> <span class="release-date">17 Oct 2026</span></h2>
+<ul>
+  <li>An app's own <code>public/index.html</code> now answers at <code>/</code>, in every environment. Before, <code>/</code> always fell through to the development welcome page or the 404. See <a href="static-files.html">Static files and error pages</a>.</li>
+  <li>The generated <code>404.html</code> and <code>500.html</code> show the Bogie mascot, styled like the welcome page.</li>
+  <li>Existing apps get both through <code>bogie app:update</code>.</li>
+</ul>
+</section>
+<section class="release" id="v0.2.7">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.2.7">v0.2.7</a> <span class="release-date">17 Oct 2026</span></h2>
+<ul>
+  <li>New <code>public/</code> folder, embedded in the binary: a request no route answers is tried against a file there, then the development welcome page, then <code>public/404.html</code>. A panicking handler gets <code>public/500.html</code>. To serve a favicon or <code>robots.txt</code>, drop it in <code>public/</code> and widen the <code>go:embed</code> line in <code>public/public.go</code>.</li>
+  <li>Hand-written store methods now go in a sibling file, <code>app/models/&lt;table&gt;_extra.go</code>, because <code>g model</code> rewrites <code>app/models/&lt;table&gt;.go</code> whole. See <a href="models.html">Models and migrations</a>.</li>
+  <li>Existing apps get <code>public/</code> through <code>bogie app:update</code>.</li>
+</ul>
+</section>
+<section class="release" id="v0.2.6">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.2.6">v0.2.6</a> <span class="release-date">17 Oct 2026</span> <span class="badge-breaking">Breaking</span></h2>
+<div class="breaking"><p><span class="badge-breaking">Breaking</span> Seeds are no longer goose SQL files with a version table. <code>db:seed:rollback</code>, <code>db seed-down</code>, <code>make db-seed-down</code> and <code>make g_seed_*</code> are gone. <strong>What to do:</strong> commit, port any existing seed SQL into <code>db/seeds/*.go</code> by hand, then run <code>bogie app:update</code> for the new runner; it moves the layout but does not translate seed content. Write each seed so a second run changes nothing. See <a href="upgrading.html">Upgrading an app</a>.</p></div>
+<ul>
+  <li>Seeds are plain Go: <code>bogie g seed NAME</code> writes <code>db/seeds/&lt;name&gt;.go</code> and registers it; <code>bogie db:seed</code> runs every seed, every time, so each must be safe to run twice. <code>bogie d seed NAME</code> takes one out. See <a href="seeds.html">Seeds</a>.</li>
+</ul>
+</section>
+<section class="release" id="v0.2.5">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.2.5">v0.2.5</a> <span class="release-date">16 Oct 2026</span></h2>
+<ul>
+  <li>New <code>bogie routes</code>, like <code>rails routes</code>: every mounted route with its method, path and handler, read from the booted app. It prints in development only. Existing apps get it through <code>bogie app:update</code>.</li>
+</ul>
+</section>
+<section class="release" id="v0.2.4">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.2.4">v0.2.4</a> <span class="release-date">16 Oct 2026</span></h2>
+<ul>
+  <li>A field with no type defaults to <code>string</code>, as in Rails: <code>bogie g model comment title body:text</code>.</li>
+  <li><code>string</code> now becomes Postgres <code>varchar</code> instead of <code>text</code>, keeping the distinction Rails makes. Only new migrations are affected; existing ones keep whatever type they already say.</li>
+</ul>
+</section>
+<section class="release" id="v0.2.3">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.2.3">v0.2.3</a> <span class="release-date">13 Oct 2026</span> <span class="badge-breaking">Breaking</span></h2>
+<div class="breaking"><p><span class="badge-breaking">Breaking</span> The test environment now reads only <code>&lt;APP&gt;_TEST_DATABASE_URL</code>, never <code>&lt;APP&gt;_DATABASE_URL</code>, so tests and <code>bin/ci</code> can no longer empty a development database. <strong>What to do:</strong> a CI setup that points tests at a database through <code>&lt;APP&gt;_DATABASE_URL</code> must rename it to <code>&lt;APP&gt;_TEST_DATABASE_URL</code>. Existing apps get the fix through <code>bogie app:update</code>. See <a href="upgrading.html">Upgrading an app</a>.</p></div>
+<ul>
+  <li>A scaffolded <code>PATCH</code> changes only the fields sent; before, it blanked the rest. New scaffolds get it; an existing scaffolded <code>Update</code> needs the change by hand (the release notes show the few lines).</li>
+  <li><code>bogie server</code> and <code>bogie worker</code> stop the app they started on SIGTERM.</li>
+  <li><code>bogie help</code> lists the <code>authentication</code> generator; the request log shows <code>path=/</code> for the root.</li>
+  <li>Docs: using your own Postgres without Docker (see <a href="own-postgres.html">Your own Postgres</a>), a code of conduct and a security policy.</li>
+</ul>
+</section>
+<section class="release" id="v0.2.2">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.2.2">v0.2.2</a> <span class="release-date">6 Oct 2026</span></h2>
+<ul>
+  <li>When the database cannot be reached, the error now says which of the common causes it is (nothing listening, credentials refused, or the database never created) and what to run, keeping the original error underneath.</li>
+</ul>
+</section>
+<section class="release" id="v0.2.1">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.2.1">v0.2.1</a> <span class="release-date">6 Oct 2026</span></h2>
+<ul>
+  <li><code>bogie app:update</code> adds the tool directives that newer templates pin, such as Air for live reload, so an older app reloads after updating without a manual <code>go get -tool</code>.</li>
+</ul>
+</section>
+<section class="release" id="v0.2.0">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.2.0">v0.2.0</a> <span class="release-date">6 Oct 2026</span></h2>
+<ul>
+  <li>Live reload: in development <code>bogie server</code> and <code>bogie worker</code> run under Air, rebuilding and restarting on save. Production runs the compiled binary.</li>
+  <li><code>bogie g job</code> works on an app made without <code>--jobs</code>, adding River first.</li>
+  <li>New apps need Go 1.26, pinned in the template (the tool itself builds with 1.25).</li>
+</ul>
+</section>
+<section class="release" id="v0.1.0">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.1.0">v0.1.0</a> <span class="release-date">3 Oct 2026</span></h2>
+<ul>
+  <li>The first release: <code>bogie new</code> (with <code>--jobs</code> for River), the generators <code>migration</code>, <code>model</code>, <code>scaffold</code>, <code>controller</code>, <code>service</code>, <code>job</code> and <code>authentication</code>, <code>bogie destroy</code>, <code>bogie doctor</code> and <code>bogie app:update</code>.</li>
+  <li>Generated apps ship credentials, migrations, <code>bin/ci</code>, a Dockerfile and Kamal 2 config, a welcome page and <code>AGENTS.md</code>.</li>
+  <li>Installed with <code>go install</code> only; no Homebrew tap.</li>
+</ul>
+</section>
+<p>Older history, before the first tag, is in the <a href="https://github.com/bogie-go/bogie/commits/v0.1.0">commit log</a>.</p>
+</article>
+<!-- @docs-end -->
+
+<!-- @footer -->
+
+</body>
+</html>
