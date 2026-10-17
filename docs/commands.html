@@ -56,12 +56,13 @@
 <div class="table-wrap">
 <table>
 <tr><th>Command</th><th>Does</th></tr>
-<tr><td><code>bogie generate GENERATOR NAME</code>, <code>bogie g</code></td><td>Runs a generator: <code>scaffold</code>, <code>model</code>, <code>migration</code>, <code>controller</code>, <code>service</code>, <code>job</code>, <code>authentication</code>. <code>bogie g -h</code> for its own usage.</td></tr>
+<tr><td><code>bogie generate GENERATOR NAME</code>, <code>bogie g</code></td><td>Runs a generator: <code>scaffold</code>, <code>model</code>, <code>migration</code>, <code>controller</code>, <code>service</code>, <code>job</code>, <code>seed</code>, <code>authentication</code>. <code>bogie g -h</code> for its own usage.</td></tr>
 <tr><td><code>bogie destroy GENERATOR NAME</code>, <code>bogie d</code></td><td>Removes what a generator made, registration included.</td></tr>
 <tr><td><code>bogie doctor</code></td><td>Checks markers, pinned tools and layout files; confirms every controller is constructed and mounted.</td></tr>
 <tr><td><code>bogie app:update [--pretend]</code></td><td>Moves the app to the installed Bogie's layout: a three-way merge between what the recorded version generated, what this version generates, and the file on disk. Refuses on a dirty git tree; a real overlap leaves conflict markers.</td></tr>
 <tr><td><code>bogie server</code>, <code>bogie s</code></td><td>Runs the app; migrates at boot. In development it runs under Air: save a file and it rebuilds and restarts.</td></tr>
 <tr><td><code>bogie worker</code></td><td>Works the job queue (apps with jobs; <code>g job</code> adds them to one that has none). Reloads under Air in development, same as <code>bogie server</code>, to its own binary so the two can run side by side.</td></tr>
+<tr><td><code>bogie routes</code></td><td>Every mounted route, method, path and handler, like <code>rails routes</code>. It boots the app the way <code>serve</code> does, so the list is what is actually wired. Prints in development only; in <code>test</code> or <code>production</code> it exits 0 with no output.</td></tr>
 <tr><td><code>bogie test [PKGS]</code>, <code>bogie t</code></td><td><code>go test -race -cover ./...</code>.</td></tr>
 <tr><td><code>bogie lint</code></td><td>gofmt check, <code>go vet</code>, golangci-lint.</td></tr>
 <tr><td><code>bogie ci</code></td><td>Every check, locally, then sign off: <code>bin/ci</code>.</td></tr>
@@ -74,8 +75,7 @@
 <tr><td><code>bogie db:migrate:redo</code></td><td>Rolls the last migration back and re-applies it.</td></tr>
 <tr><td><code>bogie db:rollback</code></td><td>Rolls back the most recent migration.</td></tr>
 <tr><td><code>bogie db:version</code></td><td>The current schema version.</td></tr>
-<tr><td><code>bogie db:seed</code></td><td>Applies pending seeds from <code>db/seeds</code>.</td></tr>
-<tr><td><code>bogie db:seed:rollback</code></td><td>Rolls back the most recent seed.</td></tr>
+<tr><td><code>bogie db:seed</code></td><td>Runs every seed in <code>db/seeds</code>, every time, in registration order; each must be safe to run twice.</td></tr>
 <tr><td><code>bogie credentials:edit [-e ENV]</code></td><td>Opens the encrypted settings for editing.</td></tr>
 <tr><td><code>bogie credentials:show [-e ENV]</code></td><td>Prints the decrypted file.</td></tr>
 <tr><td><code>bogie credentials:get [-e ENV] KEY</code></td><td>Prints one value.</td></tr>
@@ -94,10 +94,11 @@
 <tr><td><code>controller</code></td><td><code>NAME [action ...]</code></td><td><code>app/controllers/&lt;name&gt;_controller.go</code>, one Rails controller in one file, registered: a field, a wire line and a mount above each marker. Name a resource in the plural. <code>admin/NAME</code> puts it in the admin namespace, <code>app/controllers/admin_controller/</code>, made on first use and registered the same way.</td></tr>
 <tr><td><code>service</code></td><td><code>NAME</code></td><td><code>app/services/&lt;name&gt;/</code>, <code>ctx</code> first, no HTTP, not wired anywhere.</td></tr>
 <tr><td><code>job</code></td><td><code>NAME</code></td><td><code>app/jobs/&lt;name&gt;.go</code>, a River job, registered above <code>bogie:jobs</code>; the first one on an app with no jobs adds them first, merged in like <code>app:update</code>.</td></tr>
+<tr><td><code>seed</code></td><td><code>NAME</code></td><td><code>db/seeds/&lt;name&gt;.go</code>, registered above <code>bogie:seeds</code> in <code>db/seeds/seeds.go</code>. Unlike a migration, <code>db seed</code> runs every seed every time: write it safe to run twice.</td></tr>
 <tr><td><code>authentication</code></td><td><code>SHAPE</code></td><td>A middleware on a route group, its config key with a development value written to the credentials, and a <code>WithX</code> group helper on the root <code>Server</code>. <code>SHAPE</code> is <code>secret</code> (the Rails app calls this service), <code>token</code> (bearer JWT a user presents) or <code>api_key</code> (keys for machine clients, with a table and <code>api_keys:create</code>).</td></tr>
 </table>
 </div>
-<p>Flags: <code>--pretend</code> reports without writing, <code>--force</code> overwrites a file that differs, <code>--skip-sqlc</code> skips the sqlc run. Attributes are <code>field:type</code>, with <code>:index</code> or <code>:uniq</code> after the type: <code>string text integer bigint boolean datetime uuid jsonb references</code>. A <code>references</code> field names the other model: <code>post:references</code> is <code>post_id</code>.</p>
+<p>Flags: <code>--pretend</code> reports without writing, <code>--force</code> overwrites a file that differs, <code>--skip-sqlc</code> skips the sqlc run. Attributes are <code>field:type</code>, with <code>:index</code> or <code>:uniq</code> after the type: <code>string text integer bigint boolean datetime uuid jsonb references</code>. A field with no <code>:type</code> defaults to <code>string</code>, as in Rails. A <code>references</code> field names the other model: <code>post:references</code> is <code>post_id</code>.</p>
 <p><code>bogie d GENERATOR NAME</code> removes what the generator of the same name created: its files, and for a controller the three lines that registered it. A namespaced controller's package goes too once it holds no controller; <code>bogie d authentication token</code> also reverses its three lines in <code>config/config.go</code>, leaving the development value harmless in the credentials file.</p>
 <p><code>api_key</code> registers a subcommand on the app's own binary, not on <code>bogie</code>: <code>bogie api_keys:create NAME</code> reaches it through the same proxy rule as <code>db:*</code>, any colon task <code>bogie</code> does not know itself is shorthand for the binary's own, so it runs <code>blog api_keys create NAME</code>.</p>
 
@@ -111,8 +112,8 @@
 <tr><td><code>blog db create</code></td><td>Creates the database this environment points at.</td></tr>
 <tr><td><code>blog db drop --yes</code></td><td>Drops it; refused in production.</td></tr>
 <tr><td><code>blog db prepare</code></td><td>Create if needed, migrate, seed.</td></tr>
-<tr><td><code>blog db seed</code></td><td>Applies pending seeds.</td></tr>
-<tr><td><code>blog db seed-down --yes</code></td><td>Rolls back the most recent seed.</td></tr>
+<tr><td><code>blog db seed</code></td><td>Runs every seed in <code>db/seeds</code>; each one runs again every time.</td></tr>
+<tr><td><code>blog routes</code></td><td>Every mounted route (development only).</td></tr>
 <tr><td><code>blog migrate status</code></td><td>Which migrations have run, which are pending.</td></tr>
 <tr><td><code>blog migrate version</code></td><td>The current schema version.</td></tr>
 <tr><td><code>blog migrate up</code></td><td>Applies every pending migration (also done at boot).</td></tr>
@@ -155,10 +156,8 @@
 <tr><td><code>make db-migrate-status</code></td><td>Which migrations have run, and which are pending.</td></tr>
 <tr><td><code>make db-version</code></td><td>The current schema version.</td></tr>
 <tr><td><code>make db-migrate-redo</code></td><td>Roll the last migration back and re-apply it.</td></tr>
-<tr><td><code>make db-seed</code></td><td>Apply pending seeds from <code>db/seeds</code>, through the binary.</td></tr>
-<tr><td><code>make db-seed-down</code></td><td>Roll back the most recent seed.</td></tr>
+<tr><td><code>make db-seed</code></td><td>Apply every seed in <code>db/seeds</code>, through the binary (safe to run again).</td></tr>
 <tr><td><code>make g_migration_&lt;name&gt;</code></td><td>Author a migration (<code>go tool goose</code>).</td></tr>
-<tr><td><code>make g_seed_&lt;name&gt;</code></td><td>Author a seed (<code>go tool goose</code>).</td></tr>
 </table>
 </div>
 </article>

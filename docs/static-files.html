@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Static files and error pages: Bogie</title>
+<meta name="description" content="public/ in a Bogie app: go:embedded files served below the router, index.html at /, robots.txt and favicons, and the mascot 404 and 500 pages.">
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="stylesheet" href="../fonts.css">
+<link rel="stylesheet" href="../style.css">
+<link rel="canonical" href="https://bogie-go.com/docs/static-files.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Bogie">
+<meta property="og:title" content="Static files and error pages: Bogie">
+<meta property="og:description" content="public/ in a Bogie app: go:embedded files served below the router, index.html at /, robots.txt and favicons, and the mascot 404 and 500 pages.">
+<meta property="og:url" content="https://bogie-go.com/docs/static-files.html">
+<meta property="og:image" content="https://bogie-go.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Static files and error pages: Bogie">
+<meta name="twitter:description" content="public/ in a Bogie app: go:embedded files served below the router, index.html at /, robots.txt and favicons, and the mascot 404 and 500 pages.">
+<meta name="twitter:image" content="https://bogie-go.com/og.png">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Static files and error pages", "description": "Serve files from public/, embedded in the binary, and the 404 and 500 pages.", "url": "https://bogie-go.com/docs/static-files.html", "dateModified": "2026-10-17", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "Static files and error pages", "item": "https://bogie-go.com/docs/static-files.html"}]}]}</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-MPVQ83E1Z9');
+</script>
+</head>
+<body>
+<!-- @header -->
+
+<!-- @docs-start -->
+<article>
+<p class="guide-eyebrow">{{SECTION}}</p>
+<h1>Static files and error pages</h1>
+<p>A Rails app serves <code>public/404.html</code>, <code>public/500.html</code> and <code>robots.txt</code> even in <code>--api</code> mode, because that happens below the router, not in a view. Bogie does the same with a <code>public/</code> folder that is <code>go:embed</code>ded into the binary, so a deployed container needs no files beside it. Since v0.2.7; <code>index.html</code> at <code>/</code> since v0.2.8.</p>
+
+<h2>What a new app has</h2>
+<pre><code>public/
+  public.go            //go:embed *.html images
+  404.html             any request nothing answered
+  500.html             a handler that panicked
+  images/              the mascot art the two pages use</code></pre>
+
+<h2>How a request reaches public/</h2>
+<p>Every real route wins first. A request no route matched goes through three handlers, mounted in <code>app/controllers/routes.go</code>:</p>
+<pre><code>r.NoRoute(s.staticFile, s.welcome, s.notFound)</code></pre>
+<ol>
+  <li><strong><code>staticFile</code></strong> looks the request path up in <code>public/</code> and, if a file is there, serves it as itself, with its content type from the extension. <code>/</code> means <code>public/index.html</code>.</li>
+  <li><strong><code>welcome</code></strong> answers <code>GET /</code> in development only, when nothing above did.</li>
+  <li><strong><code>notFound</code></strong> answers with <code>public/404.html</code> and status 404, always.</li>
+</ol>
+<p>A panicking handler gets <code>public/500.html</code> from <code>middlewares.Recover</code>, outside this chain. Edit either page freely; they are yours.</p>
+
+<h2>Adding a file</h2>
+<p>Drop it in <code>public/</code>, then widen the <code>go:embed</code> line in <code>public/public.go</code> so the binary carries it. Only what the pattern matches is embedded; anything else is a 404 even though it is on disk.</p>
+<pre><code>// public/public.go
+//go:embed *.html *.txt *.ico css images
+var Files embed.FS</code></pre>
+<p>With that line, <code>public/robots.txt</code> answers at <code>/robots.txt</code>, <code>public/favicon.ico</code> at <code>/favicon.ico</code>, and <code>public/css/app.css</code> at <code>/css/app.css</code>, in every environment. A directory named in the pattern brings everything under it.</p>
+
+<h2>A page at /</h2>
+<p>Add <code>public/index.html</code> (already matched by <code>*.html</code>) and <code>GET /</code> serves it in every environment, ahead of the development welcome page. A controller mounted at <code>/</code> still wins over both.</p>
+
+<h2>What it is not</h2>
+<ul>
+  <li><strong>Not an asset pipeline.</strong> Files are served as they are: no compiling, no fingerprinted names.</li>
+  <li><strong>Not for uploads.</strong> <code>public/</code> is fixed when the binary is built. Files users upload at runtime need storage of their own and a controller that serves them.</li>
+  <li><strong>Not a CDN.</strong> Embedded files carry no modification time, so no <code>Last-Modified</code> header is sent; put a cache or CDN in front if the files are large or hot.</li>
+</ul>
+
+<h2>Bringing it to an older app</h2>
+<p>Commit your work, then <code>bogie app:update</code>: it adds <code>public/</code> and <code>app/controllers/public.go</code>, and merges the updated <code>routes.go</code>, <code>welcome.go</code> and middlewares. See <a href="upgrading.html">Upgrading an app</a>.</p>
+</article>
+<!-- @docs-end -->
+
+<!-- @footer -->
+
+</body>
+</html>
