@@ -73,7 +73,7 @@ docker exec &lt;container&gt; blog migrate down --yes</code></pre>
 <p>Kamal's healthcheck points at <code>/healthz</code> rather than its own default <code>/up</code>, since this service has no such route and <code>/healthz</code> touches nothing and allocates nothing.</p>
 
 <h2>.kamal/secrets</h2>
-<p>What Kamal substitutes into <code>deploy.yml</code>'s <code>secret:</code> lists. Everything else lives in the encrypted credentials; only the decryption key stays on disk, gitignored, copied between machines by hand:</p>
+<p>What Kamal substitutes into the <code>secret:</code> lists in <code>deploy.yml</code>. Everything else lives in the encrypted credentials; only the decryption key stays on disk, gitignored, copied between machines by hand:</p>
 <pre><code>BLOG_MASTER_KEY=$(cat config/credentials/staging.key)
 KAMAL_REGISTRY_PASSWORD=$(go tool credentials get -e staging kamal.registry_password)</code></pre>
 <p><code>.kamal/secrets.production</code> is the same shape, reading <code>config/credentials/production.key</code> instead; Kamal picks whichever file matches the destination. <code>make credentials ENV=staging</code> makes the credentials file and its key the first time, before the first deploy to that environment can work; the service refuses to boot without a database URL in it.</p>
