@@ -55,7 +55,7 @@
   <li><strong><code>welcome</code></strong> answers <code>GET /</code> in development only, when nothing above did.</li>
   <li><strong><code>notFound</code></strong> answers with <code>public/404.html</code> and status 404, always.</li>
 </ol>
-<p>A panicking handler gets <code>public/500.html</code> from <code>middlewares.Recover</code>, outside this chain. Edit either page freely; they are yours.</p>
+<p>A panicking handler gets <code>public/500.html</code> from <code>middlewares.Recover</code>, outside this chain. Edit either page freely; they are yours. Both are HTML whatever the request asked for: a JSON client gets the page too, though a scaffolded controller's own errors, such as an unknown id, stay JSON.</p>
 
 <h2>Adding a file</h2>
 <p>A new app embeds only <code>*.html</code> and <code>images/</code>. Anything else, a stylesheet, a script, <code>robots.txt</code>, is a 404 even though it is on disk, until you drop it in <code>public/</code> and widen the <code>go:embed</code> line in <code>public/public.go</code> so the binary carries it. Only what the pattern matches is embedded.</p>
@@ -66,6 +66,7 @@ var Files embed.FS</code></pre>
 
 <h2>A page at /</h2>
 <p>Add <code>public/index.html</code> (already matched by <code>*.html</code>) and <code>GET /</code> serves it in every environment, ahead of the development welcome page. A controller mounted at <code>/</code> still wins over both.</p>
+<p>Files in <code>public/</code> are embedded, so a change shows only after a rebuild. In v0.2.8, live reload under <code>bogie server</code> watches <code>.go</code> and <code>.sql</code> files only: restart it after editing an HTML page.</p>
 
 <h2>What it is not</h2>
 <ul>
