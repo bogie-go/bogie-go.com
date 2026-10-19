@@ -21,7 +21,7 @@
 <meta name="twitter:title" content="From Rails: Bogie">
 <meta name="twitter:description" content="A dictionary: what each Rails thing is called here, where it lives, and what has no equivalent.">
 <meta name="twitter:image" content="https://bogie-go.com/og.png">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "From Rails", "description": "A dictionary: what each Rails thing is called here, where it lives, and what has no equivalent.", "url": "https://bogie-go.com/docs/from-rails.html", "dateModified": "2026-10-06", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "From Rails", "item": "https://bogie-go.com/docs/from-rails.html"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "From Rails", "description": "A dictionary: what each Rails thing is called here, where it lives, and what has no equivalent.", "url": "https://bogie-go.com/docs/from-rails.html", "dateModified": "2026-10-19", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "From Rails", "item": "https://bogie-go.com/docs/from-rails.html"}]}]}</script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
 <script>
@@ -47,7 +47,7 @@
 <div class="table-wrap">
 <table>
 <tr><th>Rails</th><th>Bogie</th><th>Notes</th></tr>
-<tr><td><code>rails new blog</code></td><td><code>bogie new blog</code></td><td><code>--jobs</code> adds River. API-only, Postgres-only; no <code>--api</code>, no <code>-d</code>.</td></tr>
+<tr><td><code>rails new blog</code></td><td><code>bogie new blog</code></td><td><code>--jobs</code> adds River; <code>--id=uuid</code> swaps the default bigint ids for uuids. API-only, Postgres-only; no <code>--api</code>, no <code>-d</code>.</td></tr>
 <tr><td><code>rails server</code>, <code>rails s</code></td><td><code>bogie server</code>, <code>bogie s</code></td><td>Migrates at boot, as a deployed container does. Reloads on save in development.</td></tr>
 <tr><td><code>bin/dev</code>, Spring</td><td>none; built into <code>bogie server</code> and <code>bogie worker</code></td><td>Save a file and Air rebuilds and restarts it; a new migration is picked up on the next boot too. Production runs the compiled binary, no watcher.</td></tr>
 <tr><td><code>rails g scaffold post title:string</code></td><td><code>bogie g scaffold post title:string</code></td><td>Model, views and a wired controller; no HTML.</td></tr>
@@ -65,7 +65,6 @@
 <tr><td><code>rails credentials:edit</code></td><td><code>bogie credentials:edit</code></td><td><code>-e production</code> for that environment's file and key.</td></tr>
 <tr><td><code>rails test</code></td><td><code>bogie test</code>, <code>bogie t</code></td><td><code>go test -race -cover ./...</code>; store tests need Postgres up.</td></tr>
 <tr><td><code>bin/ci</code></td><td><code>bin/ci</code></td><td>The whole pipeline, locally; green signs off with <code>gh signoff</code>.</td></tr>
-<tr><td><code>rails routes</code></td><td>none</td><td>Read <code>app/controllers/routes.go</code> and each <code>SetupRoutes</code>; it is one screen.</td></tr>
 <tr><td><code>rails console</code></td><td>none</td><td>No REPL. <code>make psql</code> opens the database; a throwaway <code>_test.go</code> is the Go way.</td></tr>
 <tr><td><code>rails dbconsole</code></td><td><code>make psql</code></td><td></td></tr>
 <tr><td><code>bundle install</code></td><td><code>go mod download</code></td><td><code>go mod tidy</code> is <code>bundle</code> after a Gemfile edit.</td></tr>
@@ -110,7 +109,7 @@
 <h2>A model, in three places</h2>
 <p>Rails's <code>Post</code> is one class that is a table, a type and a query builder. Here that is three files, each with one job:</p>
 <ul>
-  <li><strong><code>app/domain/post.go</code></strong> is the type and its <code>Validate</code>. It imports nothing third-party (rule 3). Ids are strings here; the store turns them into uuids.</li>
+  <li><strong><code>app/domain/post.go</code></strong> is the type and its <code>Validate</code>. It imports nothing third-party (rule 3). Ids are <code>int64</code> under the default <code>bigint</code> scheme, as in Rails, or strings in an app made with <code>--id=uuid</code>. See <a href="models.html#ids">Id schemes</a>.</li>
   <li><strong><code>db/queries/posts.sql</code></strong> is the SQL, by name: <code>GetPost</code>, <code>ListPosts</code>, <code>CreatePost</code>. sqlc compiles it into <code>app/models/posts.sql.go</code>, and a query that names a column that does not exist fails at <code>make sqlc</code>, not in production.</li>
   <li><strong><code>app/models/posts.go</code></strong> is the store: <code>CreatePost</code>, <code>GetPost</code> and so on, converting between the domain type and sqlc's row type, mapping "no rows" to <code>domain.ErrNotFound</code>, and running <code>Validate</code> before create and update.</li>
 </ul>

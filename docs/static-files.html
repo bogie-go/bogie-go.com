@@ -21,7 +21,7 @@
 <meta name="twitter:title" content="Static files and error pages: Bogie">
 <meta name="twitter:description" content="public/ in a Bogie app: go:embedded files served below the router, index.html at /, robots.txt and favicons, and the mascot 404 and 500 pages.">
 <meta name="twitter:image" content="https://bogie-go.com/og.png">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Static files and error pages", "description": "Serve files from public/, embedded in the binary, and the 404 and 500 pages.", "url": "https://bogie-go.com/docs/static-files.html", "dateModified": "2026-10-17", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "Static files and error pages", "item": "https://bogie-go.com/docs/static-files.html"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Static files and error pages", "description": "Serve files from public/, embedded in the binary, and the 404 and 500 pages.", "url": "https://bogie-go.com/docs/static-files.html", "dateModified": "2026-10-19", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "Static files and error pages", "item": "https://bogie-go.com/docs/static-files.html"}]}]}</script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
 <script>
@@ -58,7 +58,7 @@
 <p>A panicking handler gets <code>public/500.html</code> from <code>middlewares.Recover</code>, outside this chain. Edit either page freely; they are yours.</p>
 
 <h2>Adding a file</h2>
-<p>Drop it in <code>public/</code>, then widen the <code>go:embed</code> line in <code>public/public.go</code> so the binary carries it. Only what the pattern matches is embedded; anything else is a 404 even though it is on disk.</p>
+<p>A new app embeds only <code>*.html</code> and <code>images/</code>. Anything else, a stylesheet, a script, <code>robots.txt</code>, is a 404 even though it is on disk, until you drop it in <code>public/</code> and widen the <code>go:embed</code> line in <code>public/public.go</code> so the binary carries it. Only what the pattern matches is embedded.</p>
 <pre><code>// public/public.go
 //go:embed *.html *.txt *.ico css images
 var Files embed.FS</code></pre>

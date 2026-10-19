@@ -21,7 +21,7 @@
 <meta name="twitter:title" content="Getting started: Bogie">
 <meta name="twitter:description" content="Install Bogie, generate a new service, and get it migrating, seeded and serving.">
 <meta name="twitter:image" content="https://bogie-go.com/og.png">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Getting started", "description": "Install Bogie, generate a new service, and get it migrating, seeded and serving.", "url": "https://bogie-go.com/docs/getting-started.html", "dateModified": "2026-10-06", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "Getting started", "item": "https://bogie-go.com/docs/getting-started.html"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Getting started", "description": "Install Bogie, generate a new service, and get it migrating, seeded and serving.", "url": "https://bogie-go.com/docs/getting-started.html", "dateModified": "2026-10-19", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "Getting started", "item": "https://bogie-go.com/docs/getting-started.html"}]}]}</script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
 <script>
@@ -47,9 +47,10 @@
 
 <h2>Generate a service</h2>
 <pre><code>bogie new blog</code></pre>
-<p>This is <code>rails new</code>: it writes an API-only, Postgres-only Go service, runs <code>go mod tidy</code>, and makes the development credentials file. Two flags change what it writes:</p>
+<p>This is <code>rails new</code>: it writes an API-only, Postgres-only Go service, runs <code>go mod tidy</code>, and makes the development credentials file. Three flags change what it writes:</p>
 <ul>
   <li><code>--module=PATH</code> sets the Go module path, if it should not be the app's name.</li>
+  <li><code>--id=uuid</code> makes every primary key a uuid instead of the default <code>bigint</code>, Rails's own choice. It is chosen once for the whole app and recorded in <code>bogie.toml</code>. See <a href="models.html#ids">Id schemes</a>.</li>
   <li><code>--jobs</code> adds River on the same Postgres: a worker role, <code>app/jobs</code>, and <code>g job</code>. See <a href="jobs.html">Background jobs</a>.</li>
 </ul>
 
