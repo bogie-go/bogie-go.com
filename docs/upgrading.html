@@ -53,6 +53,7 @@ bogie app:update</code></pre>
   <li>A file you never touched updates silently.</li>
   <li>A file you edited where the template did not change merges cleanly.</li>
   <li>Only a real overlap leaves conflict markers, and the report names those files.</li>
+  <li>A file the new version no longer generates is reported <code>retired</code> and left as it is; delete it yourself once nothing uses it.</li>
 </ul>
 <p>Files the templates never produced, everything <code>bogie g</code> and you wrote, are not touched. Afterwards <code>bogie.toml</code> records the new version, <code>go mod tidy</code> runs, and <code>bogie doctor</code> checks the markers. Because the tree was clean, the whole upgrade is one reviewable diff.</p>
 

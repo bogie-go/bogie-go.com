@@ -54,6 +54,7 @@ bogie version</code></pre>
   <li>New apps get <code>bigint</code> ids by default (an auto-incrementing <code>bigserial</code>), as Rails does, instead of uuid. <code>bogie new NAME --id=uuid</code> keeps uuids. The choice is app-wide, recorded in <code>bogie.toml</code>, and every later generator and <code>app:update</code> follows it. See <a href="models.html#ids">Id schemes</a>.</li>
   <li>Existing apps have no <code>id</code> line in <code>bogie.toml</code>, which reads as uuid, so they stay on uuid and nothing changes. Leave that line out rather than adding <code>id = "bigint"</code>.</li>
   <li>A scaffolded <code>Update</code> now loads the record first and reuses its id, instead of building the id from the URL string. New scaffolds get it; an existing one keeps working under uuid as it is.</li>
+  <li>The generated <code>routes_test.go</code> no longer fails golangci-lint (a comment read as a malformed <code>go:embed</code> directive).</li>
 </ul>
 </section>
 <section class="release" id="v0.2.8">
