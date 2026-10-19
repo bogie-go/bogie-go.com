@@ -8,9 +8,14 @@ Pages are plain HTML with a few markers that this script fills in:
 
 The version is the latest tag from the Go module proxy. If that fetch fails,
 BOGIE_VERSION or the last known version in FALLBACK_VERSION is used.
+
+sitemap.xml's <lastmod> for each page is the date of the last git commit that
+touched the page's source file. Without git (or history), the date already
+written in sitemap.xml is kept.
+
 Standard library only:  python3 build.py   (then serve _site/)
 """
-import html, json, os, shutil, sys, urllib.request
+import html, json, os, re, shutil, subprocess, sys, urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
@@ -53,6 +58,27 @@ def latest_version():
     except Exception as e:  # network, JSON, anything: never fail the build
         print(f"warning: version fetch failed ({e}); using {FALLBACK_VERSION}", file=sys.stderr)
     return FALLBACK_VERSION
+
+
+def git_date(rel):
+    """YYYY-MM-DD of the last commit touching rel, or None without git/history."""
+    try:
+        out = subprocess.run(["git", "log", "-1", "--format=%cs", "--", str(rel)],
+                             cwd=ROOT, capture_output=True, text=True, timeout=10)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    d = out.stdout.strip()
+    return d if out.returncode == 0 and re.fullmatch(r"\d{4}-\d{2}-\d{2}", d) else None
+
+
+def sitemap(text):
+    """Set each <url>'s <lastmod> to its source file's last commit date."""
+    def fix(m):
+        path = m.group(1).split("bogie-go.com", 1)[-1].lstrip("/")
+        src = path + "index.html" if path == "" or path.endswith("/") else path
+        d = git_date(src) if (ROOT / src).is_file() else None
+        return m.group(0) if not d else re.sub(r"<lastmod>[^<]*</lastmod>", f"<lastmod>{d}</lastmod>", m.group(0))
+    return re.sub(r"<url><loc>([^<]+)</loc>.*?</url>", fix, text)
 
 
 def sidebar(current):
@@ -111,6 +137,8 @@ def main():
             if left:
                 sys.exit(f"error: unfilled {left} in {rel}")
             dst.write_text(out)
+        elif rel == Path("sitemap.xml"):
+            dst.write_text(sitemap(src.read_text()))
         else:
             shutil.copy2(src, dst)
     print(f"built {OUT.relative_to(ROOT)}/ with Bogie {version}")
