@@ -10,8 +10,9 @@ The version is the latest tag from the Go module proxy. If that fetch fails,
 BOGIE_VERSION or the last known version in FALLBACK_VERSION is used.
 
 sitemap.xml's <lastmod> for each page is the date of the last git commit that
-touched the page's source file. Without git (or history), the date already
-written in sitemap.xml is kept.
+touched the page's source file, and so is each page's JSON-LD "dateModified".
+Without git (or history), the dates already written in sitemap.xml and in the
+page are kept.
 
 Standard library only:  python3 build.py   (then serve _site/)
 """
@@ -109,6 +110,9 @@ def prevnext(current):
 
 
 def render(path, text, inc, version):
+    d = git_date(path.relative_to(ROOT))
+    if d:  # same source as the sitemap's <lastmod>; the typed date is the fallback
+        text = re.sub(r'"dateModified": "\d{4}-\d{2}-\d{2}"', f'"dateModified": "{d}"', text)
     text = text.replace("<!-- @header -->", inc["header"]).replace("<!-- @footer -->", inc["footer"])
     if "<!-- @docs-start -->" in text:
         slug = path.stem
