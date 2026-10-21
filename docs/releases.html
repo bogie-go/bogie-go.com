@@ -41,6 +41,16 @@
 <p>What each tagged release added or changed, newest first, in plain words. Each version links to its GitHub release, where the full notes and the commit list live. Changes marked <span class="badge-breaking">Breaking</span> can stop an existing app or setup working until you act; each one says what to do.</p>
 <pre><code>go install github.com/bogie-go/bogie@latest   # {{VERSION}} as of this build
 bogie version</code></pre>
+<section class="release" id="v0.2.11">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.2.11">v0.2.11</a> <span class="release-date">20 Oct 2026</span></h2>
+<ul>
+  <li>A brand-new app passes <code>bin/ci</code> again: <code>app/models/id.go</code> is gofmt-clean and <code>parseID</code> is used, which v0.2.9 and v0.2.10 apps failed before their first model.</li>
+  <li>Adding <code>public/index.html</code> no longer fails the generated <code>routes_test.go</code>; a new test checks it is served at <code>/</code>.</li>
+  <li><code>bogie server</code> live-reloads on <code>.html</code> edits. See <a href="static-files.html">Static files and error pages</a>.</li>
+  <li><code>Create</code> and <code>Update</code> on a model with a <code>:uniq</code> column return <code>domain.ErrInvalid</code> ("email is already taken") on a duplicate, not a raw database error and a 500.</li>
+  <li>Existing apps: commit, then <code>bogie app:update</code> for the template fixes; re-run <code>g model</code> for a model with a <code>:uniq</code> column.</li>
+</ul>
+</section>
 <section class="release" id="v0.2.10">
 <h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.2.10">v0.2.10</a> <span class="release-date">18 Oct 2026</span></h2>
 <ul>
