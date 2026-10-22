@@ -41,6 +41,14 @@
 <p>What each tagged release added or changed, newest first, in plain words. Each version links to its GitHub release, where the full notes and the commit list live. Changes marked <span class="badge-breaking">Breaking</span> can stop an existing app or setup working until you act; each one says what to do.</p>
 <pre><code>go install github.com/bogie-go/bogie@latest   # {{VERSION}} as of this build
 bogie version</code></pre>
+<section class="release" id="v0.2.12">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.2.12">v0.2.12</a> <span class="release-date">21 Oct 2026</span></h2>
+<ul>
+  <li>Every new app's <code>app/models/store.go</code> has a <code>withTx</code> helper: it begins a transaction, runs your function against a <code>*Queries</code> bound to it, and commits on success or rolls back on error. Call it from a hand-written method in <code>&lt;table&gt;_extra.go</code> for writes that span tables. The app's <code>AGENTS.md</code> has a new "Run a transaction" section.</li>
+  <li>Removed dead code (<code>IDScheme.idSQLCType</code>) that golangci-lint flagged.</li>
+  <li>Existing apps: commit, then <code>bogie app:update</code> to get <code>withTx</code>.</li>
+</ul>
+</section>
 <section class="release" id="v0.2.11">
 <h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.2.11">v0.2.11</a> <span class="release-date">20 Oct 2026</span></h2>
 <ul>
