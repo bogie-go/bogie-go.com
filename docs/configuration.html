@@ -42,20 +42,20 @@
 <p>Two sources, in order: an encrypted credentials file if one exists, then environment variables, which always win. No globals, no <code>init()</code>: <code>config.Load()</code> returns a struct once, at startup, and every field is validated then, so a missing setting is a refusal to boot rather than a nil a request trips over an hour later.</p>
 
 <h2>The environment variables</h2>
-<p>Named after the app: a service called <code>blog</code> reads <code>BLOG_*</code>.</p>
+<p>Since v0.3.0, a setting's variable is its path in the credentials file, upper-cased, with no app prefix: <code>server.addr</code> is <code>SERVER_ADDR</code>, <code>database.url</code> is <code>DATABASE_URL</code>. Only the variables that control the process itself keep the app's name: a service called <code>blog</code> reads <code>BLOG_ENV</code>, <code>BLOG_CREDENTIALS</code>, <code>BLOG_MASTER_KEY</code>, <code>BLOG_CONFIG_DIR</code> and <code>BLOG_TEST_DATABASE_URL</code>.</p>
 <div class="table-wrap">
 <table>
 <tr><th>Variable</th><th>What it selects</th></tr>
 <tr><td><code>&lt;NAME&gt;_ENV</code></td><td>A closed set: <code>development</code>, <code>test</code> or <code>production</code>. Selects behaviour.</td></tr>
 <tr><td><code>&lt;NAME&gt;_CREDENTIALS</code></td><td>Any name; selects which credentials file to read. Defaults to <code>&lt;NAME&gt;_ENV</code>.</td></tr>
 <tr><td><code>&lt;NAME&gt;_MASTER_KEY</code></td><td>The decryption key, handed in by a deployment so no key file has to exist in the image.</td></tr>
-<tr><td><code>&lt;NAME&gt;_ADDR</code></td><td>The listen address, default <code>:8080</code>.</td></tr>
-<tr><td><code>&lt;NAME&gt;_DATABASE_URL</code></td><td>The database. Development and test default to the compose stack on :5440; production has no default and must be given.</td></tr>
-<tr><td><code>&lt;NAME&gt;_LOG_LEVEL</code></td><td><code>debug</code>, <code>info</code>, <code>warn</code> or <code>error</code>.</td></tr>
-<tr><td><code>&lt;NAME&gt;_MIGRATE_AT_BOOT</code></td><td><code>true</code> by default; set to <code>false</code> only for a deployment that migrates from one place on purpose.</td></tr>
+<tr><td><code>SERVER_ADDR</code></td><td>The listen address, default <code>:8080</code>.</td></tr>
+<tr><td><code>DATABASE_URL</code></td><td>The database. Development defaults to the compose stack on :5440; production has no default and must be given. Tests read only <code>&lt;NAME&gt;_TEST_DATABASE_URL</code>.</td></tr>
+<tr><td><code>SERVER_LOG_LEVEL</code></td><td><code>debug</code>, <code>info</code>, <code>warn</code> or <code>error</code>.</td></tr>
+<tr><td><code>DATABASE_MIGRATE_AT_BOOT</code></td><td><code>true</code> by default; set to <code>false</code> only for a deployment that migrates from one place on purpose.</td></tr>
 </table>
 </div>
-<p>(There is also <code>&lt;NAME&gt;_SHUTDOWN_GRACE</code>, how long the server waits for in-flight requests on <code>SIGTERM</code>, and <code>&lt;NAME&gt;_CONFIG_DIR</code> for running the binary from somewhere other than the app root. Both have sensible defaults.)</p>
+<p>(There is also <code>SERVER_SHUTDOWN_GRACE</code>, how long the server waits for in-flight requests on <code>SIGTERM</code>, and <code>&lt;NAME&gt;_CONFIG_DIR</code> for running the binary from somewhere other than the app root. Both have sensible defaults.)</p>
 
 <p><code>&lt;NAME&gt;_ENV</code> and <code>&lt;NAME&gt;_CREDENTIALS</code> are deliberately separate. <code>&lt;NAME&gt;_ENV</code> is a closed set with no "staging" member on purpose, because every behavioural switch in the app reads it, and a typo there should fail loudly rather than fall through to production behaviour silently. A staging deployment is:</p>
 <pre><code>BLOG_ENV=production BLOG_CREDENTIALS=staging</code></pre>
@@ -66,7 +66,21 @@
 <pre><code>config/credentials.yml.enc            + config/master.key              development
 config/credentials/staging.yml.enc    + config/credentials/staging.key
 config/credentials/production.yml.enc + config/credentials/production.key</code></pre>
-<p>Each file is flat, one section named after the app, whose keys give the environment-variable names: <code>blog.addr</code> is overridden by <code>BLOG_ADDR</code>, so a value can move between the file and the environment without renaming anything.</p>
+<p>Each file is groups at the top level, as Rails credentials are, with no section named after the app. A key's path gives its environment variable: <code>server.addr</code> is overridden by <code>SERVER_ADDR</code>, so a value can move between the file and the environment without renaming anything.</p>
+<pre><code>database:
+  url: postgres://postgres:postgres@localhost:5440/blog_development?sslmode=disable
+server:
+  addr: ":8080"
+  log_level: debug</code></pre>
+<p>The bundled Postgres port, 5440, is written into this file and into the defaults in <code>config/config.go</code>. Changing the port in <code>docker-compose.yml</code> alone is not enough: change <code>database.url</code> too (or set <code>DATABASE_URL</code> and <code>&lt;NAME&gt;_TEST_DATABASE_URL</code>), or the app keeps dialing 5440.</p>
+
+<h2>Adding settings: bogie g config</h2>
+<p>Since v0.3.0, <code>bogie g config</code> adds your own settings, typed and validated at boot:</p>
+<pre><code>bogie g config smtp address:req port:int=1025 password:secret   # a group: config/smtp.go
+bogie g config database pool_size:int=10                         # keys into an app group
+bogie g config hello=world                                       # a flat top-level key
+bogie d config smtp                                               # remove a group</code></pre>
+<p>Types are <code>string</code> (the default), <code>int</code>, <code>bool</code> (<code>yes</code>/<code>no</code>/<code>on</code>/<code>off</code>) and <code>duration</code>; flags are <code>req</code> and <code>secret</code>. A secret gets no development value: set it with <code>make credentials</code>. New top-level entries go in alphabetical order; keys in a group stay in the order typed. The app's own <code>server</code> and <code>database</code> groups take new keys but are never created or removed. Read a value as <code>s.Config.Smtp.Address</code>; its variable is <code>SMTP_ADDRESS</code>.</p>
 <pre><code>bogie credentials:edit
 bogie credentials:edit -e production
 make credentials ENV=staging</code></pre>

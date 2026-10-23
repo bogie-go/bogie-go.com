@@ -41,13 +41,13 @@
 <p>Docker only runs the bundled Postgres on port 5440; the app itself just needs a Postgres it can reach. To use one you already run, point the app at it. The role needs <code>CREATEDB</code>, or create the databases first.</p>
 
 <h2>Development</h2>
-<pre><code>export BLOG_DATABASE_URL='postgres://USER:PASSWORD@localhost:5432/blog_development?sslmode=disable'
+<pre><code>export DATABASE_URL='postgres://USER:PASSWORD@localhost:5432/blog_development?sslmode=disable'
 bogie db:prepare
 bogie s</code></pre>
-<p>To keep the URL out of your shell, set <code>database_url</code> with <code>bogie credentials:edit</code> instead. See <a href="configuration.html">Configuration and credentials</a>.</p>
+<p>To keep the URL out of your shell, set <code>database.url</code> with <code>bogie credentials:edit</code> instead. See <a href="configuration.html">Configuration and credentials</a>.</p>
 
 <h2>Tests</h2>
-<p>Tests never read the credentials or <code>BLOG_DATABASE_URL</code>, so a test run can never truncate development data. They take their own URL:</p>
+<p>Tests never read the credentials or <code>DATABASE_URL</code>, so a test run can never truncate development data. They take their own URL:</p>
 <pre><code>export BLOG_TEST_DATABASE_URL='postgres://USER:PASSWORD@localhost:5432/blog_test?sslmode=disable'
 BLOG_ENV=test bogie db:prepare
 bogie test</code></pre>

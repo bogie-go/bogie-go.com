@@ -41,6 +41,36 @@
 <p>What each tagged release added or changed, newest first, in plain words. Each version links to its GitHub release, where the full notes and the commit list live. Changes marked <span class="badge-breaking">Breaking</span> can stop an existing app or setup working until you act; each one says what to do.</p>
 <pre><code>go install github.com/bogie-go/bogie@latest   # {{VERSION}} as of this build
 bogie version</code></pre>
+<section class="release" id="v0.3.2">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.3.2">v0.3.2</a> <span class="release-date">22 Oct 2026</span></h2>
+<ul>
+  <li><code>bogie g config database username=xxx password=yyy</code> adds keys to the app's own <code>server</code> and <code>database</code> groups. Those groups are never created or removed: <code>bogie d config database</code> is refused.</li>
+  <li>Values are written bare when YAML reads them as the string they are (<code>username: xxx</code>) and quoted otherwise; a <code>bool</code> key takes <code>yes</code>/<code>no</code>/<code>on</code>/<code>off</code>.</li>
+</ul>
+</section>
+<section class="release" id="v0.3.1">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.3.1">v0.3.1</a> <span class="release-date">22 Oct 2026</span></h2>
+<ul>
+  <li><code>bogie g config hello=world</code> (or <code>retries:int=3</code>) adds a flat top-level key, a field directly on <code>Config</code>, overridden by <code>HELLO</code>.</li>
+  <li>New top-level entries are inserted in alphabetical order in both the credentials file and the <code>Config</code> struct; keys inside a group keep the order typed.</li>
+</ul>
+</section>
+<section class="release" id="v0.3.0">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.3.0">v0.3.0</a> <span class="release-date">22 Oct 2026</span></h2>
+<ul>
+  <li>New: <code>bogie g config GROUP key[:type][:flag][=value] ...</code> adds a typed group to the credentials file, a struct in <code>config/&lt;group&gt;.go</code>; <code>bogie d config GROUP</code> removes it. Types <code>string</code>, <code>int</code>, <code>bool</code>, <code>duration</code>; flags <code>req</code>, <code>secret</code>. See <a href="configuration.html">Configuration</a>.</li>
+  <li>The credentials file is nested groups (<code>server:</code>, <code>database:</code>, <code>token:</code>), with no section named after the app.</li>
+  <li><code>g authentication</code> keeps its secret in a group: <code>token.secret</code>, <code>control.secret</code>.</li>
+</ul>
+<div class="breaking"><p><span class="badge-breaking">Breaking</span> Setting variables lose the app prefix: <code>BLOG_DATABASE_URL</code> is now <code>DATABASE_URL</code>, <code>BLOG_ADDR</code> is <code>SERVER_ADDR</code>, <code>BLOG_TOKEN_SECRET</code> is <code>TOKEN_SECRET</code>. Only <code>BLOG_ENV</code>, <code>BLOG_CREDENTIALS</code>, <code>BLOG_MASTER_KEY</code>, <code>BLOG_CONFIG_DIR</code> and <code>BLOG_TEST_DATABASE_URL</code> keep it. <strong>What to do:</strong> for an existing app, rename those variables in your shell, CI and deploy config, and move each credentials file from the flat <code>blog:</code> section into groups with <code>bogie credentials:edit</code> (and <code>-e production</code>). See <a href="upgrading.html">Upgrading an app</a>.</p></div>
+</section>
+<section class="release" id="v0.2.13">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.2.13">v0.2.13</a> <span class="release-date">22 Oct 2026</span></h2>
+<ul>
+  <li>Deleting a row something else still references now returns <code>domain.ErrInvalid</code> ("product is still in use"), so a controller answers 422 instead of a raw foreign-key error and a 500.</li>
+  <li>Existing apps: re-run <code>g model</code> to get the new <code>Delete</code>.</li>
+</ul>
+</section>
 <section class="release" id="v0.2.12">
 <h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.2.12">v0.2.12</a> <span class="release-date">21 Oct 2026</span></h2>
 <ul>
