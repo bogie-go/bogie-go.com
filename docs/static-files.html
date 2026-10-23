@@ -66,7 +66,7 @@ var Files embed.FS</code></pre>
 
 <h2>A page at /</h2>
 <p>Add <code>public/index.html</code> (already matched by <code>*.html</code>) and <code>GET /</code> serves it in every environment, ahead of the development welcome page. A controller mounted at <code>/</code> still wins over both.</p>
-<p>Files in <code>public/</code> are embedded, so a change shows only after a rebuild. Through v0.2.10, live reload under <code>bogie server</code> watches <code>.go</code> and <code>.sql</code> files only: restart it after editing an HTML page.</p>
+<p>Files in <code>public/</code> are embedded, so a change shows only after a rebuild. Since v0.2.11, live reload under <code>bogie server</code> watches <code>.html</code> as well as <code>.go</code> and <code>.sql</code>, so saving a page rebuilds it. An app made earlier gets this from <code>bogie app:update</code> (it changes <code>.air.toml</code>); until then, restart the server after editing an HTML page.</p>
 
 <h2>What it is not</h2>
 <ul>

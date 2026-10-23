@@ -91,9 +91,16 @@ bogie server</code></pre>
 <p><code>make up</code> starts Postgres under Docker Compose on port 5440 and waits until it answers. <code>bogie db:prepare</code> is <code>rails db:prepare</code>: create the database if it does not exist, migrate, seed. <code>bogie server</code> (or <code>bogie s</code>) runs the HTTP server; it migrates at boot, the way a deployed container does. In development it also runs under Air, so saving a file rebuilds and restarts it; since migrations are embedded in the binary and applied at boot, a new one is picked up on the next reload too. <code>bogie worker</code> reloads the same way, to its own binary, so the two run side by side in two terminals. Production runs the compiled binary, untouched; <code>make server</code> and <code>make worker</code> are the plain, one-boot equivalents.</p>
 <p>Visit <code>/</code> in development for a welcome page with the environment, the listen address and the Go version, and <code>GET /healthz</code> for the plain text a load balancer checks. The welcome page disappears the moment any controller claims <code>/</code>, or you add a <code>public/index.html</code>; in every other environment <code>/</code> answers with <code>public/404.html</code> until something is there. <code>bogie routes</code> lists what is actually mounted. See <a href="static-files.html">Static files and error pages</a>.</p>
 
+<h2>Run the tests</h2>
+<pre><code>BLOG_ENV=test bogie db:prepare   # once: the prefix is the app name, upper-cased
+bogie test</code></pre>
+<p>Tests use their own database, <code>blog_test</code>, so your development data survives a test run. <code>bogie db:prepare</code> on its own prepares only the development database, and <code>bogie test</code> without the test database fails with a hint to run the line above. <code>bin/ci</code> rebuilds the test database itself. See <a href="testing.html">Testing and CI</a>.</p>
+
 <h2>Check the app is sound</h2>
 <pre><code>bin/ci</code></pre>
 <p>The whole pipeline, run on the machine you already have: it rebuilds the test database from the migrations, rolls them down and back up, checks the generated models are current, runs gofmt, vet, golangci-lint, the build, and the test suite. A green run on a clean tree signs the commit off with <code>gh signoff</code>, if that extension is installed.</p>
+<p><code>bin/ci</code> needs golangci-lint v2, which Go does not bring with it; without it the lint step fails with the install line:</p>
+<pre><code>go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest</code></pre>
 <p><code>bogie doctor</code> is worth running any time the app feels off: it checks every marker the generators write is intact exactly once, that the pinned tools are still in <code>go.mod</code>, that the layout files generators depend on exist, and that every controller is both constructed and mounted. See <a href="testing.html">Testing and CI</a> for what each step of <code>bin/ci</code> does.</p>
 </article>
 <!-- @docs-end -->
