@@ -60,6 +60,33 @@ bogie app:update</code></pre>
 <h2>What it does not carry</h2>
 <p>Only files the tool templates into an app. A change inside Bogie itself, such as v0.2.4's <code>string</code> now being <code>varchar</code>, affects what generators write from then on and leaves existing migrations alone. A change in shape, such as v0.2.6's move from SQL seeds to Go seeds, brings in the new layout but does not translate content: port old seeds by hand first. Each <a href="https://github.com/bogie-go/bogie/releases">release note</a> says which kind it is.</p>
 <p>One setting is never changed for you: the id scheme. An app made before v0.2.9 has no <code>id</code> line in <code>bogie.toml</code>, and <code>app:update</code> reads that as <code>uuid</code>, so the app keeps uuid ids after upgrading. See <a href="models.html#ids">Id schemes</a>.</p>
+<h2 id="v0-3">Moving an app from v0.2 to v0.3</h2>
+<p>v0.3.0 changed two things <code>app:update</code> cannot do for you, because the files involved are yours: the encrypted credentials and the variables you set in your shell, CI and deploy config. Until you move them, the app still builds and boots, and <strong>quietly ignores the old settings</strong>: a key left in the old flat section is never read, and an old <code>BLOG_DATABASE_URL</code> is not a variable anything reads any more, so development falls back to the bundled database on :5440 and production refuses to start for lack of a URL.</p>
+<ol>
+<li>Rename the variables, in your shell, CI and deploy config (<code>blog</code> stands for your app's name):
+<div class="table-wrap">
+<table>
+<tr><th>v0.2</th><th>v0.3</th></tr>
+<tr><td><code>BLOG_DATABASE_URL</code></td><td><code>DATABASE_URL</code></td></tr>
+<tr><td><code>BLOG_MIGRATE_AT_BOOT</code></td><td><code>DATABASE_MIGRATE_AT_BOOT</code></td></tr>
+<tr><td><code>BLOG_ADDR</code></td><td><code>SERVER_ADDR</code></td></tr>
+<tr><td><code>BLOG_LOG_LEVEL</code></td><td><code>SERVER_LOG_LEVEL</code></td></tr>
+<tr><td><code>BLOG_SHUTDOWN_GRACE</code></td><td><code>SERVER_SHUTDOWN_GRACE</code></td></tr>
+</table>
+</div>
+<code>BLOG_ENV</code>, <code>BLOG_CREDENTIALS</code>, <code>BLOG_MASTER_KEY</code>, <code>BLOG_CONFIG_DIR</code> and <code>BLOG_TEST_DATABASE_URL</code> keep the app's name.</li>
+<li>Restructure each credentials file (<code>bogie credentials:edit</code>, and <code>-e production</code> for the others) from the flat section named after the app into groups:
+<pre><code># v0.2                              # v0.3
+blog:                               server:
+  addr: ":8080"                       addr: ":8080"
+  log_level: debug                    log_level: debug
+  database_url: postgres://...      database:
+                                      url: postgres://...</code></pre>
+<code>bogie credentials:get database.url</code> reads one key back, and <code>bogie g config</code> adds your own keys from here on.</li>
+<li>If <code>go build</code> then says <code>undefined: credentials.ApplyEnvOverrides</code>, the app still pins the old <code>credentials</code> module (v0.3.2 and earlier did not raise it). Run <code>go get github.com/bogie-go/credentials@v1.6.0</code> and commit the result.</li>
+</ol>
+<p>The <a href="releases.html">release notes</a> list every rename; <a href="configuration.html">Configuration</a> describes the new layout.</p>
+
 </article>
 <!-- @docs-end -->
 
