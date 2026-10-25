@@ -52,6 +52,7 @@
      updated  Makefile
      updated  app/application.go
       create  app/jobs/jobs.go
+      create  app/jobs/jobs_suite_test.go
       create  app/jobs/jobs_test.go
      updated  app/models/store.go
      updated  app/services/migrate/migrate.go
@@ -59,6 +60,8 @@
      updated  config/deploy.production.yml
      updated  config/deploy.yml
      updated  main.go
+     updated  test/testapp/testapp.go
+     updated  test/testdb/testdb.go
       insert  main.go: "worker": runWorker,
       insert  app/application.go: import "blog/app/jobs"
      updated  bogie.toml: jobs = true

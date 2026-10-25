@@ -86,6 +86,20 @@ blog:                               server:
 <li>If <code>go build</code> then says <code>undefined: credentials.ApplyEnvOverrides</code>, the app still pins the old <code>credentials</code> module (v0.3.2 and earlier did not raise it). Run <code>go get github.com/bogie-go/credentials@v1.6.0</code> and commit the result.</li>
 </ol>
 <p>The <a href="releases.html">release notes</a> list every rename; <a href="configuration.html">Configuration</a> describes the new layout.</p>
+<h2 id="v0-4">Moving an app from v0.3 to v0.4</h2>
+<p>v0.4.0 and v0.4.1 change how a generated app tests: a <code>test/</code> folder for what tests share, and Ginkgo and Gomega specs in every package. There's nothing to rename and no settings move, so <code>app:update</code> does most of it. Commit, then run <code>bogie app:update --pretend</code> to see the plan, then <code>bogie app:update</code>. It:</p>
+<ul>
+  <li><strong>Adds</strong> a <code>&lt;pkg&gt;_suite_test.go</code> in <code>app/controllers</code>, <code>app/models</code>, <code>app/middlewares</code>, <code>app/services/database</code> and <code>config</code>, the <code>export_test.go</code> files, and the whole <code>test/</code> tree (<code>testdb</code>, <code>testapp</code>, <code>factories</code>, <code>requests</code>).</li>
+  <li><strong>Updates</strong> the scaffold's own tests (<code>routes_test.go</code>, <code>config_test.go</code>, <code>database_test.go</code>) to Ginkgo, plus <code>bin/ci</code>, the <code>Makefile</code>, <code>.golangci.yml</code> and <code>AGENTS.md</code>. <code>go test</code> becomes <code>go test -p 1</code>, because the packages share one test database.</li>
+  <li><strong>Runs <code>go mod tidy</code></strong>, which adds <code>github.com/onsi/ginkgo/v2</code> and <code>github.com/onsi/gomega</code> to <code>go.mod</code> and <code>go.sum</code>.</li>
+</ul>
+<p>What it leaves for you:</p>
+<ol>
+<li><strong>Tests generators wrote earlier stay as they are.</strong> A <code>posts_test.go</code> or <code>posts_controller_test.go</code> from v0.3 is stdlib <code>testing</code> in the package itself, and it keeps running next to the new suites. To move a resource to specs, re-run its generator (<code>bogie g scaffold post title:string body:text</code>, or <code>g model</code>), which rewrites its tests and writes its factory. Port any tests you added by hand to those files first, or keep them in a file of your own.</li>
+<li><strong><code>app/models/store_test.go</code> is reported <code>retired</code></strong> and left in place, because the old model tests call its <code>testStore</code>. Delete it once none of them does. The replacement is <code>testdb.Store</code>.</li>
+<li>Run <code>bin/ci</code>. A fresh v0.3.2 app with one scaffold came through <code>app:update</code> to v0.4.1 with no conflicts, and its <code>bin/ci</code> passed, old tests and new specs together.</li>
+</ol>
+<p>An app still on v0.2 should make the v0.3 move above first. Its <code>store_test.go</code> reads the old flat config, so after updating to v0.4 it no longer compiles: delete it and move its model tests to the new specs. <a href="testing.html">Testing and CI</a> describes the new layout.</p>
 
 </article>
 <!-- @docs-end -->

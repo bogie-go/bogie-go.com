@@ -41,6 +41,24 @@
 <p>What each tagged release added or changed, newest first, in plain words. Each version links to its GitHub release, where the full notes and the commit list live. Changes marked <span class="badge-breaking">Breaking</span> can stop an existing app or setup working until you act; each one says what to do.</p>
 <pre><code>go install github.com/bogie-go/bogie@latest   # {{VERSION}} as of this build
 bogie version</code></pre>
+<section class="release" id="v0.4.1">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.4.1">v0.4.1</a> <span class="release-date">24 Oct 2026</span></h2>
+<ul>
+  <li>Generated apps test with Ginkgo v2 and Gomega: <code>Describe</code>, <code>Context</code>, <code>BeforeEach</code>, <code>It</code> and <code>Expect</code>, in external <code>_test</code> packages. Each package has one <code>&lt;pkg&gt;_suite_test.go</code> that owns its shared setup (<code>app</code> in controllers and requests, <code>store</code> in models). See <a href="testing.html">Testing and CI</a>.</li>
+  <li><code>g model</code> also writes a factory, <code>test/factories/&lt;table&gt;.go</code>. <code>g controller</code> and <code>g scaffold</code> write request specs beside the controller, through the wired <code>Server</code>, instead of fake-store controller tests. <code>g service</code>, <code>g job</code> and <code>g authentication</code> write specs too.</li>
+  <li>A new app's <code>go.mod</code> requires <code>github.com/onsi/ginkgo/v2</code> and <code>github.com/onsi/gomega</code>.</li>
+  <li>Existing apps: commit, then <code>bogie app:update</code>. It adds the suites and <code>test/</code>, moves the scaffold's own tests to Ginkgo and tidies in the two modules. Tests that generators wrote earlier, and <code>app/models/store_test.go</code> (reported <code>retired</code>), are left as they are. See <a href="upgrading.html#v0-4">Moving an app from v0.3 to v0.4</a>.</li>
+</ul>
+</section>
+<section class="release" id="v0.4.0">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.4.0">v0.4.0</a> <span class="release-date">24 Oct 2026</span></h2>
+<ul>
+  <li>New apps get <code>test/</code>: <code>testdb</code> (a clean, migrated test database per test), <code>testapp</code> (the whole app on it, with a request helper), <code>factories</code> (with <code>Sequence</code> for unique values) and <code>requests</code> (a starter <code>GET /healthz</code> request test). <code>g authentication token</code> adds <code>As(subject)</code> to sign a test request in.</li>
+  <li><code>app/models/store_test.go</code> and its <code>testStore</code> are gone. <code>g model</code>'s store test is <code>package models_test</code> on <code>testdb.Store</code>.</li>
+  <li><code>go test</code> runs one package at a time (<code>-p 1</code>), in <code>bogie test</code>, <code>make test</code> and <code>bin/ci</code>, because the packages share one test database.</li>
+  <li>Existing apps: go straight to v0.4.1.</li>
+</ul>
+</section>
 <section class="release" id="v0.3.2">
 <h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.3.2">v0.3.2</a> <span class="release-date">22 Oct 2026</span></h2>
 <ul>
