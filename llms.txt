@@ -1,6 +1,6 @@
 # Bogie
 
-> The Go service next to your Rails app. Bogie is a command-line tool that scaffolds an API-only, Postgres-only Go service with Rails-style generators (new, g scaffold, g model, g controller, g job, g seed, g authentication, g config) that also wire the code in. It builds on Gin, sqlc with pgx, goose, River and Kamal. The generated app never imports Bogie. MIT licensed, v0.3.2. Generated apps need Go 1.26 or newer (the CLI itself builds with 1.25) and Docker with Compose v2 for the local Postgres.
+> The Go service next to your Rails app. Bogie is a command-line tool that scaffolds an API-only, Postgres-only Go service with Rails-style generators (new, g scaffold, g model, g controller, g job, g seed, g authentication, g config) that also wire the code in. It builds on Gin, sqlc with pgx, goose, River and Kamal, and generated apps test with Ginkgo and Gomega. The generated app never imports Bogie. MIT licensed, v0.4.1. Generated apps need Go 1.26 or newer (the CLI itself builds with 1.25) and Docker with Compose v2 for the local Postgres.
 
 Install: `go install github.com/bogie-go/bogie@latest`. Then `bogie new blog && cd blog && make up && bogie db:prepare && bogie server`.
 
@@ -18,7 +18,7 @@ Every generated app follows six rules: ctx first on anything doing I/O; interfac
 - [Background jobs](https://bogie-go.com/docs/jobs.html): Add River with --jobs at new time, or later with g job, and write a worker that runs beside it.
 - [Configuration and credentials](https://bogie-go.com/docs/configuration.html): The environment variables, the encrypted settings file, and what staging means here.
 - [Your own Postgres](https://bogie-go.com/docs/own-postgres.html): Point the app at a Postgres you already run, without Docker.
-- [Testing and CI](https://bogie-go.com/docs/testing.html): Where tests live, what bin/ci runs, and what doctor checks before either does.
+- [Testing and CI](https://bogie-go.com/docs/testing.html): Ginkgo and Gomega specs, the test/ folder (testdb, testapp, factories, request specs), what bin/ci runs, and what doctor checks before either does.
 - [Deploying](https://bogie-go.com/docs/deploying.html): One Docker image, every role, shipped with Kamal 2 to staging and production.
 - [Upgrading an app](https://bogie-go.com/docs/upgrading.html): bogie app:update, a three-way merge to a newer layout that keeps your edits.
 - [Conventions and agents](https://bogie-go.com/docs/conventions.html): The six rules every generated app keeps, and why the layout is Rails-shaped on purpose.

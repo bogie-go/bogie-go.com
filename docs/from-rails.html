@@ -63,7 +63,7 @@
 <tr><td><code>rails destroy ...</code>, <code>rails d</code></td><td><code>bogie destroy ...</code>, <code>bogie d</code></td><td>Removes the registration lines too.</td></tr>
 <tr><td><code>rails db:create</code> &#8230; <code>db:rollback</code></td><td>the same words</td><td><code>db:prepare</code>, <code>db:reset</code>, <code>db:seed</code>, <code>db:migrate:status</code>, <code>db:migrate:redo</code>, <code>db:version</code>.</td></tr>
 <tr><td><code>rails credentials:edit</code></td><td><code>bogie credentials:edit</code></td><td><code>-e production</code> for that environment's file and key.</td></tr>
-<tr><td><code>rails test</code></td><td><code>bogie test</code>, <code>bogie t</code></td><td><code>go test -race -cover ./...</code>; store tests need Postgres up.</td></tr>
+<tr><td><code>rails test</code></td><td><code>bogie test</code>, <code>bogie t</code></td><td><code>go test -p 1 -race -cover ./...</code>; Ginkgo specs, and they need Postgres up.</td></tr>
 <tr><td><code>bin/ci</code></td><td><code>bin/ci</code></td><td>The whole pipeline, locally; green signs off with <code>gh signoff</code>.</td></tr>
 <tr><td><code>rails console</code></td><td>none</td><td>No REPL. <code>make psql</code> opens the database; a throwaway <code>_test.go</code> is the Go way.</td></tr>
 <tr><td><code>rails dbconsole</code></td><td><code>make psql</code></td><td></td></tr>
@@ -99,7 +99,7 @@
 <tr><td><code>config/deploy.yml</code></td><td><code>config/deploy.yml</code></td><td>Kamal 2, unchanged.</td></tr>
 <tr><td><code>Gemfile</code>, <code>Gemfile.lock</code></td><td><code>go.mod</code>, <code>go.sum</code></td><td>Tools (sqlc, goose) are pinned there too, under <code>tool</code>.</td></tr>
 <tr><td><code>.rubocop.yml</code></td><td><code>.golangci.yml</code></td><td></td></tr>
-<tr><td><code>test/</code>, <code>spec/</code></td><td>beside the code, <code>*_test.go</code></td><td>Stdlib <code>testing</code>, no factories, no fixtures.</td></tr>
+<tr><td><code>test/</code>, <code>spec/</code></td><td>beside the code, <code>*_test.go</code>; shared helpers in <code>test/</code></td><td>Ginkgo and Gomega (<code>Describe</code>/<code>Context</code>/<code>It</code>, <code>Expect</code>). <code>test/testdb</code>, <code>test/testapp</code>, <code>test/factories</code> (factory_bot, by hand), request specs. No fixtures: seeds.</td></tr>
 <tr><td><code>Procfile.dev</code>, <code>bin/dev</code></td><td><code>make server</code>, <code>make worker</code></td><td></td></tr>
 <tr><td><code>config/spring.rb</code></td><td><code>.air.toml</code></td><td>Settings for the reload <code>bogie server</code> and <code>bogie worker</code> run under in development; delete it to turn reload off.</td></tr>
 <tr><td><code>AGENTS.md</code>, <code>CLAUDE.md</code></td><td>the same</td><td>The rules, the commands, a recipe per task.</td></tr>
@@ -143,7 +143,7 @@
 <h2>What is deliberately different</h2>
 <p>These have no Rails counterpart because Rails does them implicitly. In Go they are explicit, and the six rules in <a href="conventions.html">Conventions and agents</a> keep them that way.</p>
 <ol>
-  <li><strong>Dependencies are passed in, in <code>app/application.go</code>.</strong> Nothing reaches for a global. A controller gets its store on its wire line; a test hands it a fake.</li>
+  <li><strong>Dependencies are passed in, in <code>app/application.go</code>.</strong> Nothing reaches for a global. A controller gets its store on its wire line; a service's spec hands it a fake.</li>
   <li><strong>Interfaces are declared by the consumer</strong> (rule 2), not by the thing implemented. <code>postsStore</code> lives beside <code>PostsController</code> and lists only the five methods it calls. That is why a controller test needs no database, and why there is no mocking library.</li>
   <li><strong><code>ctx context.Context</code> is the first parameter</strong> of anything that does I/O (rule 1). Cancellation, deadlines and tracing travel in it; a request that is abandoned stops its query.</li>
   <li><strong>Constructors return <code>(T, error)</code></strong> (rule 4); only <code>main</code> exits. A bad configuration fails at boot with a message, never with a panic in a handler.</li>

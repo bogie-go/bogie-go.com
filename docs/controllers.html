@@ -47,6 +47,7 @@
       create  app/domain/post.go
       create  app/models/posts.go
       create  app/models/posts_test.go
+      create  test/factories/posts.go
       create  app/views/posts.go
       create  app/controllers/posts_controller.go
       create  app/controllers/posts_controller_test.go
@@ -65,7 +66,7 @@
 	UpdatePost(ctx context.Context, p domain.Post) (domain.Post, error)
 	DeletePost(ctx context.Context, id string) error
 }</code></pre>
-<p><code>*models.Store</code> satisfies it without either package knowing about the other; a test hands the controller a fake that is a few lines.</p>
+<p><code>*models.Store</code> satisfies it without either package knowing about the other, and the interface lists exactly what the controller uses.</p>
 
 <h3>SetupRoutes and one action</h3>
 <pre><code>func (ctl *PostsController) SetupRoutes(router *gin.RouterGroup) {
@@ -100,7 +101,7 @@ func (ctl *PostsController) Show(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, views.ErrorMessage("internal error"))
 	}
 }</code></pre>
-<p><code>domain.ErrNotFound</code> is 404, <code>domain.ErrInvalid</code> is 422 (validation runs in the store, as Rails validates on save), and anything else is logged with its request id and answered 500 without leaking its text. A controller test hands the fake store an error and asserts the status; no real database is needed.</p>
+<p><code>domain.ErrNotFound</code> is 404, <code>domain.ErrInvalid</code> is 422 (validation runs in the store, as Rails validates on save), and anything else is logged with its request id and answered 500 without leaking its text. The request specs check the 404 and the 400 for a malformed body through the real app and the test database.</p>
 <p>Done with a scaffold: <code>bogie d scaffold post</code> removes all of it, registration included. When a resource outgrows CRUD, <a href="services.html">a service</a> gives the logic a home that knows nothing about HTTP.</p>
 
 <h2>A controller by hand</h2>
@@ -142,12 +143,13 @@ func (ctl *PostsController) Show(c *gin.Context) {
   <li>Add a field and a constructor parameter: <code>Store commentsStore</code>, <code>NewCommentsController(store commentsStore, log *slog.Logger)</code>.</li>
   <li>On its wire line in <code>app/application.go</code>, pass the real thing: <code>server.Comments = controllers.NewCommentsController(store, log)</code>. <code>*models.Store</code> satisfies any interface made of its own methods, so nothing on the store's side changes.</li>
 </ol>
-<p>The test hands in a fake with the same methods; it needs no database. A scaffolded controller, above, shows the finished shape.</p>
+<p>The generated test is a request spec through the whole app: for a stub it checks only that each route is mounted. Once an action does real work, give it a spec the way a scaffolded controller does, above: arrange records with a factory, send the request, check the answer. See <a href="testing.html#request-specs">Request specs</a>.</p>
 
 <h2>Namespaces</h2>
 <pre><code>bogie g controller admin/reports index show</code></pre>
 <pre><code>      create  app/controllers/admin_controller/server.go
       create  app/controllers/admin_controller/routes.go
+      create  app/controllers/admin_controller/admin_controller_suite_test.go
       create  app/controllers/admin_controller/reports_controller.go
       create  app/controllers/admin_controller/reports_controller_test.go
       insert  app/controllers/application.go: Admin *admin_controller.Server
@@ -166,7 +168,7 @@ func (ctl *PostsController) Show(c *gin.Context) {
 }</code></pre>
 
 <h2>Testing a controller</h2>
-<p>With a fake store, no database: the fake records what it was asked for and answers with what the test chose, so a 404 test, a 422 test and a 500-that-leaks-nothing test all run without Postgres. A namespaced controller's test mounts it on the namespace's own <code>Server</code> the same way.</p>
+<p>Since v0.4.1, a controller is tested by request specs beside it: Ginkgo specs that send real HTTP through the wired <code>Server</code> to the test database, with records arranged by <a href="testing.html#factories">factories</a>. A scaffold's specs cover list, show, create, update and delete, a 400 for a malformed body, and a 404 for an unknown id. A namespace package gets its own suite file, and its specs go through the same <code>app</code>. There is no fake-store controller test any more. The store interface beside the controller still keeps it honest about what it uses. See <a href="testing.html">Testing and CI</a>.</p>
 </article>
 <!-- @docs-end -->
 

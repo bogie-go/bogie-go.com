@@ -43,6 +43,7 @@
 
 <pre><code>bogie g service publish_post</code></pre>
 <pre><code>      create  app/services/publish_post/publish_post.go
+      create  app/services/publish_post/publish_post_suite_test.go
       create  app/services/publish_post/publish_post_test.go</code></pre>
 
 <pre><code>package publish_post
@@ -67,7 +68,7 @@ func (s *Service) Run(ctx context.Context) error {
 <pre><code>type store interface {
 	GetPost(ctx context.Context, id string) (domain.Post, error)
 }</code></pre>
-<p><code>*models.Store</code> satisfies whatever you write without this package ever being imported by <code>models</code>, and the fake in the test stays a few lines. Rename <code>Run</code> to say what it does; that is the only thing the generator cannot name for you.</p>
+<p><code>*models.Store</code> satisfies whatever you write without this package ever being imported by <code>models</code>, and the fake in the spec stays a few lines. Rename <code>Run</code> to say what it does; that is the only thing the generator cannot name for you.</p>
 
 <h2>Not wired anywhere</h2>
 <p>Unlike a controller or a job, a service is never registered above a marker. The thing that needs it declares the dependency and constructs it:</p>

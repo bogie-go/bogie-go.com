@@ -39,7 +39,7 @@
 <p class="guide-eyebrow">{{SECTION}}</p>
 <h1>Models and migrations</h1>
 
-<p>Rails's <code>Post</code> is one class that is a table, a type and a query builder. Here that is three files, each with one job, plus the migration and a test. One command writes all five:</p>
+<p>Rails's <code>Post</code> is one class that is a table, a type and a query builder. Here that is three files, each with one job, plus the migration, a spec and a factory. One command writes all six:</p>
 <pre><code>bogie g model post title body:text</code></pre>
 <p>A field with no <code>:type</code> is a <code>string</code>, as in Rails, so <code>title</code> is <code>title:string</code>.</p>
 <pre><code>      create  db/migrate/20261003053152_create_posts.sql
@@ -47,6 +47,7 @@
       create  app/domain/post.go
       create  app/models/posts.go
       create  app/models/posts_test.go
+      create  test/factories/posts.go
          run  sqlc generate</code></pre>
 
 <h2>The migration</h2>
@@ -117,7 +118,7 @@ func (p Post) Validate() error {
 	}
 	return postFromRow(row), nil
 }</code></pre>
-<p><code>GetPost</code>, <code>ListPosts</code>, <code>UpdatePost</code> and <code>DeletePost</code> follow the same shape. <code>app/models/posts_test.go</code> starts with one test, that an unknown id is <code>ErrNotFound</code> whatever it looks like, and a <code>TODO</code> for the round trip. Store tests run against the real database, so they need it up: <code>make up</code> first.</p>
+<p><code>GetPost</code>, <code>ListPosts</code>, <code>UpdatePost</code> and <code>DeletePost</code> follow the same shape. <code>app/models/posts_test.go</code> is a Ginkgo spec on the real test database: an unknown or malformed id is <code>ErrNotFound</code>, an update to a missing post is <code>ErrNotFound</code>, and a saved post reads back, lists, updates and deletes. <code>test/factories/posts.go</code> builds valid posts for it and for every other spec (<code>factories.Post(GinkgoT(), store)</code>). It's yours to edit once written. Store specs need the database up: <code>make up</code> first. See <a href="testing.html">Testing and CI</a>.</p>
 
 <h2>Attribute types</h2>
 <p><code>string text integer bigint boolean datetime uuid jsonb references</code>, each optionally followed by <code>:index</code> or <code>:uniq</code>:</p>

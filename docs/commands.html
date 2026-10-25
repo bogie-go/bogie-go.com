@@ -63,7 +63,7 @@
 <tr><td><code>bogie server</code>, <code>bogie s</code></td><td>Runs the app; migrates at boot. In development it runs under Air: save a file and it rebuilds and restarts.</td></tr>
 <tr><td><code>bogie worker</code></td><td>Works the job queue (apps with jobs; <code>g job</code> adds them to one that has none). Reloads under Air in development, same as <code>bogie server</code>, to its own binary so the two can run side by side.</td></tr>
 <tr><td><code>bogie routes</code></td><td>Every mounted route, method, path and handler, like <code>rails routes</code>. It boots the app the way <code>serve</code> does, so the list is what is actually wired. Prints in development only; in <code>test</code> or <code>production</code> it exits 0 with no output.</td></tr>
-<tr><td><code>bogie test [PKGS]</code>, <code>bogie t</code></td><td><code>go test -race -cover ./...</code>.</td></tr>
+<tr><td><code>bogie test [PKGS]</code>, <code>bogie t</code></td><td><code>go test -p 1 -race -cover ./...</code>: Ginkgo specs, one package at a time.</td></tr>
 <tr><td><code>bogie lint</code></td><td>gofmt check, <code>go vet</code>, golangci-lint.</td></tr>
 <tr><td><code>bogie ci</code></td><td>Every check, locally, then sign off: <code>bin/ci</code>.</td></tr>
 <tr><td><code>bogie db:create</code></td><td>Creates the database for the current environment.</td></tr>

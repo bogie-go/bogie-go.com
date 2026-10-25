@@ -40,25 +40,74 @@
 <h1>Testing and CI</h1>
 
 <h2>Where tests live</h2>
-<p>Beside the code they test, <code>*_test.go</code>, stdlib <code>testing</code> only: no factories, no fixtures, no <code>spec/</code> directory. A generator writes the test file next to the file it tests every time it writes one.</p>
+<p>Every test in a generated app is a <a href="https://onsi.github.io/ginkgo/">Ginkgo</a> v2 spec with <a href="https://onsi.github.io/gomega/">Gomega</a> matchers: <code>Describe</code>, <code>Context</code>, <code>BeforeEach</code>, <code>It</code> and <code>Expect</code>, which reads like RSpec. Unit and edge-case specs sit beside the code they test, in an external <code>_test</code> package (<code>package models_test</code>), so they use a package the way its callers do. When a spec needs something unexported, an <code>export_test.go</code> in the package exports it for tests only. There's no mocking library.</p>
+<p>Three things more than one package needs live in <code>test/</code>, the way Rails's <code>test/</code> holds <code>test_helper.rb</code> and the factories:</p>
+<pre><code>test/
+  testdb/      a clean, migrated test database per spec
+  testapp/     the whole application on that database, with a request helper
+  factories/   valid records with overrides, saved through the real store
+  requests/    request specs that belong to no single controller</code></pre>
+<p>There's no <code>spec/</code> folder and no fixtures folder: fixed data belongs in <a href="seeds.html">seeds</a>. A generator writes the specs for what it generates every time it runs.</p>
 <pre><code>bogie test
 bogie t
-BLOG_ENV=test go test -race -cover ./...</code></pre>
-<p>Either runs the whole suite with the race detector and coverage, in the test environment.</p>
+bogie test ./app/models
+BLOG_ENV=test go test -p 1 -race -cover ./...</code></pre>
+<p>These run the suite with the race detector and coverage, in the test environment. Pass a package path to run just that package. Packages run one at a time (<code>-p 1</code>) because they share one test database.</p>
 
-<h2>Store tests</h2>
-<p>A store test opens the real, test database, migrates it, and truncates every table (CASCADE, across the foreign keys between them) before the test runs, so each one starts from nothing. There is no in-memory substitute on purpose: a store test that never touches the database tests nothing. That means store tests need Postgres up and the test database prepared once first:</p>
+<h2>Suites</h2>
+<p>Each package with tests has one <code>&lt;pkg&gt;_suite_test.go</code>. It runs the package's specs and owns their shared setup, a package variable rebuilt in a <code>BeforeEach</code> before every spec, the way RSpec uses <code>let</code>:</p>
+<pre><code>// app/models/models_suite_test.go
+var store *models.Store
+
+var _ = BeforeEach(func() {
+	store = testdb.Store(GinkgoT())
+})
+
+func TestModels(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Models")
+}</code></pre>
+<p><code>app/controllers</code> and <code>test/requests</code> get <code>app</code> (<code>testapp.New(GinkgoT())</code>) in the same way. The helpers in <code>test/</code> take a small <code>T</code> interface, which both <code>GinkgoT()</code> and <code>*testing.T</code> satisfy.</p>
+
+<h2>The test database</h2>
+<p><code>testdb.Store(t)</code> opens the real test database, migrates it, and truncates every table of the app's (CASCADE, across the foreign keys between them), so each spec starts from nothing. goose's version table and River's schema are left alone, so migration and job state survive between specs. <code>testdb.Pool(t)</code> is a second connection for raw SQL. The environment is forced to test, so <code>go test</code> run by hand in a development shell can never truncate development data.</p>
+<p>There's no in-memory substitute on purpose: a store spec that never touches the database tests nothing. That means the specs need Postgres up and the test database prepared once first:</p>
 <pre><code>make up
 BLOG_ENV=test bogie db:prepare
 bogie test</code></pre>
-<p><code>bogie db:prepare</code> on its own prepares only the development database. The variable's prefix is the app's name upper-cased (<code>bogie new shop</code> gives <code>SHOP_ENV</code>). <code>bin/ci</code> rebuilds the test database itself.</p>
-<p>goose's version table and River's schema are left alone by the truncation, so migration and job state survive between tests.</p>
+<p><code>bogie db:prepare</code> on its own prepares only the development database. The variable's prefix is the app's name in upper case (<code>bogie new shop</code> gives <code>SHOP_ENV</code>). <code>bin/ci</code> rebuilds the test database itself.</p>
 
-<h2>Controller tests</h2>
-<p>With a fake that satisfies the small interface declared beside the controller (see <a href="controllers.html">Resources, controllers and routing</a>): no database, no real store, just a struct that records what it was asked for and answers with what the test chose. A test mounts the controller alone on <code>gin.New()</code>, so it sees the controller and nothing else: no middleware, no other routes.</p>
+<h2 id="factories">Factories</h2>
+<p><code>bogie g model</code> writes <code>test/factories/&lt;table&gt;.go</code> with two functions: <code>NewPost</code> builds a valid post without saving it, and <code>Post</code> saves one through the real store and fails the spec if it can't. Every attribute has a default, and an override changes only what the spec cares about:</p>
+<pre><code>post  := factories.Post(GinkgoT(), store)
+draft := factories.Post(GinkgoT(), store, func(p *domain.Post) { p.Published = false })</code></pre>
+<p>Values that must be unique (emails, names, tokens) come from <code>factories.Sequence("user")</code>, which returns <code>user1</code>, then <code>user2</code>, so two records made in one spec never collide. The factories are written by hand, with no library. Once written, a factory is yours: the generator leaves a changed file alone unless you pass <code>--force</code>. Add a column's default there when you add the column.</p>
 
-<h2>Domain and service tests</h2>
-<p>A domain test is a plain function call: <code>Validate</code> and whatever rules live in <code>app/domain</code>, nothing to set up. A service test fakes the <code>store</code> interface the service itself declared, the same pattern as a controller test.</p>
+<h2 id="request-specs">Request specs</h2>
+<p>A feature starts outside in, with a request spec: real HTTP through the real router to the real application and the test database. <code>g controller</code> and <code>g scaffold</code> write one beside the controller, against the suite's <code>app</code>:</p>
+<pre><code>var _ = Describe("GET /posts/:id", func() {
+	Context("when the post exists", func() {
+		var record domain.Post
+
+		BeforeEach(func() {
+			record = factories.Post(GinkgoT(), app.Store)
+		})
+
+		It("shows it", func() {
+			var shown views.PostResponse
+			app.Get("/posts/" + fmt.Sprint(record.ID)).Do().Status(http.StatusOK).JSON(&amp;shown)
+			Expect(shown.ID).To(Equal(record.ID))
+		})
+	})
+})</code></pre>
+<p><code>app.Get</code>, <code>Post</code>, <code>Patch</code> and <code>Delete</code> build the request (with a JSON body for the writes), and <code>WithHeader</code> and <code>WithAuthorization</code> set headers. <code>Do</code> sends it. The response checks are <code>Status</code>, which shows the body on a mismatch, <code>JSON</code> and <code>Contains</code>. Background jobs are inserted, not worked: <code>app.Jobs("send_welcome_email")</code> counts the queued jobs of a kind and <code>app.JobArgs</code> returns their arguments. After <code>g authentication token</code>, <code>.As(subject)</code> on a request sends it as a signed-in user: <code>app.Get("/me").As("user-1").Do()</code>.</p>
+<p><code>test/requests/wiring_test.go</code> checks that every controller is constructed and every route has a handler, the same thing <code>bogie doctor</code> checks from the source.</p>
+
+<h2>Store, domain and service specs</h2>
+<p>Below the request specs, the edge cases. <code>g model</code> writes a store spec in <code>package models_test</code> on the suite's <code>store</code>: unknown and malformed ids, an update to a missing record, and a saved record read back, listed, updated and deleted. A domain spec is a plain call to <code>Validate</code> and whatever rules live in <code>app/domain</code>, with nothing to set up. A service spec (from <code>g service</code>) fakes the <code>store</code> interface the service itself declares, and <code>g job</code> and <code>g authentication</code> write specs for what they add.</p>
+
+<h2>Apps from before v0.4</h2>
+<p>Apps generated before v0.4.0 used stdlib <code>testing</code>, a <code>testStore</code> helper in <code>app/models/store_test.go</code>, and controller tests on a fake store. <code>bogie app:update</code> adds the suites and <code>test/</code>, but leaves the tests that generators wrote earlier as they are, so both kinds run side by side. Re-running <code>g model</code> or <code>g scaffold</code> for a resource gives it the new specs. See <a href="upgrading.html#v0-4">Upgrading an app</a>.</p>
 
 <h2>Adding a query</h2>
 <p>There is no <code>where</code> builder; a query is SQL with a name, in <code>db/queries/&lt;table&gt;.sql</code>:</p>
@@ -80,7 +129,7 @@ make ci</code></pre>
   <li>Style: go vet.</li>
   <li>Style: golangci-lint, against <code>.golangci.yml</code>.</li>
   <li>Build. <code>go build ./...</code>.</li>
-  <li>Tests. <code>go test -race -cover ./...</code>.</li>
+  <li>Tests. <code>go test -p 1 -race -cover ./...</code>, one package at a time because they share the test database.</li>
   <li>Worker: boots and drains (apps made with <code>--jobs</code> only). Builds the binary and runs it as <code>worker</code> for six seconds, to prove it starts.</li>
 </ol>
 <p>A green run on a clean tree ends with one more step, <strong>Signoff</strong>: <code>gh signoff</code> records a status on the commit, if the <code>basecamp/gh-signoff</code> extension is installed; without it, the run is still green but says so. A failing run never signs off, and never should be merged or deployed.</p>
