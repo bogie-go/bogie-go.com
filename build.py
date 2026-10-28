@@ -22,7 +22,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "_site"
 PROXY = "https://proxy.golang.org/github.com/bogie-go/bogie/@latest"
-FALLBACK_VERSION = "v0.5.4"
+FALLBACK_VERSION = "v0.5.5"
 SKIP = {"_site", "_includes", "build.py", "README.md", ".git", ".github", ".claude"}
 
 # Sidebar order is also prev/next order.

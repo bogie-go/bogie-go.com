@@ -163,7 +163,16 @@ func (ctl *PostsController) Show(c *gin.Context) {
   <li>Add a field and a constructor parameter: <code>Store commentsStore</code>, <code>NewCommentsController(store commentsStore, log *slog.Logger)</code>.</li>
   <li>On its wire line in <code>app/application.go</code>, pass the real thing: <code>server.Comments = controllers.NewCommentsController(store, log)</code>. <code>*adapter.Store</code> satisfies any interface made of its own methods, so nothing on the store's side changes.</li>
 </ol>
-<p>The generated test is a request spec through the whole app: for a stub it checks only that each route is mounted. Once an action does real work, give it a spec the way a scaffolded controller does, above: arrange records with a factory, send the request, check the answer. See <a href="testing.html#request-specs">Request specs</a>.</p>
+<p>The generated test is a request spec through the whole app: for a stub it checks only that each route is mounted. It looks the method and path up in the application's routes rather than sending a request, so a real <code>Show</code> or <code>Destroy</code> that answers 404 for a record that is not there does not break it:</p>
+<pre><code>var _ = Describe("GET /comments/:id", func() {
+	It("is mounted", func() {
+		Expect(app.Server.Router.Routes()).To(ContainElement(And(
+			HaveField("Method", http.MethodGet),
+			HaveField("Path", "/comments/:id"),
+		)))
+	})
+})</code></pre>
+<p>It fails when a route was never registered or the namespace's <code>routes.go</code> lost the mount line. Once an action does real work, give it a spec the way a scaffolded controller does, above: arrange records with a factory, send the request, check the answer. See <a href="testing.html#request-specs">Request specs</a>.</p>
 
 <h2>Namespaces</h2>
 <pre><code>bogie g controller admin/reports index show</code></pre>

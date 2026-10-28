@@ -1,6 +1,6 @@
 # Bogie
 
-> A Go API service, from zero to production. Bogie is a command-line tool that scaffolds an API-only, Postgres-only Go service with generators (new, g scaffold, g model, g controller, g job, g seed, g authentication, g config) that also wire the code in. It builds on Gin, sqlc with pgx, goose, River (opt-in) and Kamal, and generated apps test with Ginkgo and Gomega. The generated app never imports Bogie. MIT licensed, v0.5.4. Generated apps need Go 1.26 or newer (the CLI itself builds with 1.25) and Docker with Compose v2 for the local Postgres.
+> A Go API service, from zero to production. Bogie is a command-line tool that scaffolds an API-only, Postgres-only Go service with generators (new, g scaffold, g model, g controller, g job, g seed, g authentication, g config) that also wire the code in. It builds on Gin, sqlc with pgx, goose, River (opt-in) and Kamal, and generated apps test with Ginkgo and Gomega. The generated app never imports Bogie. MIT licensed, v0.5.5. Generated apps need Go 1.26 or newer (the CLI itself builds with 1.25) and Docker with Compose v2 for the local Postgres.
 
 Install: `go install github.com/bogie-go/bogie@latest`. Then `bogie new blog && cd blog && make up && bogie db:prepare && bogie server`.
 
