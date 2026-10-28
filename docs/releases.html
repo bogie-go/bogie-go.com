@@ -43,8 +43,8 @@
 bogie version</code></pre>
 <section class="release" id="v0.5.4">
 <h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.5.4">v0.5.4</a> <span class="release-date">28 Oct 2026</span> <span class="badge-breaking">Breaking</span></h2>
+<div class="breaking"><p><span class="badge-breaking">Breaking</span> for an app that has a namespace made by v0.5.0 to v0.5.3. The namespace package is now plural, <code>app/controllers/admin_controllers/</code>, like every other directory. The old <code>admin_controller/</code> package keeps working after <code>app:update</code>, but <code>bogie doctor</code> does not list it, and the next <code>g controller admin/NAME</code> writes a second package that does not build. Rename the package first; the steps are in <a href="upgrading.html#v0-5-4">Moving an app from v0.5.0 to v0.5.4</a>. New apps are not affected.</p></div>
 <ul>
-  <li><span class="badge-breaking">Breaking</span> for an app that has a namespace made by v0.5.0 to v0.5.3: the namespace package is now plural, <code>app/controllers/admin_controllers/</code>, like every other directory. The old <code>admin_controller/</code> package keeps working after <code>app:update</code>, but <code>bogie doctor</code> does not list it, and the next <code>g controller admin/NAME</code> writes a second package that does not build. Rename the package first; the steps are in <a href="upgrading.html#v0-5-4">Moving an app from v0.5.0 to v0.5.4</a>. New apps are not affected.</li>
   <li><code>g scaffold admin/pages</code> is a model of its own: the model is <code>admin_page</code>, the table <code>admin_pages</code>, and its <code>PagesController</code> sits in the namespace at <code>/admin/pages</code>. <code>d scaffold</code> handles the namespaced form. For a controller over an existing model, use <code>g scaffold_controller</code>.</li>
 </ul>
 </section>
@@ -72,11 +72,11 @@ bogie version</code></pre>
 </section>
 <section class="release" id="v0.5.0">
 <h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.5.0">v0.5.0</a> <span class="release-date">27 Oct 2026</span> <span class="badge-breaking">Breaking</span></h2>
+<div class="breaking"><p><span class="badge-breaking">Breaking</span> The layers of a generated app moved, and <code>bogie app:update</code> cannot follow the move on its own: it exits with a conflict in <code>app/models/models.go</code> and leaves the old files <code>retired</code>. See <a href="upgrading.html#v0-5">Moving an app from v0.4 to v0.5</a> for the steps.</p></div>
 <ul>
-  <li><span class="badge-breaking">Breaking</span> The layers of a generated app moved. <code>app/domain/</code> (the types and their <code>Validate</code>) is now <code>app/models/</code>. The hand-written Store, <code>withTx</code> and row conversion that lived in <code>app/models/</code> are now <code>db/adapter/</code> (package <code>adapter</code>). sqlc writes to <code>db/sqlc/</code> (package <code>sqlc</code>) instead of beside the store, and the store qualifies sqlc's types as <code>sqlc.Post</code> and <code>sqlc.CreatePostParams</code>. <code>g model</code>, <code>g scaffold</code>, <code>g authentication</code>, <code>g seed</code> and <code>d</code> write and remove the new paths.</li>
+  <li><code>app/domain/</code> (the types and their <code>Validate</code>) is now <code>app/models/</code>. The hand-written Store, <code>withTx</code> and row conversion that lived in <code>app/models/</code> are now <code>db/adapter/</code> (package <code>adapter</code>). sqlc writes to <code>db/sqlc/</code> (package <code>sqlc</code>) instead of beside the store, and the store qualifies sqlc's types as <code>sqlc.Post</code> and <code>sqlc.CreatePostParams</code>. <code>g model</code>, <code>g scaffold</code>, <code>g authentication</code>, <code>g seed</code> and <code>d</code> write and remove the new paths.</li>
   <li><code>withTx</code> now hands its closure the <code>pgx.Tx</code> as well as the bound queries: <code>func(tx pgx.Tx, q *sqlc.Queries) error</code>, so a hand-written store method no longer has to reach into sqlc's unexported field to get at the transaction.</li>
   <li>The <code>bin/ci</code> step that runs <code>sqlc diff</code> is called "Schema: sqlc current" (it was "Schema: models current"); it checks <code>db/sqlc</code>.</li>
-  <li>Existing apps: <code>bogie app:update</code> merges one file at a time, so it cannot follow the move. It exits with a conflict in <code>app/models/models.go</code> and leaves the old files <code>retired</code>. See <a href="upgrading.html#v0-5">Moving an app from v0.4 to v0.5</a>.</li>
 </ul>
 </section>
 <section class="release" id="v0.4.2">
