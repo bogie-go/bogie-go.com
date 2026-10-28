@@ -38,7 +38,7 @@
 <article>
 <p class="guide-eyebrow">{{SECTION}}</p>
 <h1>Upgrading an app</h1>
-<p>The generated app never imports Bogie, so a new Bogie release changes nothing in an app until you ask. <code>bogie app:update</code> is the asking: <code>rails app:update</code>, done as a three-way merge.</p>
+<p>The generated app never imports Bogie, so a new Bogie release changes nothing in an app until you ask. <code>bogie app:update</code> is the asking: a three-way merge between your app and the layout of the Bogie you have installed.</p>
 
 <h2>Upgrade</h2>
 <pre><code>go install github.com/bogie-go/bogie@latest   # {{VERSION}} as of this build
@@ -115,7 +115,7 @@ blog:                               server:
 <p>These steps worked on a v0.4.1 app with one scaffold, both a default (bigint) app and one made with <code>--id=uuid</code>, and <code>bin/ci</code> passed on both. A v0.2 or v0.3 app should make the v0.3 and v0.4 moves above first.</p>
 <ol>
 <li>Commit (<code>git commit -am "before app:update"</code>), install the new Bogie, and run <code>bogie app:update</code>. It exits 1 with <code>conflict app/models/models.go</code>. That is expected; the other files are updated.</li>
-<li>In <code>app/models/models.go</code>, keep the <code>bogie v0.5</code> side of the conflict (the package doc and the two errors) and delete the <code>yours</code> side and the markers.</li>
+<li>In <code>app/models/models.go</code>, keep the side of the conflict labelled with your installed Bogie's version, <code>bogie v0.5.4</code> here (the package doc and the two errors) and delete the <code>yours</code> side and the markers.</li>
 <li>Delete the old layout. For each model, that is its <code>app/models/&lt;table&gt;.go</code>, <code>&lt;table&gt;.sql.go</code> and <code>&lt;table&gt;_test.go</code>:
 <pre><code>rm -rf app/domain
 rm app/models/db.go app/models/id.go app/models/store.go
@@ -128,6 +128,13 @@ For a model without a controller, use <code>g model</code> with the same attribu
 <li>Run <code>go build ./...</code>, <code>bogie doctor</code> and <code>bin/ci</code>, then commit.</li>
 </ol>
 <p><strong>Know before you start.</strong> Regenerating overwrites the files it writes, so port any hand edits in your store, controller, views or specs into the new files afterwards. Only apps with scaffolds were tried. Apps with hand-written store code, <code>g authentication</code>, <code>g config</code>, jobs or services were not, so check those by hand.</p>
+
+<h2 id="v0-5-4">Moving an app from v0.5.0 to v0.5.4</h2>
+<p>v0.5.1 to v0.5.4 keep the v0.5 layout, so <code>app:update</code> does most of it. Commit, run <code>bogie app:update --pretend</code> to see the plan, then <code>bogie app:update</code>. On a v0.5.0 app with one scaffold it ended with no conflict, <code>go build ./...</code> and <code>bogie doctor</code> passed, and <code>bin/ci</code> was green. It updates the templated files (<code>bin/ci</code>, the <code>Makefile</code>, <code>Dockerfile</code>, <code>.golangci.yml</code>, <code>AGENTS.md</code>, the shared test helpers and comments in the generated code), and adds <code>app/models/models_suite_test.go</code>. What it leaves for you:</p>
+<ol>
+<li><strong>Specs the generators wrote earlier stay as they are.</strong> v0.5.1 added a spec for the model itself, <code>app/models/&lt;name&gt;_test.go</code>, and v0.4.2 gave the store spec its <code>Describe</code>-per-method shape. Re-run the generator for a resource (<code>bogie g model product name:string price:integer</code>) to get the model spec; it creates that file and reports the files you have changed <code>conflict</code>, leaving them alone until you pass <code>--force</code>.</li>
+<li><strong>A namespace made before v0.5.4 is still <code>app/controllers/admin_controller/</code></strong>, and v0.5.4 spells it <code>admin_controllers</code>. The old package keeps working, but <code>bogie doctor</code> does not list it, and the next <code>bogie g controller admin/NAME</code> writes a second package, <code>admin_controllers</code>, which does not build (<code>Admin redeclared</code> in <code>app/controllers/application.go</code>). Rename the package first: <code>git mv</code> the directory and its <code>_suite_test.go</code> file to the plural, then change <code>admin_controller</code> to <code>admin_controllers</code> in the package clauses, the import, the <code>Admin *admin_controllers.Server</code> field and the constructor call in <code>app/application.go</code>. With that done, <code>go build ./...</code>, <code>bogie doctor</code> and <code>bin/ci</code> pass, and new controllers in the namespace register as usual.</li>
+</ol>
 
 </article>
 <!-- @docs-end -->

@@ -85,7 +85,7 @@ KAMAL_REGISTRY_PASSWORD=$(go tool credentials get -e staging kamal.registry_pass
 <p>Apps made with <code>--jobs</code> get a <code>job</code> role in both <code>deploy.yml</code> and the production overlay: the same image, started as <code>blog worker</code> instead of serving. Same host as <code>web</code> until the queue needs one of its own.</p>
 
 <h2>The database</h2>
-<p>Not an accessory by default. The premise is a service next to a Rails app that already runs Postgres, so <code>database.url</code> in the credentials points at that server, as a separate database on it. Uncommenting an <code>accessories.db</code> block in <code>deploy.yml</code> gives the service its own Postgres container instead, resolved by container name on Kamal's network; the schema is still applied by the container itself at boot.</p>
+<p>Not an accessory by default. The premise is a Postgres server you already run, so <code>database.url</code> in the credentials points at that server, as a database of this service's own. Uncommenting an <code>accessories.db</code> block in <code>deploy.yml</code> gives the service its own Postgres container instead, resolved by container name on Kamal's network; the schema is still applied by the container itself at boot.</p>
 </article>
 <!-- @docs-end -->
 

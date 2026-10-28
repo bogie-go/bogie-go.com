@@ -41,12 +41,13 @@
 
 <h2>A whole resource</h2>
 <pre><code>bogie g scaffold post title:string body:text</code></pre>
-<p>This is <code>rails g scaffold</code>: the model (everything <a href="models.html">Models and migrations</a> covers), the wire shapes in <code>app/views/posts.go</code>, and <code>app/controllers/posts_controller.go</code> with five real handlers over the store, registered. There is no HTML and no service layer.</p>
-<pre><code>      create  db/migrate/..._create_posts.sql
+<p>This writes the model (everything <a href="models.html">Models and migrations</a> covers), the wire shapes in <code>app/views/posts.go</code>, and <code>app/controllers/posts_controller.go</code> with five real handlers over the store, registered. There is no HTML and no service layer.</p>
+<pre><code>      create  db/migrate/20261028094504_create_posts.sql
       create  db/queries/posts.sql
-      create  app/domain/post.go
-      create  app/models/posts.go
-      create  app/models/posts_test.go
+      create  app/models/post.go
+      create  app/models/post_test.go
+      create  db/adapter/posts.go
+      create  db/adapter/posts_test.go
       create  test/factories/posts.go
       create  app/views/posts.go
       create  app/controllers/posts_controller.go
@@ -55,18 +56,18 @@
       insert  app/application.go: server.Posts = controllers.NewPostsController(store, log)
       insert  app/controllers/routes.go: s.Posts.SetupRoutes(&amp;r.RouterGroup)
          run  sqlc generate</code></pre>
-<p>The model is named in the singular and the views and controller in the plural, as Rails names them: <code>post</code>, but <code>PostsController</code> and <code>posts.go</code>.</p>
+<p>The model is named in the singular and the views and controller in the plural: <code>post</code>, but <code>PostsController</code> and <code>posts.go</code>. Run the same command again and every file and line is reported <code>identical</code>; a file you have since edited is reported <code>conflict</code> and nothing is written until you pass <code>--force</code>.</p>
 
 <h3>The store interface</h3>
 <p>Declared beside the controller that uses it (rule 2), holding only the methods its actions call:</p>
 <pre><code>type postsStore interface {
-	CreatePost(ctx context.Context, p domain.Post) (domain.Post, error)
-	GetPost(ctx context.Context, id string) (domain.Post, error)
-	ListPosts(ctx context.Context, limit int32) ([]domain.Post, error)
-	UpdatePost(ctx context.Context, p domain.Post) (domain.Post, error)
+	CreatePost(ctx context.Context, p models.Post) (models.Post, error)
+	GetPost(ctx context.Context, id string) (models.Post, error)
+	ListPosts(ctx context.Context, limit int32) ([]models.Post, error)
+	UpdatePost(ctx context.Context, p models.Post) (models.Post, error)
 	DeletePost(ctx context.Context, id string) error
 }</code></pre>
-<p><code>*models.Store</code> satisfies it without either package knowing about the other, and the interface lists exactly what the controller uses.</p>
+<p><code>*adapter.Store</code> satisfies it without either package knowing about the other, and the interface lists exactly what the controller uses.</p>
 
 <h3>SetupRoutes and one action</h3>
 <pre><code>func (ctl *PostsController) SetupRoutes(router *gin.RouterGroup) {
@@ -86,14 +87,14 @@ func (ctl *PostsController) Show(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, postView(p))
 }</code></pre>
-<p>A handler converts HTTP into domain values, calls one store method, and converts the result back with <code>postView</code>. <code>*gin.Context</code> never travels below <code>app/controllers</code> (rule 5): nothing below this file ever sees <code>c</code>.</p>
+<p>A handler converts HTTP into model values, calls one store method, and converts the result back with <code>postView</code>. <code>*gin.Context</code> never travels below <code>app/controllers</code> (rule 5): nothing below this file ever sees <code>c</code>.</p>
 
 <h3>fail: where error mapping lives</h3>
 <pre><code>func (ctl *PostsController) fail(c *gin.Context, err error) {
 	switch {
-	case errors.Is(err, domain.ErrNotFound):
+	case errors.Is(err, models.ErrNotFound):
 		c.JSON(http.StatusNotFound, views.ErrorMessage("no such post"))
-	case errors.Is(err, domain.ErrInvalid):
+	case errors.Is(err, models.ErrInvalid):
 		c.JSON(http.StatusUnprocessableEntity, views.Error(err))
 	default:
 		ctl.Log.ErrorContext(c.Request.Context(), "posts: request failed",
@@ -101,8 +102,27 @@ func (ctl *PostsController) Show(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, views.ErrorMessage("internal error"))
 	}
 }</code></pre>
-<p><code>domain.ErrNotFound</code> is 404, <code>domain.ErrInvalid</code> is 422 (validation runs in the store, as Rails validates on save), and anything else is logged with its request id and answered 500 without leaking its text. The request specs check the 404 and the 400 for a malformed body through the real app and the test database.</p>
+<p><code>models.ErrNotFound</code> is 404, <code>models.ErrInvalid</code> is 422 (validation runs in the store, on save), and anything else is logged with its request id and answered 500 without leaking its text. The request specs check the 404 and the 400 for a malformed body through the real app and the test database.</p>
 <p>Done with a scaffold: <code>bogie d scaffold post</code> removes all of it, registration included. When a resource outgrows CRUD, <a href="services.html">a service</a> gives the logic a home that knows nothing about HTTP.</p>
+
+<h3>Only some actions, or only the controller</h3>
+<p><code>--only</code> writes just the actions you list, with their routes, store methods, views and request specs. The model half is always written whole:</p>
+<pre><code>bogie g scaffold category name:string:uniq --only index,show</code></pre>
+<p>That mounts <code>GET /categories</code> and <code>GET /categories/:id</code> and nothing else. To put the HTTP half over a model that already exists, in a namespace, use <code>scaffold_controller</code>. It reads the attributes back from <code>app/models</code> (so it takes none), shares the model's <code>app/views/categories.go</code>, which only gains the types it lacks, and takes <code>--only</code> too:</p>
+<pre><code>bogie g scaffold_controller admin/categories</code></pre>
+<pre><code>      create  app/controllers/admin_controllers/server.go
+      create  app/controllers/admin_controllers/routes.go
+      create  app/controllers/admin_controllers/admin_controllers_suite_test.go
+      create  app/controllers/admin_controllers/categories_controller.go
+      create  app/controllers/admin_controllers/categories_controller_test.go
+      update  app/views/categories.go: CategoryRequest
+      insert  app/controllers/application.go: Admin *admin_controllers.Server
+      insert  app/application.go: server.Admin = admin_controllers.NewServer(log)
+      insert  app/controllers/routes.go: s.Admin.SetupRoutes(&amp;r.RouterGroup)
+      insert  app/controllers/admin_controllers/server.go: Categories *CategoriesController
+      insert  app/application.go: server.Admin.Categories = admin_controllers.NewCategoriesController(store, log)
+      insert  app/controllers/admin_controllers/routes.go: s.Categories.SetupRoutes(admin)</code></pre>
+<p>The model is the last segment of the name, never namespaced. <code>bogie g scaffold admin/page title</code>, by contrast, is a model of its own in a namespace: the model is <code>admin_page</code> (table <code>admin_pages</code>, <code>app/models/admin_page.go</code>) and its <code>PagesController</code> answers at <code>/admin/pages</code>. <code>bogie d scaffold_controller admin/categories</code> removes the controller and its spec, and the emptied namespace package.</p>
 
 <h2>A controller by hand</h2>
 <pre><code>bogie g controller comments index show create</code></pre>
@@ -111,14 +131,14 @@ func (ctl *PostsController) Show(c *gin.Context) {
       insert  app/controllers/application.go: Comments *CommentsController
       insert  app/application.go: server.Comments = controllers.NewCommentsController(log)
       insert  app/controllers/routes.go: s.Comments.SetupRoutes(&amp;r.RouterGroup)</code></pre>
-<p>One Rails controller is one Go file: a <code>CommentsController</code> type holding its dependencies, <code>SetupRoutes</code>, and one method per action, with a test beside it. The actions are stubs answering 501 until filled in:</p>
+<p>One controller is one Go file: a <code>CommentsController</code> type holding its dependencies, <code>SetupRoutes</code>, and one method per action, with a test beside it. The actions are stubs answering 501 until filled in:</p>
 <pre><code>func (ctl *CommentsController) Create(c *gin.Context) {
 	c.JSON(http.StatusNotImplemented, views.ErrorMessage("comments#create is not implemented yet"))
 }</code></pre>
 <p><code>index</code>, <code>show</code>, <code>create</code>, <code>update</code> and <code>destroy</code> get their resourceful routes (<code>GET /comments</code>, <code>GET /comments/:id</code>, and so on). Any other action name is a plain <code>GET</code> under that name: <code>bogie g controller comments search</code> mounts <code>GET /comments/search</code>. <code>new</code> and <code>edit</code> render forms and are refused outright:</p>
 <pre><code>bogie: generate controller: new renders a form; this is an API-only service, so there is no new action</code></pre>
-<p>Name a resource in the plural, as Rails does: the name is used as typed, so <code>bogie g controller post index</code> answers at <code>/post</code>, not <code>/posts</code>, and says so:</p>
-<pre><code>note  Rails names a resource in the plural: posts would answer at /posts; post answers at /post</code></pre>
+<p>Name a resource in the plural: the name is used as typed, so <code>bogie g controller post show</code> answers at <code>/post/:id</code>, not <code>/posts/:id</code>, and says so:</p>
+<pre><code>        note  A resource is named in the plural: posts would answer at /posts; post answers at /post</code></pre>
 
 <h2>The three markers</h2>
 <p>Go has no autoload: a controller exists only once it is constructed and mounted. That is three one-line insertions, each above a marker comment, and the generator makes all three, idempotently:</p>
@@ -127,41 +147,41 @@ func (ctl *PostsController) Show(c *gin.Context) {
   <li><code>app/application.go</code>, above <code>// bogie:wire</code>: its construction, <code>server.Comments = controllers.NewCommentsController(log)</code>.</li>
   <li><code>app/controllers/routes.go</code>, above <code>// bogie:routes</code>: its mount, <code>s.Comments.SetupRoutes(&amp;r.RouterGroup)</code>.</li>
 </ol>
-<p><code>--pretend</code> reports what would be written without touching anything; <code>--force</code> overwrites a file that differs. A marker missing from a file is a named error with no partial write; the generator never guesses. <code>bogie d controller comments</code> removes the file and all three lines. <code>bogie doctor</code> checks every marker exists exactly once and that every controller it finds is both constructed and mounted.</p>
+<p>Run the same command again and every file and line is reported <code>identical</code>. <code>--pretend</code> reports what would be written without touching anything; a file that differs from what the generator would write is reported <code>conflict</code>, and only <code>--force</code> overwrites it. A marker missing from a file is a named error with no partial write; the generator never guesses. <code>bogie d controller comments</code> removes the file and all three lines. <code>bogie doctor</code> checks every marker exists exactly once and that every controller it finds is both constructed and mounted.</p>
 
 <h2>Seeing what is mounted</h2>
 <pre><code>bogie routes</code></pre>
-<p>The <code>rails routes</code> of a Bogie app: method, path and handler for every route, in the order it was wired. It boots the app the way <code>serve</code> does and prints through Gin's own debug route hook, so the list is what is really mounted, not a guess read off the files. Like Gin's debug output, it prints only in development; in <code>test</code> or <code>production</code> it exits 0 with nothing. A request no route answers falls through to <code>public/</code> and then <code>public/404.html</code>: see <a href="static-files.html">Static files and error pages</a>.</p>
+<p>Method, path and handler for every route, in the order it was wired. It boots the app the way <code>serve</code> does and prints through Gin's own debug route hook, so the list is what is really mounted, not a guess read off the files. Like Gin's debug output, it prints only in development; in <code>test</code> or <code>production</code> it exits 0 with nothing. A request no route answers falls through to <code>public/</code> and then <code>public/404.html</code>: see <a href="static-files.html">Static files and error pages</a>.</p>
 
 <h2>Giving a controller a dependency</h2>
 <p>A freshly generated controller holds only a logger. Wiring in a store or a service is three edits, all in files you already own, with no generator for the step itself:</p>
 <ol>
   <li>Beside the controller, declare the slice it needs (rule 2), only the methods it calls:
   <pre><code>type commentsStore interface {
-	GetComment(ctx context.Context, id string) (domain.Comment, error)
+	GetComment(ctx context.Context, id string) (models.Comment, error)
 }</code></pre></li>
   <li>Add a field and a constructor parameter: <code>Store commentsStore</code>, <code>NewCommentsController(store commentsStore, log *slog.Logger)</code>.</li>
-  <li>On its wire line in <code>app/application.go</code>, pass the real thing: <code>server.Comments = controllers.NewCommentsController(store, log)</code>. <code>*models.Store</code> satisfies any interface made of its own methods, so nothing on the store's side changes.</li>
+  <li>On its wire line in <code>app/application.go</code>, pass the real thing: <code>server.Comments = controllers.NewCommentsController(store, log)</code>. <code>*adapter.Store</code> satisfies any interface made of its own methods, so nothing on the store's side changes.</li>
 </ol>
 <p>The generated test is a request spec through the whole app: for a stub it checks only that each route is mounted. Once an action does real work, give it a spec the way a scaffolded controller does, above: arrange records with a factory, send the request, check the answer. See <a href="testing.html#request-specs">Request specs</a>.</p>
 
 <h2>Namespaces</h2>
 <pre><code>bogie g controller admin/reports index show</code></pre>
-<pre><code>      create  app/controllers/admin_controller/server.go
-      create  app/controllers/admin_controller/routes.go
-      create  app/controllers/admin_controller/admin_controller_suite_test.go
-      create  app/controllers/admin_controller/reports_controller.go
-      create  app/controllers/admin_controller/reports_controller_test.go
-      insert  app/controllers/application.go: Admin *admin_controller.Server
-      insert  app/application.go: server.Admin = admin_controller.NewServer(log)
+<pre><code>      create  app/controllers/admin_controllers/server.go
+      create  app/controllers/admin_controllers/routes.go
+      create  app/controllers/admin_controllers/admin_controllers_suite_test.go
+      create  app/controllers/admin_controllers/reports_controller.go
+      create  app/controllers/admin_controllers/reports_controller_test.go
+      insert  app/controllers/application.go: Admin *admin_controllers.Server
+      insert  app/application.go: server.Admin = admin_controllers.NewServer(log)
       insert  app/controllers/routes.go: s.Admin.SetupRoutes(&amp;r.RouterGroup)
-      insert  app/controllers/admin_controller/server.go: Reports *ReportsController
-      insert  app/application.go: server.Admin.Reports = admin_controller.NewReportsController(log)
-      insert  app/controllers/admin_controller/routes.go: s.Reports.SetupRoutes(admin)</code></pre>
-<p>A Rails namespace (<code>namespace :admin</code>, <code>Admin::ReportsController</code>) is a Go package, <code>app/controllers/admin_controller/</code>, written on first use: its own <code>server.go</code> with its own <code>// bogie:controllers</code> marker, and its own <code>routes.go</code> mounting the <code>/admin</code> group above its own <code>// bogie:routes</code>. The package is registered at the root with the same three lines a controller gets; each controller inside it then gets two more, into the namespace's own files. Middleware the whole namespace shares, an auth check or a shared secret, goes on that group in <code>routes.go</code>, so the exposure boundary is visible in one place; <code>bogie g authentication</code> writes that middleware, covered in <a href="authentication.html">Authentication</a>. One level of namespace is supported; a version such as <code>v1</code> is a route group inside the namespace's <code>routes.go</code>, not a nested namespace. <code>bogie d controller admin/reports</code> removes the controller, and the package too once it holds no controller.</p>
+      insert  app/controllers/admin_controllers/server.go: Reports *ReportsController
+      insert  app/application.go: server.Admin.Reports = admin_controllers.NewReportsController(log)
+      insert  app/controllers/admin_controllers/routes.go: s.Reports.SetupRoutes(admin)</code></pre>
+<p>A namespace (everything mounted under <code>/admin</code>) is a Go package, <code>app/controllers/admin_controllers/</code>, plural like every other directory and written on first use: its own <code>server.go</code> with its own <code>// bogie:controllers</code> marker, and its own <code>routes.go</code> mounting the <code>/admin</code> group above its own <code>// bogie:routes</code>. The package is registered at the root with the same three lines a controller gets; each controller inside it then gets two more, into the namespace's own files. Middleware the whole namespace shares, an auth check or a shared secret, goes on that group in <code>routes.go</code>, so the exposure boundary is visible in one place; <code>bogie g authentication</code> writes that middleware, covered in <a href="authentication.html">Authentication</a>. One level of namespace is supported; a version such as <code>v1</code> is a route group inside the namespace's <code>routes.go</code>, not a nested namespace. <code>bogie d controller admin/reports</code> removes the controller, and the package too once it holds no controller.</p>
 
-<h2>Views: wire structs, never the domain type</h2>
-<p><code>app/views/posts.go</code> holds <code>PostRequest</code> and <code>PostResponse</code>; a domain type never doubles as a wire type, so a field added to the database does not silently appear on the wire, and the job of <code>params.permit</code> is done by the request struct only having the fields it has:</p>
+<h2>Views: wire structs, never the model</h2>
+<p><code>app/views/posts.go</code> holds <code>PostRequest</code> and <code>PostResponse</code>; a model type never doubles as a wire type, so a field added to the database does not silently appear on the wire, and a request can only set the fields its struct has:</p>
 <pre><code>type PostRequest struct {
 	Title string `json:"title"`
 	Body  string `json:"body"`

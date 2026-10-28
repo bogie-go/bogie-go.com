@@ -38,7 +38,7 @@
 <article>
 <p class="guide-eyebrow">{{SECTION}}</p>
 <h1>Static files and error pages</h1>
-<p>A Rails app serves <code>public/404.html</code>, <code>public/500.html</code> and <code>robots.txt</code> even in <code>--api</code> mode, because that happens below the router, not in a view. Bogie does the same with a <code>public/</code> folder that is embedded into the binary with <code>go:embed</code>, so a deployed container needs no files beside it. Since v0.2.7; <code>index.html</code> at <code>/</code> since v0.2.8.</p>
+<p>An API service still needs a <code>404.html</code>, a <code>500.html</code> and often a <code>robots.txt</code>, and serving them happens below the router, not in a handler. Bogie serves them from a <code>public/</code> folder that is embedded into the binary with <code>go:embed</code>, so a deployed container needs no files beside it. Since v0.2.7; <code>index.html</code> at <code>/</code> since v0.2.8.</p>
 
 <h2>What a new app has</h2>
 <pre><code>public/

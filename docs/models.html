@@ -39,19 +39,20 @@
 <p class="guide-eyebrow">{{SECTION}}</p>
 <h1>Models and migrations</h1>
 
-<p>Rails's <code>Post</code> is one class that is a table, a type and a query builder. Here that is three files, each with one job, plus the migration, a spec and a factory. One command writes all six:</p>
+<p>A model here is a few files, each with one job: the type and its rules, the SQL, and the store that joins them, plus the migration, two specs and a factory. One command writes all seven:</p>
 <pre><code>bogie g model post title body:text</code></pre>
-<p>A field with no <code>:type</code> is a <code>string</code>, as in Rails, so <code>title</code> is <code>title:string</code>.</p>
-<pre><code>      create  db/migrate/20261003053152_create_posts.sql
+<p>A field with no <code>:type</code> is a <code>string</code>, so <code>title</code> is <code>title:string</code>.</p>
+<pre><code>      create  db/migrate/20261028094447_create_posts.sql
       create  db/queries/posts.sql
-      create  app/domain/post.go
-      create  app/models/posts.go
-      create  app/models/posts_test.go
+      create  app/models/post.go
+      create  app/models/post_test.go
+      create  db/adapter/posts.go
+      create  db/adapter/posts_test.go
       create  test/factories/posts.go
          run  sqlc generate</code></pre>
 
 <h2>The migration</h2>
-<p>goose SQL, timestamped, embedded in the binary:</p>
+<p>goose SQL, stamped with the UTC time it was generated (<code>20261028094447</code> is 28 Oct 2026, 09:44:47 UTC), embedded in the binary:</p>
 <pre><code>-- +goose Up
 CREATE TABLE posts (
     id         bigserial   PRIMARY KEY,
@@ -63,7 +64,7 @@ CREATE TABLE posts (
 
 -- +goose Down
 DROP TABLE posts;</code></pre>
-<p>Every generated column is <code>NOT NULL</code> with a type-appropriate default, so sqlc emits plain Go types rather than pointers. A column that truly needs null is one edit to the migration, by hand.</p>
+<p>Every generated column is <code>NOT NULL</code>, so sqlc emits plain Go types rather than pointers. Strings, numbers, booleans and <code>jsonb</code> also get a default; <code>datetime</code>, <code>uuid</code> and <code>references</code> columns have none, so every insert must supply them. A column that truly needs null is one edit to the migration, by hand, and sqlc then emits a pointer (<code>*string</code>, <code>*int32</code>) for it.</p>
 
 <h2>The queries</h2>
 <p><code>db/queries/posts.sql</code>, named statements that sqlc compiles:</p>
@@ -84,11 +85,13 @@ UPDATE posts SET title = $2, body = $3, updated_at = now() WHERE id = $1 RETURNI
 
 -- name: DeletePost :execrows
 DELETE FROM posts WHERE id = $1;</code></pre>
-<p>A query that names a column which does not exist fails at <code>make sqlc</code>, not in production.</p>
+<p>sqlc compiles these into <code>db/sqlc/posts.sql.go</code>. A query that names a column which does not exist fails at <code>make sqlc</code>, not in production.</p>
 
-<h2>The domain type</h2>
-<p><code>app/domain/post.go</code> imports nothing third-party (rule 3). In the default <code>bigint</code> scheme an id is an <code>int64</code>; in an <code>--id=uuid</code> app it is a <code>string</code>, which the store turns into a uuid:</p>
-<pre><code>type Post struct {
+<h2>The model</h2>
+<p><code>app/models/post.go</code> imports nothing third-party (rule 3). In the default <code>bigint</code> scheme an id is an <code>int64</code>; in an <code>--id=uuid</code> app it is a <code>string</code>, which the store turns into a uuid:</p>
+<pre><code>// Post is a post. Imports nothing third-party: ids are int64s here and
+// become bigint at the store boundary.
+type Post struct {
 	ID        int64
 	Title     string
 	Body      string
@@ -96,7 +99,7 @@ DELETE FROM posts WHERE id = $1;</code></pre>
 	UpdatedAt time.Time
 }
 
-// Validate is the model's validations, as Rails would put them. Wrap every
+// Validate is the model's validations. Wrap every
 // failure in ErrInvalid so a controller can answer 422 without knowing the
 // rule:
 //
@@ -104,32 +107,32 @@ DELETE FROM posts WHERE id = $1;</code></pre>
 func (p Post) Validate() error {
 	return nil
 }</code></pre>
-<p><code>Validate</code> starts empty; fill it in as Rails's <code>validates</code> would. It runs on both create and update, inside the store, so every caller gets it and none can forget it.</p>
+<p><code>Validate</code> starts empty; fill it in with the rules the model must keep. It runs on both create and update, inside the store, so every caller gets it and none can forget it. The same file's neighbour, <code>app/models/post_test.go</code>, is the model's own spec: it starts from the factory's defaults, which are valid by construction, so a rule you add to <code>Validate</code> that the defaults break fails there, and it shows where the next rule's <code>Context</code> goes.</p>
 
 <h2>The store</h2>
-<p><code>app/models/posts.go</code> converts between the domain type and sqlc's row type, maps "no rows" to <code>domain.ErrNotFound</code>, and runs <code>Validate</code> before writing:</p>
-<pre><code>func (s *Store) CreatePost(ctx context.Context, p domain.Post) (domain.Post, error) {
+<p><code>db/adapter/posts.go</code> (package <code>adapter</code>) converts between the model and sqlc's row type from <code>db/sqlc</code>, maps "no rows" to <code>models.ErrNotFound</code>, and runs <code>Validate</code> before writing:</p>
+<pre><code>func (s *Store) CreatePost(ctx context.Context, p models.Post) (models.Post, error) {
 	if err := p.Validate(); err != nil {
-		return domain.Post{}, err
+		return models.Post{}, err
 	}
-	row, err := s.q.CreatePost(ctx, CreatePostParams{Title: p.Title, Body: p.Body})
+	row, err := s.q.CreatePost(ctx, sqlc.CreatePostParams{Title: p.Title, Body: p.Body})
 	if err != nil {
-		return domain.Post{}, fmt.Errorf("models: create post: %w", err)
+		return models.Post{}, fmt.Errorf("store: create post: %w", err)
 	}
 	return postFromRow(row), nil
 }</code></pre>
-<p><code>GetPost</code>, <code>ListPosts</code>, <code>UpdatePost</code> and <code>DeletePost</code> follow the same shape. <code>app/models/posts_test.go</code> is a Ginkgo spec on the real test database: an unknown or malformed id is <code>ErrNotFound</code>, an update to a missing post is <code>ErrNotFound</code>, and a saved post reads back, lists, updates and deletes. <code>test/factories/posts.go</code> builds valid posts for it and for every other spec (<code>factories.Post(GinkgoT(), store)</code>). It's yours to edit once written. Store specs need the database up: <code>make up</code> first. See <a href="testing.html">Testing and CI</a>.</p>
+<p><code>GetPost</code>, <code>ListPosts</code>, <code>UpdatePost</code> and <code>DeletePost</code> follow the same shape. The <code>Store</code> itself, its connection pool and its unexported <code>withTx</code> live in <code>db/adapter/store.go</code>, written once by <code>bogie new</code>. <code>db/adapter/posts_test.go</code> is a Ginkgo spec on the real test database, with a <code>Describe</code> per store method: an id that is not a number, is empty, or matches no post is <code>ErrNotFound</code> for both <code>GetPost</code> and <code>DeletePost</code>, an update to a missing post is <code>ErrNotFound</code>, and a saved post reads back, lists, updates and deletes. <code>test/factories/posts.go</code> builds valid posts for it and for every other spec (<code>factories.Post(GinkgoT(), store)</code>). It's yours to edit once written. Store specs need the database up: <code>make up</code> first. See <a href="testing.html">Testing and CI</a>.</p>
 
 <h2>Attribute types</h2>
 <p><code>string text integer bigint boolean datetime uuid jsonb references</code>, each optionally followed by <code>:index</code> or <code>:uniq</code>:</p>
 <pre><code>bogie g model comment body:text post:references score:integer</code></pre>
-<p><code>string</code> is Postgres <code>varchar</code> (unlimited, as Rails leaves it with no <code>:limit</code>) and <code>text</code> is <code>text</code>: the distinction Rails makes is kept, not collapsed. Columns written by v0.2.3 and earlier keep whatever their migration already says.</p>
+<p><code>string</code> is Postgres <code>varchar</code> (unlimited) and <code>text</code> is <code>text</code>: the distinction is kept, not collapsed. Columns written by v0.2.3 and earlier keep whatever their migration already says.</p>
 <p><code>post:references</code> writes the column <code>post_id</code> as <code>bigint NOT NULL REFERENCES posts (id)</code>, with its own index (<code>uuid</code> in an <code>--id=uuid</code> app: a foreign key is always made of whatever its target's id is). <code>slug:string:uniq</code> adds a unique constraint.</p>
 
 <h2 id="ids">Id schemes</h2>
-<p>Since v0.2.9 every <code>id</code> is a <code>bigserial</code>, an auto-incrementing <code>bigint</code>, as Rails does by default. <code>bogie new NAME --id=uuid</code> makes them <code>uuid PRIMARY KEY DEFAULT gen_random_uuid()</code> instead. Pick uuid when an API should not reveal how many records exist (<code>/orders/41</code> next to <code>/orders/42</code> does); pick bigint when people read the ids.</p>
-<pre><code>bogie new blog              # id bigserial, domain ID int64
-bogie new blog --id=uuid    # id uuid, domain ID string</code></pre>
+<p>Since v0.2.9 every <code>id</code> is a <code>bigserial</code>, an auto-incrementing <code>bigint</code>. <code>bogie new NAME --id=uuid</code> makes them <code>uuid PRIMARY KEY DEFAULT gen_random_uuid()</code> instead. Pick uuid when an API should not reveal how many records exist (<code>/orders/41</code> next to <code>/orders/42</code> does); pick bigint when people read the ids.</p>
+<pre><code>bogie new blog              # id bigserial, model ID int64
+bogie new blog --id=uuid    # id uuid, model ID string</code></pre>
 <p>The choice is made once, for the whole app, and written to <code>bogie.toml</code> as <code>id = "bigint"</code> or <code>id = "uuid"</code>. Every later <code>g model</code>, <code>g scaffold</code> and <code>g authentication</code> reads it, and so does <code>app:update</code>. It cannot be mixed per model, because a <code>references</code> column has to match the id it points to. Store methods still take the id as the string from the URL; the store parses it for its scheme, and an id that does not parse is <code>ErrNotFound</code>.</p>
 <p>An app made before v0.2.9 has no <code>id</code> line in <code>bogie.toml</code>. That reads as <code>uuid</code>, what it was always generated with, so its new models keep matching its old tables. Do not add <code>id = "bigint"</code> to such an app: new tables would get bigint ids and the new <code>references</code> columns would no longer match the uuid ids already there.</p>
 
@@ -147,7 +150,7 @@ ALTER TABLE posts ADD COLUMN slug varchar NOT NULL DEFAULT '' UNIQUE;
 
 -- +goose Down
 ALTER TABLE posts DROP COLUMN slug;</code></pre>
-<p>The migration generator runs sqlc immediately too, so <code>app/models/*.sql.go</code> changes before the migration is ever applied, and a renamed column shows up as a compile error right away.</p>
+<p>The migration generator runs sqlc immediately too, so <code>db/sqlc/*.sql.go</code> changes before the migration is ever applied, and a renamed column shows up as a compile error right away.</p>
 
 <h2>Running them</h2>
 <pre><code>bogie db:migrate
@@ -156,28 +159,28 @@ bogie db:migrate:status
 bogie db:reset
 bogie db:seed
 bogie db:version</code></pre>
-<p>All through the app's own binary, never the goose CLI directly, so development runs exactly what a deployed container runs. <code>db:reset</code> drops the database and rebuilds it from the migrations; there is no <code>schema.rb</code> to load instead. Seeds are not migrations: they are plain Go, written with <code>bogie g seed</code> and run, every one of them, by <code>bogie db:seed</code>. See <a href="seeds.html">Seeds</a>.</p>
+<p>All through the app's own binary, never the goose CLI directly, so development runs exactly what a deployed container runs. <code>db:reset</code> drops the database and rebuilds it from the migrations; there is no schema dump to load instead. Seeds are not migrations: they are plain Go, written with <code>bogie g seed</code> and run, every one of them, by <code>bogie db:seed</code>. See <a href="seeds.html">Seeds</a>.</p>
 
 <h2 id="extra">Hand-written code beside generated code</h2>
-<p><code>g model</code> writes two files whole every time it runs: <code>db/queries/&lt;table&gt;.sql</code> and <code>app/models/&lt;table&gt;.go</code>. A query or method written straight into either is reported <code>conflict</code> on the next run. Since v0.2.10 both files open with a comment that says so. Put your own code in a sibling <code>_extra</code> file instead:</p>
+<p><code>g model</code> writes two files whole every time it runs: <code>db/queries/&lt;table&gt;.sql</code> and <code>db/adapter/&lt;table&gt;.go</code>. Run it again and each file is reported <code>identical</code> when nothing changed, or <code>conflict</code> when it differs from what the generator would write, as it does after a query or method written straight into it. A conflict leaves the differing file as it is (a file that does not exist yet is still created) and the command exits with an error; only <code>--force</code> overwrites. Both files open with a comment that says so. Put your own code in a sibling <code>_extra</code> file instead:</p>
 <ul>
   <li><strong><code>db/queries/posts_extra.sql</code></strong> for a hand-written query. sqlc compiles every <code>*.sql</code> file in <code>db/queries/</code>, so <code>make sqlc</code> picks it up like the generated ones.</li>
-  <li><strong><code>app/models/posts_extra.go</code></strong> for a hand-written store method. Go merges every file in a package, so the store gains the method and the generator never sees it.</li>
+  <li><strong><code>db/adapter/posts_extra.go</code></strong> for a hand-written store method. Go merges every file in a package, so the store gains the method and the generator never sees it.</li>
 </ul>
 <pre><code>-- db/queries/posts_extra.sql
 -- name: ListPostsByTitle :many
 SELECT * FROM posts WHERE title = $1 ORDER BY created_at DESC;</code></pre>
-<pre><code>// app/models/posts_extra.go
-package models
+<pre><code>// db/adapter/posts_extra.go
+package adapter
 
-func (s *Store) PostsByTitle(ctx context.Context, title string) ([]domain.Post, error) {
+func (s *Store) PostsByTitle(ctx context.Context, title string) ([]models.Post, error) {
 	// call s.q.ListPostsByTitle (written by make sqlc) and convert
 	// each row with postFromRow, as the generated methods do
 }</code></pre>
 
 <h2>Taking it out</h2>
 <pre><code>bogie d model post</code></pre>
-<p>Removes the migration, the queries, the domain type and the store, the same way <code>bogie g model</code> wrote them.</p>
+<p>Removes everything <code>bogie g model</code> wrote for it: the migration, the queries, the model and its spec, the store and its spec, the factory, and sqlc's output for the table. A migration that was already applied somewhere stays applied there; <code>bogie db:reset</code> rebuilds the development database from the files that remain.</p>
 </article>
 <!-- @docs-end -->
 
