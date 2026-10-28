@@ -101,6 +101,34 @@ blog:                               server:
 </ol>
 <p>An app still on v0.2 should make the v0.3 move above first. Its <code>store_test.go</code> reads the old flat config, so after updating to v0.4 it no longer compiles: delete it and move its model tests to the new specs. <a href="testing.html">Testing and CI</a> describes the new layout.</p>
 
+<h2 id="v0-5">Moving an app from v0.4 to v0.5</h2>
+<p>v0.5.0 moved the layers of a generated app, and <code>app:update</code> merges one file at a time, so it cannot follow a move. Run on an app made by v0.4.1 or earlier, it exits with a conflict and the app no longer builds. What moved:</p>
+<div class="table-wrap">
+<table>
+<tr><th>v0.4</th><th>v0.5</th></tr>
+<tr><td><code>app/domain/</code> (the types and their rules)</td><td><code>app/models/</code></td></tr>
+<tr><td><code>app/models/</code> (the Store, ids, <code>uuid.go</code>)</td><td><code>db/adapter/</code></td></tr>
+<tr><td>sqlc's output in <code>app/models/</code></td><td><code>db/sqlc/</code></td></tr>
+</table>
+</div>
+<p>The conflict is in <code>app/models/models.go</code>: in v0.4 that file is sqlc's generated output, and in v0.5 the same path holds the package doc and the <code>ErrNotFound</code> and <code>ErrInvalid</code> errors. The old files are reported <code>retired</code> and left in place, so the old and new layers sit side by side until you remove the old ones.</p>
+<p>These steps worked on a v0.4.1 app with one scaffold, both a default (bigint) app and one made with <code>--id=uuid</code>, and <code>bin/ci</code> passed on both. A v0.2 or v0.3 app should make the v0.3 and v0.4 moves above first.</p>
+<ol>
+<li>Commit (<code>git commit -am "before app:update"</code>), install the new Bogie, and run <code>bogie app:update</code>. It exits 1 with <code>conflict app/models/models.go</code>. That is expected; the other files are updated.</li>
+<li>In <code>app/models/models.go</code>, keep the <code>bogie v0.5</code> side of the conflict (the package doc and the two errors) and delete the <code>yours</code> side and the markers.</li>
+<li>Delete the old layout. For each model, that is its <code>app/models/&lt;table&gt;.go</code>, <code>&lt;table&gt;.sql.go</code> and <code>&lt;table&gt;_test.go</code>:
+<pre><code>rm -rf app/domain
+rm app/models/db.go app/models/id.go app/models/store.go
+rm app/models/products.go app/models/products.sql.go app/models/products_test.go
+rm -f app/models/uuid.go   # uuid apps only; app:update does not list it as retired</code></pre>
+A uuid app that keeps <code>uuid.go</code> fails <code>golangci-lint</code> with <code>parseUUID is unused</code>.</li>
+<li>Regenerate each resource into the new layout. <code>--force</code> rewrites its files; the migration is reported identical, so no second one is written:
+<pre><code>bogie g scaffold product name:string price:integer --force</code></pre>
+For a model without a controller, use <code>g model</code> with the same attributes and <code>--force</code>. It writes <code>app/models/&lt;name&gt;.go</code> and <code>db/adapter/&lt;table&gt;.go</code>, with the factory, controller and specs, and runs sqlc into <code>db/sqlc</code>.</li>
+<li>Run <code>go build ./...</code>, <code>bogie doctor</code> and <code>bin/ci</code>, then commit.</li>
+</ol>
+<p><strong>Know before you start.</strong> Regenerating overwrites the files it writes, so port any hand edits in your store, controller, views or specs into the new files afterwards. Only apps with scaffolds were tried. Apps with hand-written store code, <code>g authentication</code>, <code>g config</code>, jobs or services were not, so check those by hand.</p>
+
 </article>
 <!-- @docs-end -->
 
