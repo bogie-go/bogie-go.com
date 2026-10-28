@@ -41,9 +41,9 @@ NAV = [
                ("deploying", "Deploying"),
                ("upgrading", "Upgrading an app")]),
     ("Reference", [("conventions", "Conventions and agents"),
-                   ("from-rails", "From Rails"),
                    ("commands", "Command reference"),
-                   ("releases", "Releases")]),
+                   ("releases", "Releases"),
+                   ("from-rails", "Rails equivalents")]),
 ]
 FLAT = [(slug, title, sec) for sec, items in NAV for slug, title in items]
 
