@@ -41,7 +41,6 @@ NAV = [
                ("deploying", "Deploying"),
                ("upgrading", "Upgrading an app")]),
     ("Reference", [("conventions", "Conventions and agents"),
-                   ("from-rails", "From Rails"),
                    ("commands", "Command reference"),
                    ("releases", "Releases")]),
 ]
