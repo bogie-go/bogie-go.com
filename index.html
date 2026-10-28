@@ -3,25 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bogie — Go like Rails for API services</title>
-<meta name="description" content="Scaffold a Go API with Rails-style generators. Plain Go on Gin, sqlc, goose, River &amp; Kamal — beside your Rails app, not a rewrite. bogie new → production.">
+<title>Bogie — A Go API service, from zero to production</title>
+<meta name="description" content="A CLI that scaffolds a production-ready Go API: plain Go on Gin, sqlc and goose, with Kamal deploys and optional River jobs. From `bogie new` to deploy.">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="style.css">
 <link rel="canonical" href="https://bogie-go.com/">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Bogie">
-<meta property="og:title" content="Bogie — Go like Rails for API services">
-<meta property="og:description" content="Scaffold a Go API with Rails-style generators. Plain Go on Gin, sqlc, goose, River &amp; Kamal — beside your Rails app, not a rewrite. bogie new → production.">
+<meta property="og:title" content="Bogie — A Go API service, from zero to production">
+<meta property="og:description" content="A CLI that scaffolds a production-ready Go API: plain Go on Gin, sqlc and goose, with Kamal deploys and optional River jobs. From `bogie new` to deploy.">
 <meta property="og:url" content="https://bogie-go.com/">
 <meta property="og:image" content="https://bogie-go.com/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Bogie — Go like Rails for API services">
-<meta name="twitter:description" content="Scaffold a Go API with Rails-style generators. Plain Go on Gin, sqlc, goose, River &amp; Kamal — beside your Rails app, not a rewrite. bogie new → production.">
+<meta name="twitter:title" content="Bogie — A Go API service, from zero to production">
+<meta name="twitter:description" content="A CLI that scaffolds a production-ready Go API: plain Go on Gin, sqlc and goose, with Kamal deploys and optional River jobs. From `bogie new` to deploy.">
 <meta name="twitter:image" content="https://bogie-go.com/og.png">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebSite", "@id": "https://bogie-go.com/#site", "name": "Bogie", "url": "https://bogie-go.com/", "description": "Go like Rails for API services. Rails conventions, laid on Go track, beside your Rails app."}, {"@type": "SoftwareApplication", "@id": "https://bogie-go.com/#app", "name": "Bogie", "url": "https://bogie-go.com", "applicationCategory": "DeveloperApplication", "operatingSystem": "Linux, macOS, Windows", "softwareVersion": "{{VERSION_NUM}}", "programmingLanguage": "Go", "license": "https://github.com/bogie-go/bogie/blob/main/LICENSE", "codeRepository": "https://github.com/bogie-go/bogie", "downloadUrl": "https://github.com/bogie-go/bogie/releases", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "A CLI that scaffolds an API-only, Postgres-only Go service with Rails-style generators that wire the code in. The generated app never imports Bogie."}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is Bogie?", "acceptedAnswer": {"@type": "Answer", "text": "A command-line tool that scaffolds an API-only, Postgres-only Go service with Rails-style generators: bogie new, g scaffold, g model, g controller, g job, g seed, g authentication. It writes plain Go on top of Gin, sqlc, goose, River and Kamal, and the generated app never imports Bogie."}}, {"@type": "Question", "name": "Is there a Rails for Go?", "acceptedAnswer": {"@type": "Answer", "text": "Bogie gives Rails-style generators for an API-only Go service that sits beside your Rails app. It is not a full-stack Rails clone. For a Rails-like Go framework with views, see Andurel."}}, {"@type": "Question", "name": "How is Bogie different from go-on-rails / Go on Rails?", "acceptedAnswer": {"@type": "Answer", "text": "The go-on-rails gem generated Go code from an existing Rails app, and that project is separate and archived. Bogie is a standalone Go CLI: bogie new / g scaffold with a Rails-like layout, and the generated app never imports Bogie."}}, {"@type": "Question", "name": "Is Bogie a Go web framework?", "acceptedAnswer": {"@type": "Answer", "text": "No. There is no runtime, no base class and no DSL. Bogie renders templates and shells out to tools the Go ecosystem already ships. Delete the tool and the app does not notice. For a Rails-like Go framework with views, see Andurel."}}, {"@type": "Question", "name": "Do I need Rails to use Bogie?", "acceptedAnswer": {"@type": "Answer", "text": "No. It is built for the Rails shop that needs one network-facing Go service beside its app, so the commands, layout and vocabulary follow Rails. A Go team can use it without ever having written Ruby."}}, {"@type": "Question", "name": "Which databases does Bogie support?", "acceptedAnswer": {"@type": "Answer", "text": "Postgres only, by design. Background jobs run on River, which uses the same Postgres, so there is no Redis. SQLite was considered and declined until River's SQLite driver is stable."}}, {"@type": "Question", "name": "How do I install Bogie?", "acceptedAnswer": {"@type": "Answer", "text": "go install github.com/bogie-go/bogie@latest. Generated apps need Go 1.26 or newer (the CLI itself builds with 1.25). Postgres runs in Docker, with Compose v2, from the generated app's own compose file. There is no Homebrew tap and nothing prebuilt."}}, {"@type": "Question", "name": "How does a generated app get upgraded?", "acceptedAnswer": {"@type": "Answer", "text": "bogie app:update is a three-way merge: it renders what the recorded Bogie version generated, what the current version generates, and merges each template-owned file with your edits kept. Only a real overlap leaves conflict markers."}}, {"@type": "Question", "name": "Can an AI agent work in a Bogie app?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Every generated app ships an AGENTS.md with the six rules, every command and a recipe per task, and the generators register code above visible marker comments, so an agent's change is a diff a person can review."}}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebSite", "@id": "https://bogie-go.com/#site", "name": "Bogie", "url": "https://bogie-go.com/", "description": "A Go API service, from zero to production. A CLI that scaffolds plain Go on Gin, sqlc and goose, with Kamal deploys and optional River jobs."}, {"@type": "SoftwareApplication", "@id": "https://bogie-go.com/#app", "name": "Bogie", "url": "https://bogie-go.com", "applicationCategory": "DeveloperApplication", "operatingSystem": "Linux, macOS, Windows", "softwareVersion": "{{VERSION_NUM}}", "programmingLanguage": "Go", "license": "https://github.com/bogie-go/bogie/blob/main/LICENSE", "codeRepository": "https://github.com/bogie-go/bogie", "downloadUrl": "https://github.com/bogie-go/bogie/releases", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "A CLI that scaffolds an API-only, Postgres-only Go service, with generators that also wire the code in. The generated app never imports Bogie."}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is Bogie?", "acceptedAnswer": {"@type": "Answer", "text": "A command-line tool that scaffolds an API-only, Postgres-only Go service with generators that also wire the code in: bogie new, g scaffold, g model, g controller, g job, g seed, g authentication. It writes plain Go on top of Gin, sqlc, goose, River and Kamal, and the generated app never imports Bogie."}}, {"@type": "Question", "name": "How is Bogie different from go-on-rails / Go on Rails?", "acceptedAnswer": {"@type": "Answer", "text": "The go-on-rails gem generated Go code from an existing Rails app, and that project is separate and archived. Bogie is an unrelated standalone Go CLI: bogie new and g scaffold create a Go service from nothing, and the generated app never imports Bogie."}}, {"@type": "Question", "name": "Is Bogie a Go web framework?", "acceptedAnswer": {"@type": "Answer", "text": "No. There is no runtime, no base class and no DSL. Bogie renders templates and shells out to tools the Go ecosystem already ships. Delete the tool and the app does not notice. For a Go framework with views, see Andurel."}}, {"@type": "Question", "name": "Which databases does Bogie support?", "acceptedAnswer": {"@type": "Answer", "text": "Postgres only, by design. Background jobs run on River, which uses the same Postgres, so there is no Redis. SQLite was considered and declined until River's SQLite driver is stable."}}, {"@type": "Question", "name": "How do I install Bogie?", "acceptedAnswer": {"@type": "Answer", "text": "go install github.com/bogie-go/bogie@latest. Generated apps need Go 1.26 or newer (the CLI itself builds with 1.25). Postgres runs in Docker, with Compose v2, from the generated app's own compose file. There is no Homebrew tap and nothing prebuilt."}}, {"@type": "Question", "name": "How does a generated app get upgraded?", "acceptedAnswer": {"@type": "Answer", "text": "bogie app:update is a three-way merge: it renders what the recorded Bogie version generated, what the current version generates, and merges each template-owned file with your edits kept. Only a real overlap leaves conflict markers."}}, {"@type": "Question", "name": "Can an AI agent work in a Bogie app?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Every generated app ships an AGENTS.md with the six rules, every command and a recipe per task, and the generators register code above visible marker comments, so an agent's change is a diff a person can review."}}]}]}</script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
 <script>
@@ -40,9 +40,9 @@
 <section class="wrap hero">
   <div class="copytext">
     <div class="tags"><a class="pill" href="https://github.com/bogie-go/bogie/releases">{{VERSION}}</a><span>A generator for Go services · MIT</span></div>
-    <p class="eyebrow">Rails conventions, laid on Go track.</p>
-    <h1 class="display"><span class="go">Go like Rails</span> for one API service.</h1>
-    <p class="lead">Go like Rails for scaffolding an API — plain Go on Gin, sqlc, and Postgres, beside your Rails app, not a rewrite. Scaffold an API service in minutes, and get plain Go code you can read and own. It never imports Bogie.</p>
+    <p class="eyebrow">Conventions, laid on Go track.</p>
+    <h1 class="display"><span class="go">A Go API service,</span> from zero to production.</h1>
+    <p class="lead">Scaffold an API-only, Postgres-only Go service in minutes: plain Go on Gin, sqlc and goose, with Kamal deploys and optional River jobs. You get code you can read and own, and it never imports Bogie.</p>
     <div class="terminal">
       <header><span>Install · new · run</span><button type="button" class="copy" data-copy="go install github.com/bogie-go/bogie@latest
 bogie new blog
@@ -53,12 +53,12 @@ cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server">
     </div>
     <div class="ctas">
       <a class="btn btn-primary" href="/docs/">Read the guides</a>
-      <a class="btn btn-outline" href="/docs/from-rails.html">Coming from Rails?</a>
+      <a class="btn btn-outline" href="/docs/commands.html">Command reference</a>
     </div>
   </div>
   <figure class="mascot">
-    <div class="plate"><img src="bogie.webp" width="1212" height="1297" alt="The Bogie mascot: a gopher riding a mine cart on rails, with a ruby beside it"></div>
-    <figcaption class="caption">Go up front. Ruby’s best idea along for the ride.</figcaption>
+    <div class="plate"><img src="bogie.webp" width="1212" height="1297" alt="Bogie's mascot: a gopher and a red gem riding a mine cart along a track"></div>
+    <figcaption class="caption">Go up front. The generators ride along.</figcaption>
   </figure>
 </section>
 
@@ -121,11 +121,11 @@ cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server">
   <h2 class="display" style="max-width: 14em; margin-bottom: 56px">Nothing exists until it is written down and registered.</h2>
   <div class="cards">
     <div class="card">
-      <h3>What you keep from Rails</h3>
+      <h3>What the generators give you</h3>
       <ul>
         <li>Generators: <code>new</code>, <code>g scaffold</code>, <code>d</code> to undo</li>
-        <li>A layout you already know: <code>app/controllers</code>, <code>db/migrate</code></li>
-        <li>The vocabulary: <code>db:migrate</code>, <code>credentials:edit</code></li>
+        <li>A layout where every file has a place: <code>app/controllers</code>, <code>db/migrate</code></li>
+        <li>Commands that read the same everywhere: <code>db:migrate</code>, <code>credentials:edit</code></li>
         <li>One way to do it, so reviews talk about the work</li>
       </ul>
     </div>
@@ -143,8 +143,8 @@ cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server">
       <ul>
         <li>Templates, sessions, CSRF: it serves JSON</li>
         <li>Databases other than Postgres</li>
-        <li>An ORM, fixtures, factories or a console</li>
-        <li>Replacing Rails: it runs beside it just fine</li>
+        <li>An ORM, fixtures or a console</li>
+        <li>A runtime: nothing in your app imports Bogie</li>
       </ul>
     </div>
   </div>
@@ -155,26 +155,26 @@ cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server">
 <section class="wrap section tight">
   <p class="eyebrow">The line</p>
   <h2 class="display" style="margin-bottom: 20px">Every app rides the same four stops.</h2>
-  <p class="lead" style="max-width: 38em; font-size: 19px; margin-bottom: 64px">Rails gives you Active Record, Action Controller and friends. Bogie gives you the same separation, spelled out in plain Go. Here is what <code>bogie g scaffold post</code> lays down, plus a job from <code>bogie g job</code>.</p>
+  <p class="lead" style="max-width: 38em; font-size: 19px; margin-bottom: 64px">Models, controllers and views stay separate, and each is spelled out in plain Go. Here is what <code>bogie g scaffold post</code> lays down, plus a job from <code>bogie g job</code>.</p>
 
   <ol class="stops">
     <li class="stop">
       <div aria-hidden="true"><div class="dot"></div></div>
       <div class="body">
         <div class="text">
-          <div class="where">01 · app/domain · db/queries · app/models</div>
+          <div class="where">01 · app/models · db/queries · db/adapter</div>
           <h3>Models keep the SQL honest</h3>
-          <p>A domain type with no third-party imports. Named queries in plain SQL, compiled by sqlc onto pgx. A store maps one to the other, and runs the model's validations on save. When you want to know what hits the database, you open a <code>.sql</code> file.</p>
+          <p>A model type with no third-party imports. Named queries in plain SQL, compiled by sqlc onto pgx. A store in <code>db/adapter</code> maps one to the other, and runs the model's validations on save. When you want to know what hits the database, you open a <code>.sql</code> file.</p>
         </div>
         <div class="panels">
-          <div class="panel"><pre class="code"><span class="c">// app/domain/post.go</span>
+          <div class="panel"><pre class="code"><span class="c">// app/models/post.go</span>
 <span class="k">type</span> <span class="t">Post</span> <span class="k">struct</span> {
-	ID          <span class="t">string</span>
+	ID          <span class="t">int64</span>
 	Title       <span class="t">string</span>
 	Body        <span class="t">string</span>
 	Score       <span class="t">int32</span>
 	PublishedAt <span class="t">time.Time</span>
-	AuthorID    <span class="t">string</span>
+	AuthorID    <span class="t">int64</span>
 	CreatedAt   <span class="t">time.Time</span>
 	UpdatedAt   <span class="t">time.Time</span>
 }</pre></div>
@@ -192,14 +192,14 @@ cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server">
         <div class="text">
           <div class="where">02 · app/controllers</div>
           <h3>Controllers convert and call</h3>
-          <p>A handler converts HTTP into domain values, calls one method on a store interface declared next to it holding only what that controller needs, and converts the result back. <code>*gin.Context</code> never leaves this folder.</p>
+          <p>A handler converts HTTP into model values, calls one method on a store interface declared next to it holding only what that controller needs, and converts the result back. <code>*gin.Context</code> never leaves this folder.</p>
         </div>
         <div class="panel"><pre class="code"><span class="c">// app/controllers/posts_controller.go</span>
 <span class="k">type</span> <span class="t">postsStore</span> <span class="k">interface</span> {
-	<span class="f">CreatePost</span>(ctx <span class="t">context.Context</span>, p <span class="t">domain.Post</span>) (<span class="t">domain.Post</span>, <span class="t">error</span>)
-	<span class="f">GetPost</span>(ctx <span class="t">context.Context</span>, id <span class="t">string</span>) (<span class="t">domain.Post</span>, <span class="t">error</span>)
-	<span class="f">ListPosts</span>(ctx <span class="t">context.Context</span>, limit <span class="t">int32</span>) ([]<span class="t">domain.Post</span>, <span class="t">error</span>)
-	<span class="f">UpdatePost</span>(ctx <span class="t">context.Context</span>, p <span class="t">domain.Post</span>) (<span class="t">domain.Post</span>, <span class="t">error</span>)
+	<span class="f">CreatePost</span>(ctx <span class="t">context.Context</span>, p <span class="t">models.Post</span>) (<span class="t">models.Post</span>, <span class="t">error</span>)
+	<span class="f">GetPost</span>(ctx <span class="t">context.Context</span>, id <span class="t">string</span>) (<span class="t">models.Post</span>, <span class="t">error</span>)
+	<span class="f">ListPosts</span>(ctx <span class="t">context.Context</span>, limit <span class="t">int32</span>) ([]<span class="t">models.Post</span>, <span class="t">error</span>)
+	<span class="f">UpdatePost</span>(ctx <span class="t">context.Context</span>, p <span class="t">models.Post</span>) (<span class="t">models.Post</span>, <span class="t">error</span>)
 	<span class="f">DeletePost</span>(ctx <span class="t">context.Context</span>, id <span class="t">string</span>) <span class="t">error</span>
 }</pre></div>
       </div>
@@ -211,11 +211,11 @@ cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server">
         <div class="text">
           <div class="where">03 · app/views</div>
           <h3>Views are the wire contract</h3>
-          <p>A domain type never doubles as a wire type, so a field added to the database does not silently appear on the wire. Requests and responses are their own structs.</p>
+          <p>A model type never doubles as a wire type, so a field added to the database does not silently appear on the wire. Requests and responses are their own structs.</p>
         </div>
         <div class="panel"><pre class="code"><span class="c">// app/views/posts.go</span>
 <span class="k">type</span> <span class="t">PostResponse</span> <span class="k">struct</span> {
-	ID          <span class="t">string</span>    <span class="s">`json:"id"`</span>
+	ID          <span class="t">int64</span>     <span class="s">`json:"id"`</span>
 	Title       <span class="t">string</span>    <span class="s">`json:"title"`</span>
 	Body        <span class="t">string</span>    <span class="s">`json:"body"`</span>
 	PublishedAt <span class="t">time.Time</span> <span class="s">`json:"published_at"`</span>
@@ -262,7 +262,7 @@ cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server">
     <ol class="rules">
       <li><span class="n">1</span><span class="rule"><code>ctx</code> comes first on anything that does I/O.</span></li>
       <li><span class="n">2</span><span class="rule">Interfaces are declared where they are consumed.</span></li>
-      <li><span class="n">3</span><span class="rule">The domain layer imports nothing third-party.</span></li>
+      <li><span class="n">3</span><span class="rule">The models layer imports nothing third-party.</span></li>
       <li><span class="n">4</span><span class="rule">Constructors return <code>(T, error)</code>.</span></li>
       <li><span class="n">5</span><span class="rule">The HTTP context never leaves the controllers.</span></li>
       <li><span class="n">6</span><span class="rule">No <code>utils</code>, <code>helpers</code> or <code>common</code> packages.</span></li>
@@ -273,25 +273,24 @@ cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server">
 <section class="wrap section split top">
   <div>
     <p class="eyebrow">Change at this station</p>
-    <h2 class="display">Already speak Rails? You speak Bogie.</h2>
-    <p class="lead">Rails shops are Bogie’s first passengers: when the team needs one fast, network-facing Go service, the commands and folders are already in their fingers. Go teams get the same thing without ever having written Ruby.</p>
-    <a class="arrow" href="/docs/from-rails.html">Read the From Rails guide →</a>
+    <h2 class="display">Everything you type, in one table.</h2>
+    <p class="lead">The same few commands, whatever the service is for: generate, migrate, test, deploy. Tasks that name a thing take a colon, as in <code>db:migrate</code>; everything else is a plain word.</p>
+    <a class="arrow" href="/docs/commands.html">Read the command reference →</a>
   </div>
   <div class="table-wrap">
     <table>
-      <thead><tr><th scope="col">Rails</th><th scope="col">Bogie</th></tr></thead>
+      <thead><tr><th scope="col">To</th><th scope="col">Run or open</th></tr></thead>
       <tbody class="mono">
-        <tr><td class="from">rails new blog</td><td>bogie new blog</td></tr>
-        <tr><td class="from">rails server</td><td>bogie s</td></tr>
-        <tr><td class="from">bin/dev, Spring</td><td>bogie server (reload built in)</td></tr>
-        <tr><td class="from">rails g scaffold</td><td>bogie g scaffold</td></tr>
-        <tr><td class="from">rails g authentication</td><td>bogie g authentication</td></tr>
-        <tr><td class="from">rails g job</td><td>bogie g job</td></tr>
-        <tr><td class="from">rails db:migrate</td><td>bogie db:migrate</td></tr>
-        <tr><td class="from">rails credentials:edit</td><td>bogie credentials:edit</td></tr>
-        <tr><td class="from">rails test</td><td>bogie t</td></tr>
-        <tr><td class="from">config/routes.rb</td><td>app/controllers/routes.go</td></tr>
-        <tr><td class="from">app/models/post.rb</td><td>app/domain/post.go<br>app/models/posts.go<br>db/queries/posts.sql</td></tr>
+        <tr><td class="from">Start a service</td><td>bogie new blog</td></tr>
+        <tr><td class="from">Run it, reloading on save</td><td>bogie s</td></tr>
+        <tr><td class="from">Generate a whole resource</td><td>bogie g scaffold</td></tr>
+        <tr><td class="from">Guard a route group</td><td>bogie g authentication</td></tr>
+        <tr><td class="from">Add a background job</td><td>bogie g job</td></tr>
+        <tr><td class="from">Migrate the database</td><td>bogie db:migrate</td></tr>
+        <tr><td class="from">Edit encrypted settings</td><td>bogie credentials:edit</td></tr>
+        <tr><td class="from">Run the tests</td><td>bogie t</td></tr>
+        <tr><td class="from">See the routing table</td><td>app/controllers/routes.go</td></tr>
+        <tr><td class="from">Find a post</td><td>app/models/post.go<br>db/adapter/posts.go<br>db/queries/posts.sql</td></tr>
       </tbody>
     </table>
   </div>
@@ -300,13 +299,13 @@ cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server">
 <section class="wrap section">
   <p class="eyebrow">Not the same train</p>
   <h2 class="display" style="margin-bottom: 20px">Bogie vs nearby tools.</h2>
-  <p class="lead" style="max-width: 38em; margin-bottom: 32px">Three projects get mentioned in the same breath because they all put Rails and Go in one sentence. They solve different problems.</p>
+  <p class="lead" style="max-width: 38em; margin-bottom: 32px">Three projects get mentioned together. They solve different problems.</p>
   <div class="table-wrap">
     <table>
       <thead><tr><th scope="col"></th><th scope="col">Bogie</th><th scope="col">go-on-rails (gem)</th><th scope="col">Andurel</th></tr></thead>
       <tbody>
-        <tr><td class="from">What</td><td>Standalone Go CLI, Rails-like generators for API services</td><td>Rails generator that emitted Go from a Rails app</td><td>Rails-like Go with views</td></tr>
-        <tr><td class="from">Fits</td><td>One Go API beside Rails</td><td>Legacy generate-from-Rails workflow</td><td>Full-stack Go wanting views</td></tr>
+        <tr><td class="from">What</td><td>Standalone Go CLI, generators for API services</td><td>Rails generator that emitted Go from a Rails app</td><td>Full-stack Go with views</td></tr>
+        <tr><td class="from">Fits</td><td>One Go API service</td><td>Legacy generate-from-Rails workflow</td><td>Full-stack Go wanting views</td></tr>
       </tbody>
     </table>
   </div>
@@ -321,17 +320,17 @@ cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server">
     <div class="feature"><code>AGENTS.md · CLAUDE.md</code><h3>Written for agents and humans</h3><p>Every app ships the six rules, every command and a recipe per generator. Because nothing is implicit, an agent’s change is a diff you can actually review.</p></div>
     <div class="feature"><code>bin/ci</code><h3>CI runs on your machine</h3><p><code>bin/ci</code> is the whole pipeline: tests with race detection, gofmt, vet and golangci-lint. No hosted runner to wait on.</p></div>
     <div class="feature"><code>bogie server · bogie worker</code><h3>Reload on save</h3><p>Development runs the server and the worker under Air: save a file and it rebuilds and restarts. Migrations are embedded in the binary and applied at boot, so a new one is picked up on the next reload too. Production runs the compiled binary, untouched.</p></div>
-    <div class="feature"><code>Kamal</code><h3>Deploys like your Rails app</h3><p>A container, a server, one deploy tool. The service migrates at boot, so shipping is one command.</p></div>
+    <div class="feature"><code>Kamal</code><h3>One deploy tool</h3><p>A container, a server, Kamal. The service migrates at boot, so shipping is one command.</p></div>
     <div class="feature"><code>bogie d</code><h3>Undo is a command</h3><p>Destroy removes what a generator made, registration included. <code>--pretend</code> shows the change before it happens.</p></div>
     <div class="feature"><code>bogie app:update</code><h3>Upgrades that respect your edits</h3><p>A three-way merge brings a newer layout into an app you have already changed, instead of overwriting it.</p></div>
-    <div class="feature"><code>credentials:edit</code><h3>Secrets, encrypted in the repo</h3><p>Per-environment encrypted settings, edited and read the way Rails taught you.</p></div>
+    <div class="feature"><code>credentials:edit</code><h3>Secrets, encrypted in the repo</h3><p>Per-environment encrypted settings: the ciphertext is committed, the key never is.</p></div>
   </div>
 </section>
 
 <section class="proof">
   <div class="wrap inner">
-    <p class="display">One Go service next to your Rails app, <span>not a rewrite.</span></p>
-    <p>We moved the parts of our system that needed heavy concurrency and high load to Go, and kept the rest in Rails. Go handles that work well, but it gives you so many choices that building the app itself became the hard part. Bogie brings Rails's convention over configuration to that one service.</p>
+    <p class="display">Go's freedom, <span>with the decisions made.</span></p>
+    <p>We moved the parts of our system that needed heavy concurrency and high load to Go. Go handles that work well, but it gives you so many choices that building the service itself became the hard part. Bogie makes those choices once, so every service starts from a layout and a pipeline that already work.</p>
   </div>
 </section>
 
@@ -341,11 +340,9 @@ cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server">
   <p class="eyebrow">Questions</p>
   <h2 class="display" style="max-width: 14em; margin-bottom: 48px">Short answers, before the long guides.</h2>
   <div class="faq">
-    <div class="qa"><h3>What is Bogie?</h3><p>A command-line tool that scaffolds an API-only, Postgres-only Go service with Rails-style generators: bogie new, g scaffold, g model, g controller, g job, g seed, g authentication. It writes plain Go on top of Gin, sqlc, goose, River and Kamal, and the generated app never imports Bogie.</p></div>
-    <div class="qa"><h3>Is there a Rails for Go?</h3><p>Bogie gives Rails-style generators for an API-only Go service that sits beside your Rails app. It is not a full-stack Rails clone. For a Rails-like Go framework with views, see Andurel.</p></div>
-    <div class="qa"><h3>How is Bogie different from go-on-rails / Go on Rails?</h3><p>The go-on-rails gem generated Go code from an existing Rails app, and that project is separate and archived. Bogie is a standalone Go CLI: bogie new / g scaffold with a Rails-like layout, and the generated app never imports Bogie.</p></div>
-    <div class="qa"><h3>Is Bogie a Go web framework?</h3><p>No. There is no runtime, no base class and no DSL. Bogie renders templates and shells out to tools the Go ecosystem already ships. Delete the tool and the app does not notice. For a Rails-like Go framework with views, see Andurel.</p></div>
-    <div class="qa"><h3>Do I need Rails to use Bogie?</h3><p>No. It is built for the Rails shop that needs one network-facing Go service beside its app, so the commands, layout and vocabulary follow Rails. A Go team can use it without ever having written Ruby.</p></div>
+    <div class="qa"><h3>What is Bogie?</h3><p>A command-line tool that scaffolds an API-only, Postgres-only Go service with generators that also wire the code in: bogie new, g scaffold, g model, g controller, g job, g seed, g authentication. It writes plain Go on top of Gin, sqlc, goose, River and Kamal, and the generated app never imports Bogie.</p></div>
+    <div class="qa"><h3>How is Bogie different from go-on-rails / Go on Rails?</h3><p>The go-on-rails gem generated Go code from an existing Rails app, and that project is separate and archived. Bogie is an unrelated standalone Go CLI: bogie new and g scaffold create a Go service from nothing, and the generated app never imports Bogie.</p></div>
+    <div class="qa"><h3>Is Bogie a Go web framework?</h3><p>No. There is no runtime, no base class and no DSL. Bogie renders templates and shells out to tools the Go ecosystem already ships. Delete the tool and the app does not notice. For a Go framework with views, see Andurel.</p></div>
     <div class="qa"><h3>Which databases does Bogie support?</h3><p>Postgres only, by design. Background jobs run on River, which uses the same Postgres, so there is no Redis. SQLite was considered and declined until River&#x27;s SQLite driver is stable.</p></div>
     <div class="qa"><h3>How do I install Bogie?</h3><p>go install github.com/bogie-go/bogie@latest. Generated apps need Go 1.26 or newer (the CLI itself builds with 1.25). Postgres runs in Docker, with Compose v2, from the generated app&#x27;s own compose file. There is no Homebrew tap and nothing prebuilt.</p></div>
     <div class="qa"><h3>How does a generated app get upgraded?</h3><p>bogie app:update is a three-way merge: it renders what the recorded Bogie version generated, what the current version generates, and merges each template-owned file with your edits kept. Only a real overlap leaves conflict markers.</p></div>

@@ -105,7 +105,7 @@ func (ctl *PostsController) Show(c *gin.Context) {
 <p><code>models.ErrNotFound</code> is 404, <code>models.ErrInvalid</code> is 422 (validation runs in the store, on save), and anything else is logged with its request id and answered 500 without leaking its text. The request specs check the 404 and the 400 for a malformed body through the real app and the test database.</p>
 <p>Done with a scaffold: <code>bogie d scaffold post</code> removes all of it, registration included. When a resource outgrows CRUD, <a href="services.html">a service</a> gives the logic a home that knows nothing about HTTP.</p>
 
-<h3>Only some actions, or only the controller</h3>
+<h3 id="only-some-actions">Only some actions, or only the controller</h3>
 <p><code>--only</code> writes just the actions you list, with their routes, store methods, views and request specs. The model half is always written whole:</p>
 <pre><code>bogie g scaffold category name:string:uniq --only index,show</code></pre>
 <p>That mounts <code>GET /categories</code> and <code>GET /categories/:id</code> and nothing else. To put the HTTP half over a model that already exists, in a namespace, use <code>scaffold_controller</code>. It reads the attributes back from <code>app/models</code> (so it takes none), shares the model's <code>app/views/categories.go</code>, which only gains the types it lacks, and takes <code>--only</code> too:</p>
