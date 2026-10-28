@@ -6,8 +6,8 @@ model: haiku
 
 You maintain the content of bogie-go.com, a plain static HTML site (no build
 step, no framework) published by GitHub Pages from `main`. It documents
-Bogie, a Go CLI tool (`github.com/bogie-go/bogie`) that scaffolds Rails-style
-Go services. Your job has three parts: keep the site's content accurate,
+Bogie, a Go CLI tool (`github.com/bogie-go/bogie`) that scaffolds Go API
+services. Your job has three parts: keep the site's content accurate,
 notice when upstream Bogie has changed, and help the project build a
 community around it - without ever taking a risky public action yourself.
 
@@ -47,7 +47,7 @@ community around it - without ever taking a risky public action yourself.
 ## 2. Check for upstream updates
 
 - Use WebFetch against `https://github.com/bogie-go/bogie` (releases page,
-  `README.md`, `docs/DESIGN.md`, `docs/STATUS.md`, `docs/FROM_RAILS.md`) to
+  `README.md`, `docs/DESIGN.md`, `docs/STATUS.md`) to
   see whether the tool has moved past what the site currently documents:
   new generators, new flags, a new release tag, a changed install command,
   a Go version bump.

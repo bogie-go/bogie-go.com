@@ -38,9 +38,63 @@
 <article>
 <p class="guide-eyebrow">{{SECTION}}</p>
 <h1>Releases</h1>
-<p>What each tagged release added or changed, newest first, in plain words. Each version links to its GitHub release, where the full notes and the commit list live. Changes marked <span class="badge-breaking">Breaking</span> can stop an existing app or setup working until you act; each one says what to do.</p>
+<p>What each tagged release added or changed, newest first, in plain words. Each version links to its tag on GitHub, where the commit list lives. Changes marked <span class="badge-breaking">Breaking</span> can stop an existing app or setup working until you act; each one says what to do.</p>
 <pre><code>go install github.com/bogie-go/bogie@latest   # {{VERSION}} as of this build
 bogie version</code></pre>
+<section class="release" id="v0.5.5">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.5.5">v0.5.5</a> <span class="release-date">28 Oct 2026</span></h2>
+<ul>
+  <li>The "is mounted" spec that <code>g controller</code> writes for a stub, in an app or in a namespace, now looks the method and path up in <code>app.Server.Router.Routes()</code> instead of sending a request and expecting anything but a 404. A real <code>Show</code> or <code>Destroy</code> answers 404 for a record that is not there, and that must not break the spec once the action is written. It still fails when a route was never registered or the namespace lost its mount line. A route with an id is now titled <code>GET /posts/:id</code>, not <code>/posts/1</code>. See <a href="testing.html#request-specs">Request specs</a>.</li>
+  <li>Generated Go names for a multi-word resource are camelCase, not snake_case: <code>apiKeys := router.Group("/api_keys")</code>, <code>apiKeyFromRow</code>, and <code>productCategories</code> in the list handler and its view function, where v0.5.4 wrote <code>api_keys</code>, <code>api_keyFromRow</code> and <code>product_categories</code>. <code>g authentication api_key</code> writes <code>apiKeyFromRow</code> too. Types, file names, routes and tables are unchanged.</li>
+  <li>Existing apps: <code>bogie app:update</code> from v0.5.4 changes <code>AGENTS.md</code> and <code>bogie.toml</code>; the generated code you have stays and still builds. Re-run a generator to get the new shape. See <a href="upgrading.html#v0-5-5">Moving an app from v0.5.0 to v0.5.5</a>.</li>
+</ul>
+</section>
+<section class="release" id="v0.5.4">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.5.4">v0.5.4</a> <span class="release-date">28 Oct 2026</span> <span class="badge-breaking">Breaking</span></h2>
+<div class="breaking"><p><span class="badge-breaking">Breaking</span> for an app that has a namespace made by v0.5.0 to v0.5.3. The namespace package is now plural, <code>app/controllers/admin_controllers/</code>, like every other directory. The old <code>admin_controller/</code> package keeps working after <code>app:update</code>, but <code>bogie doctor</code> does not list it, and the next <code>g controller admin/NAME</code> writes a second package that does not build. Rename the package first; the steps are in <a href="upgrading.html#v0-5-5">Moving an app from v0.5.0 to v0.5.5</a>. New apps are not affected.</p></div>
+<ul>
+  <li><code>g scaffold admin/pages</code> is a model of its own: the model is <code>admin_page</code>, the table <code>admin_pages</code>, and its <code>PagesController</code> sits in the namespace at <code>/admin/pages</code>. <code>d scaffold</code> handles the namespaced form. For a controller over an existing model, use <code>g scaffold_controller</code>.</li>
+</ul>
+</section>
+<section class="release" id="v0.5.3">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.5.3">v0.5.3</a> <span class="release-date">28 Oct 2026</span></h2>
+<ul>
+  <li><code>g scaffold --only ACTIONS</code> writes just the actions you list, with their routes, store methods, views and request specs; the model half is always whole. <code>bogie g scaffold category name:string:uniq --only index,show</code> mounts <code>GET /categories</code> and <code>GET /categories/:id</code> and nothing else.</li>
+  <li>New generator <code>g scaffold_controller [NS/]RESOURCE</code>: the HTTP half of a scaffold over a model that already exists, mounted in a namespace if you give one. It reads the attributes back from <code>app/models</code> and shares the model's views file, which only gains the types it lacks. <code>--only</code> works here too, and <code>d scaffold_controller</code> removes the controller, its spec and the emptied namespace package. See <a href="controllers.html#only-some-actions">Resources, controllers and routing</a>.</li>
+</ul>
+</section>
+<section class="release" id="v0.5.2">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.5.2">v0.5.2</a> <span class="release-date">28 Oct 2026</span></h2>
+<ul>
+  <li>The commented example <code>Context</code> in a generated model spec now compiles where you uncomment it: the model variable and its <code>BeforeEach</code> are declared at the <code>Describe</code>.</li>
+</ul>
+</section>
+<section class="release" id="v0.5.1">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.5.1">v0.5.1</a> <span class="release-date">27 Oct 2026</span></h2>
+<ul>
+  <li>New positioning: Bogie is "A Go API service, from zero to production." The README, docs, templates, help text and generated code no longer compare Bogie to Rails, and <code>docs/FROM_RAILS.md</code> is gone from the repository. The commands, the layout and their decisions are unchanged. The authentication generators now describe a trusted service and any JWT library rather than a specific app.</li>
+  <li><code>g model</code> also writes the model's own spec, <code>app/models/&lt;name&gt;_test.go</code>. It starts from the factory's defaults, so a rule added to <code>Validate</code> that the defaults break fails there, and it shows where the next rule's <code>Context</code> goes. <code>d model</code> removes it with the model, and a new app ships the <code>app/models</code> suite.</li>
+  <li>Generated not-found specs read as sentences: <code>DescribeTable("returns ErrNotFound")</code> with the entries "when the id is not a number" ("a uuid" in a uuid app), "when the id is empty" and "when no &lt;model&gt; has that id", for both <code>Get</code> and <code>Delete</code>. Generated comments say what a rule is instead of pointing at a numbered rule the reader cannot see.</li>
+  <li>Existing apps: <code>bogie app:update</code> brings in the template changes. Specs that generators wrote earlier stay as they are; re-run a generator for a resource to get the new ones. See <a href="upgrading.html#v0-5-5">Moving an app from v0.5.0 to v0.5.5</a>.</li>
+</ul>
+</section>
+<section class="release" id="v0.5.0">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.5.0">v0.5.0</a> <span class="release-date">27 Oct 2026</span> <span class="badge-breaking">Breaking</span></h2>
+<div class="breaking"><p><span class="badge-breaking">Breaking</span> The layers of a generated app moved, and <code>bogie app:update</code> cannot follow the move on its own: it exits with a conflict in <code>app/models/models.go</code> and leaves the old files <code>retired</code>. See <a href="upgrading.html#v0-5">Moving an app from v0.4 to v0.5</a> for the steps.</p></div>
+<ul>
+  <li><code>app/domain/</code> (the types and their <code>Validate</code>) is now <code>app/models/</code>. The hand-written Store, <code>withTx</code> and row conversion that lived in <code>app/models/</code> are now <code>db/adapter/</code> (package <code>adapter</code>). sqlc writes to <code>db/sqlc/</code> (package <code>sqlc</code>) instead of beside the store, and the store qualifies sqlc's types as <code>sqlc.Post</code> and <code>sqlc.CreatePostParams</code>. <code>g model</code>, <code>g scaffold</code>, <code>g authentication</code>, <code>g seed</code> and <code>d</code> write and remove the new paths.</li>
+  <li><code>withTx</code> now hands its closure the <code>pgx.Tx</code> as well as the bound queries: <code>func(tx pgx.Tx, q *sqlc.Queries) error</code>, so a hand-written store method no longer has to reach into sqlc's unexported field to get at the transaction.</li>
+  <li>The <code>bin/ci</code> step that runs <code>sqlc diff</code> is called "Schema: sqlc current" (it was "Schema: models current"); it checks <code>db/sqlc</code>.</li>
+</ul>
+</section>
+<section class="release" id="v0.4.2">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.4.2">v0.4.2</a> <span class="release-date">27 Oct 2026</span></h2>
+<ul>
+  <li>Generated store specs are organised by what they test: each store method is its own <code>Describe</code> (<code>GetPing</code>, <code>ListPings</code>, <code>UpdatePing</code>, <code>DeletePing</code>), a <code>Context</code> names the situation, and every <code>It</code> names the model ("finds the ping by id", "includes the saved ping", "removes the ping"), so a failure reads as a sentence.</li>
+  <li>The comments in the generated model type describe ids without assuming uuid: they are <code>int64</code> under the default scheme and <code>string</code> under <code>--id=uuid</code>.</li>
+  <li>Existing apps: only comments and newly generated specs change; there is nothing to move. Re-run a generator for a resource to get the new spec shape.</li>
+</ul>
+</section>
 <section class="release" id="v0.4.1">
 <h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.4.1">v0.4.1</a> <span class="release-date">24 Oct 2026</span></h2>
 <ul>

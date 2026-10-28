@@ -39,7 +39,7 @@
 <p class="guide-eyebrow">{{SECTION}}</p>
 <h1>Services</h1>
 
-<p>A scaffolded resource is CRUD over the store, and most of a Rails app's logic is not CRUD: it is "publish this post", not "update this row". Rails developers reach for a plain Ruby object; here that is <code>bogie g service</code>.</p>
+<p>A scaffolded resource is CRUD over the store, and most of an app's logic is not CRUD: it is "publish this post", not "update this row". That logic gets a package of its own, and <code>bogie g service</code> writes it.</p>
 
 <pre><code>bogie g service publish_post</code></pre>
 <pre><code>      create  app/services/publish_post/publish_post.go
@@ -66,9 +66,9 @@ func (s *Service) Run(ctx context.Context) error {
 
 <p>One package per service, named after what it does. <code>ctx</code> is the first parameter of <code>Run</code> (rule 1), and the package knows nothing about HTTP, so a controller, a background job and a test can all call the same function with the same values. The <code>store</code> interface is declared here, next to the code that calls it (rule 2), empty until you list the methods it actually needs:</p>
 <pre><code>type store interface {
-	GetPost(ctx context.Context, id string) (domain.Post, error)
+	GetPost(ctx context.Context, id string) (models.Post, error)
 }</code></pre>
-<p><code>*models.Store</code> satisfies whatever you write without this package ever being imported by <code>models</code>, and the fake in the spec stays a few lines. Rename <code>Run</code> to say what it does; that is the only thing the generator cannot name for you.</p>
+<p><code>*adapter.Store</code> satisfies whatever you write without this package ever being imported by <code>adapter</code>, and the fake in the spec stays a few lines. Rename <code>Run</code> to say what it does; that is the only thing the generator cannot name for you.</p>
 
 <h2>Not wired anywhere</h2>
 <p>Unlike a controller or a job, a service is never registered above a marker. The thing that needs it declares the dependency and constructs it:</p>

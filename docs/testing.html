@@ -40,8 +40,8 @@
 <h1>Testing and CI</h1>
 
 <h2>Where tests live</h2>
-<p>Every test in a generated app is a <a href="https://onsi.github.io/ginkgo/">Ginkgo</a> v2 spec with <a href="https://onsi.github.io/gomega/">Gomega</a> matchers: <code>Describe</code>, <code>Context</code>, <code>BeforeEach</code>, <code>It</code> and <code>Expect</code>, which reads like RSpec. Unit and edge-case specs sit beside the code they test, in an external <code>_test</code> package (<code>package models_test</code>), so they use a package the way its callers do. When a spec needs something unexported, an <code>export_test.go</code> in the package exports it for tests only. There's no mocking library.</p>
-<p>Three things more than one package needs live in <code>test/</code>, the way Rails's <code>test/</code> holds <code>test_helper.rb</code> and the factories:</p>
+<p>Every test in a generated app is a <a href="https://onsi.github.io/ginkgo/">Ginkgo</a> v2 spec with <a href="https://onsi.github.io/gomega/">Gomega</a> matchers: <code>Describe</code>, <code>Context</code>, <code>BeforeEach</code>, <code>It</code> and <code>Expect</code>. Unit and edge-case specs sit beside the code they test, in an external <code>_test</code> package (<code>package adapter_test</code>), so they use a package the way its callers do. When a spec needs something unexported, an <code>export_test.go</code> in the package exports it for tests only. There's no mocking library.</p>
+<p>Four things more than one package needs live in <code>test/</code>:</p>
 <pre><code>test/
   testdb/      a clean, migrated test database per spec
   testapp/     the whole application on that database, with a request helper
@@ -50,14 +50,14 @@
 <p>There's no <code>spec/</code> folder and no fixtures folder: fixed data belongs in <a href="seeds.html">seeds</a>. A generator writes the specs for what it generates every time it runs.</p>
 <pre><code>bogie test
 bogie t
-bogie test ./app/models
+bogie test ./db/adapter
 BLOG_ENV=test go test -p 1 -race -cover ./...</code></pre>
 <p>These run the suite with the race detector and coverage, in the test environment. Pass a package path to run just that package. Packages run one at a time (<code>-p 1</code>) because they share one test database.</p>
 
 <h2>Suites</h2>
-<p>Each package with tests has one <code>&lt;pkg&gt;_suite_test.go</code>. It runs the package's specs and owns their shared setup, a package variable rebuilt in a <code>BeforeEach</code> before every spec, the way RSpec uses <code>let</code>:</p>
-<pre><code>// app/models/models_suite_test.go
-var store *models.Store
+<p>Each package with tests has one <code>&lt;pkg&gt;_suite_test.go</code>. It runs the package's specs and owns their shared setup, a package variable rebuilt in a <code>BeforeEach</code> before every spec:</p>
+<pre><code>// db/adapter/adapter_suite_test.go
+var store *adapter.Store
 
 var _ = BeforeEach(func() {
 	store = testdb.Store(GinkgoT())
@@ -67,7 +67,7 @@ func TestModels(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Models")
 }</code></pre>
-<p><code>app/controllers</code> and <code>test/requests</code> get <code>app</code> (<code>testapp.New(GinkgoT())</code>) in the same way. The helpers in <code>test/</code> take a small <code>T</code> interface, which both <code>GinkgoT()</code> and <code>*testing.T</code> satisfy.</p>
+<p>That is the store's suite. <code>app/models</code> has a suite of its own with no database in it, since a model's rules are plain calls. <code>app/controllers</code> and <code>test/requests</code> get <code>app</code> (<code>testapp.New(GinkgoT())</code>) in the same way. The helpers in <code>test/</code> take a small <code>T</code> interface, which both <code>GinkgoT()</code> and <code>*testing.T</code> satisfy.</p>
 
 <h2>The test database</h2>
 <p><code>testdb.Store(t)</code> opens the real test database, migrates it, and truncates every table of the app's (CASCADE, across the foreign keys between them), so each spec starts from nothing. goose's version table and River's schema are left alone, so migration and job state survive between specs. <code>testdb.Pool(t)</code> is a second connection for raw SQL. The environment is forced to test, so <code>go test</code> run by hand in a development shell can never truncate development data.</p>
@@ -80,14 +80,14 @@ bogie test</code></pre>
 <h2 id="factories">Factories</h2>
 <p><code>bogie g model</code> writes <code>test/factories/&lt;table&gt;.go</code> with two functions: <code>NewPost</code> builds a valid post without saving it, and <code>Post</code> saves one through the real store and fails the spec if it can't. Every attribute has a default, and an override changes only what the spec cares about:</p>
 <pre><code>post  := factories.Post(GinkgoT(), store)
-draft := factories.Post(GinkgoT(), store, func(p *domain.Post) { p.Published = false })</code></pre>
+draft := factories.Post(GinkgoT(), store, func(p *models.Post) { p.Published = false })</code></pre>
 <p>Values that must be unique (emails, names, tokens) come from <code>factories.Sequence("user")</code>, which returns <code>user1</code>, then <code>user2</code>, so two records made in one spec never collide. The factories are written by hand, with no library. Once written, a factory is yours: the generator leaves a changed file alone unless you pass <code>--force</code>. Add a column's default there when you add the column.</p>
 
 <h2 id="request-specs">Request specs</h2>
 <p>A feature starts outside in, with a request spec: real HTTP through the real router to the real application and the test database. <code>g controller</code> and <code>g scaffold</code> write one beside the controller, against the suite's <code>app</code>:</p>
 <pre><code>var _ = Describe("GET /posts/:id", func() {
 	Context("when the post exists", func() {
-		var record domain.Post
+		var record models.Post
 
 		BeforeEach(func() {
 			record = factories.Post(GinkgoT(), app.Store)
@@ -101,10 +101,11 @@ draft := factories.Post(GinkgoT(), store, func(p *domain.Post) { p.Published = f
 	})
 })</code></pre>
 <p><code>app.Get</code>, <code>Post</code>, <code>Patch</code> and <code>Delete</code> build the request (with a JSON body for the writes), and <code>WithHeader</code> and <code>WithAuthorization</code> set headers. <code>Do</code> sends it. The response checks are <code>Status</code>, which shows the body on a mismatch, <code>JSON</code> and <code>Contains</code>. Background jobs are inserted, not worked: <code>app.Jobs("send_welcome_email")</code> counts the queued jobs of a kind and <code>app.JobArgs</code> returns their arguments. After <code>g authentication token</code>, <code>.As(subject)</code> on a request sends it as a signed-in user: <code>app.Get("/me").As("user-1").Do()</code>.</p>
+<p>A controller made by hand, <code>g controller comments show</code>, gets a smaller spec until its actions are written: a <code>Describe("GET /comments/:id")</code> with one <code>It("is mounted")</code> that looks the method and path up in <code>app.Server.Router.Routes()</code>. It does not send a request, so the action can start answering 404 for a missing record without breaking it, and it fails if the route was never registered or the namespace lost its mount line. Specs written before v0.5.5 sent a request and expected anything but 404; they still pass, and re-running the generator replaces them (reported <code>conflict</code> until <code>--force</code>).</p>
 <p><code>test/requests/wiring_test.go</code> checks that every controller is constructed and every route has a handler, the same thing <code>bogie doctor</code> checks from the source.</p>
 
-<h2>Store, domain and service specs</h2>
-<p>Below the request specs, the edge cases. <code>g model</code> writes a store spec in <code>package models_test</code> on the suite's <code>store</code>: unknown and malformed ids, an update to a missing record, and a saved record read back, listed, updated and deleted. A domain spec is a plain call to <code>Validate</code> and whatever rules live in <code>app/domain</code>, with nothing to set up. A service spec (from <code>g service</code>) fakes the <code>store</code> interface the service itself declares, and <code>g job</code> and <code>g authentication</code> write specs for what they add.</p>
+<h2>Store, model and service specs</h2>
+<p>Below the request specs, the edge cases. <code>g model</code> writes a store spec, <code>db/adapter/&lt;table&gt;_test.go</code>, in <code>package adapter_test</code> on the suite's <code>store</code>, with a <code>Describe</code> per store method: an id that is not a number, is empty or matches nothing is <code>ErrNotFound</code>, an update to a missing record is too, and a saved record is read back, listed, updated and deleted. It also writes the model's own spec, <code>app/models/&lt;name&gt;_test.go</code>: a plain call to <code>Validate</code> on the factory's defaults, which are valid by construction, with nothing to set up. Add a <code>Context</code> there for each rule you put in <code>Validate</code>. A service spec (from <code>g service</code>) fakes the <code>store</code> interface the service itself declares, and <code>g job</code> and <code>g authentication</code> write specs for what they add.</p>
 
 <h2>Apps from before v0.4</h2>
 <p>Apps generated before v0.4.0 used stdlib <code>testing</code>, a <code>testStore</code> helper in <code>app/models/store_test.go</code>, and controller tests on a fake store. <code>bogie app:update</code> adds the suites and <code>test/</code>, but leaves the tests that generators wrote earlier as they are, so both kinds run side by side. Re-running <code>g model</code> or <code>g scaffold</code> for a resource gives it the new specs. See <a href="upgrading.html#v0-4">Upgrading an app</a>.</p>
@@ -113,10 +114,10 @@ draft := factories.Post(GinkgoT(), store, func(p *domain.Post) { p.Published = f
 <p>There is no <code>where</code> builder; a query is SQL with a name, in <code>db/queries/&lt;table&gt;.sql</code>:</p>
 <pre><code>-- name: ListCommentsForPost :many
 SELECT * FROM comments WHERE post_id = $1 ORDER BY created_at DESC;</code></pre>
-<p>then <code>make sqlc</code>, which writes <code>ListCommentsForPost</code> into <code>app/models/comments.sql.go</code> with typed parameters, or fails if a column is misspelled. A store method in <code>app/models/comments.go</code> then calls it and converts the rows, as the generated methods do. Annotations: <code>:one</code>, <code>:many</code>, <code>:exec</code>, <code>:execrows</code>. The generated file is committed; <code>bin/ci</code> fails if it is stale.</p>
+<p>then <code>make sqlc</code>, which writes <code>ListCommentsForPost</code> into <code>db/sqlc/comments.sql.go</code> with typed parameters, or fails if a column is misspelled. A store method, in <code>db/adapter/comments_extra.go</code> so the generator never overwrites it, then calls it and converts the rows, as the generated methods do. Annotations: <code>:one</code>, <code>:many</code>, <code>:exec</code>, <code>:execrows</code>. The generated file is committed; <code>bin/ci</code> fails if it is stale.</p>
 
 <h2>bin/ci</h2>
-<p>The whole pipeline, run locally rather than on a hosted runner, the way Rails 8.1's <code>bin/ci</code> does. Every step runs even if an earlier one failed, so one run reports everything:</p>
+<p>The whole pipeline, run locally rather than on a hosted runner. Every step runs even if an earlier one failed, so one run reports everything:</p>
 <pre><code>bin/ci
 bogie ci
 make ci</code></pre>
@@ -124,7 +125,7 @@ make ci</code></pre>
   <li>Setup: modules. Downloads and verifies the module graph.</li>
   <li>Setup: database. Brings up the compose stack, drops the test database, and prepares it fresh from the migrations.</li>
   <li>Schema: down and up. Migrates all the way down to zero and back up, so a migration with a broken Down is caught before anyone else hits it.</li>
-  <li>Schema: models current. Runs <code>sqlc diff</code>: a generated model that does not match its query is a failure here, not a silent drift.</li>
+  <li>Schema: sqlc current. Runs <code>sqlc diff</code> (called "Schema: models current" before v0.5.0): the code in <code>db/sqlc</code> must match what sqlc would generate from <code>db/queries</code> and the migrations, so a stale generated file is a failure here, not a silent drift.</li>
   <li>Style: gofmt. Fails if any file is not gofmt-clean.</li>
   <li>Style: go vet.</li>
   <li>Style: golangci-lint, against <code>.golangci.yml</code>.</li>
@@ -140,11 +141,11 @@ make ci</code></pre>
 
 <h2>bogie doctor</h2>
 <pre><code>bogie doctor</code></pre>
-<p>Checks the things the generators rely on, since Rails never needed to check them (it autoloads):</p>
+<p>Checks the things the generators rely on, since Go has no autoload to catch a missing piece:</p>
 <ul>
   <li><code>bogie.toml</code> exists.</li>
   <li>Every marker (<code>bogie:controllers</code>, <code>bogie:wire</code>, <code>bogie:routes</code>, the three in <code>config/config.go</code>, <code>bogie:commands</code> in <code>main.go</code>, <code>bogie:seeds</code>, and <code>bogie:jobs</code> if the app has jobs) is present exactly once, in the root files and in every namespace package's own <code>server.go</code> and <code>routes.go</code>.</li>
-  <li>The pinned tools (goose, sqlc, credentials) are still under the <code>tool</code> directive in <code>go.mod</code>.</li>
+  <li>The pinned tools (goose, sqlc, credentials and Air) are still under the <code>tool</code> directive in <code>go.mod</code>.</li>
   <li>The layout files generators depend on exist: <code>db/sqlc.yaml</code>, <code>db/db.go</code>, <code>bin/ci</code>, <code>docker-compose.yml</code>, <code>AGENTS.md</code>, <code>config/master.key</code>.</li>
   <li>Every controller it finds, plain or namespaced, is both constructed in <code>app/application.go</code> and mounted in the right <code>routes.go</code>. A mount with no construction is a nil controller whose first request panics; a construction with no mount serves nothing, and both are caught here rather than at runtime.</li>
 </ul>

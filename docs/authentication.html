@@ -39,17 +39,17 @@
 <p class="guide-eyebrow">{{SECTION}}</p>
 <h1>Authentication</h1>
 
-<p>Rails 8 has <code>rails g authentication</code>. Bogie's takes a shape, because every caller a Go service next to Rails has to answer is a different kind of caller, and all three turned out to be a middleware on a route group, the Go form of <code>before_action</code>.</p>
+<p><code>bogie g authentication</code> takes a shape, because the callers of an API service come in different kinds, and all three turned out to be a middleware on a route group.</p>
 
-<pre><code>bogie g authentication secret      # the Rails app calls this service
+<pre><code>bogie g authentication secret      # a trusted service calls this one
 bogie g authentication token       # a user presents a bearer token
 bogie g authentication api_key     # a machine client presents a key</code></pre>
 
 <h2>Three shapes, one mechanism</h2>
-<p>Each shape comes from one of the two services Bogie was extracted from, each of which needed a different caller answered:</p>
+<p>Each shape answers a different kind of caller:</p>
 <ul>
-  <li><strong>secret</strong>: the Rails app next door calls this service directly, over the private network. One shared secret, checked on every request.</li>
-  <li><strong>token</strong>: a user, already signed in to Rails, presents a bearer token so this service knows who is asking without asking Rails again.</li>
+  <li><strong>secret</strong>: a trusted service calls this one directly, over the private network. One shared secret, checked on every request.</li>
+  <li><strong>token</strong>: a user, already signed in somewhere else, presents a bearer JWT so this service knows who is asking without asking again.</li>
   <li><strong>api_key</strong>: a machine client, a script or another system, presents a key made for it ahead of time and can be revoked without touching anyone's session.</li>
 </ul>
 <p>Whichever shape, the mechanism is the same: a function that checks the request and either calls <code>c.Next()</code> or aborts with 401, mounted on a <code>*gin.RouterGroup</code> instead of the whole router, so only the routes in that group are guarded.</p>
@@ -86,14 +86,13 @@ bogie g authentication api_key     # a machine client presents a key</code></pre
 <p>A second guarded group reads the same way with <code>s.WithUser(&amp;r.RouterGroup)</code> or <code>s.WithAPIKey(&amp;r.RouterGroup)</code>; a controller that needs no guard at all stays on <code>&amp;r.RouterGroup</code> directly, as <code>/healthz</code> does above.</p>
 
 <h2>secret</h2>
-<p>A shared secret in the <code>X-&lt;App&gt;-Secret</code> header (the constant <code>middlewares.SecretHeader</code>), compared with <code>crypto/subtle.ConstantTimeCompare</code> so a wrong guess cannot be timed into a right one. A Basic auth fallback lets a browser open a guarded page too, since a browser cannot send a custom header; any username works and the password is the secret. On the Rails side, it is one header on the client:</p>
-<pre><code>Faraday.new(url: ENV["BLOG_URL"], headers: { "X-Blog-Secret" => Rails.application.credentials.blog_secret })</code></pre>
+<p>A shared secret in the <code>X-&lt;App&gt;-Secret</code> header (the constant <code>middlewares.SecretHeader</code>), compared with <code>crypto/subtle.ConstantTimeCompare</code> so a wrong guess cannot be timed into a right one. A Basic auth fallback lets a browser open a guarded page too, since a browser cannot send a custom header; any username works and the password is the secret. For a caller it is one header on the request:</p>
+<pre><code>curl -H "X-Blog-Secret: $BLOG_SECRET" https://blog.example.com/posts</code></pre>
 
 <h2>token</h2>
-<p>A bearer token, JWT, HS256, signed with one shared secret: <code>token.secret</code> in the credentials file, <code>TOKEN_SECRET</code> in the environment. The Rails app mints a token for its own user with the <code>jwt</code> gem and the same secret, and this service only ever verifies:</p>
-<pre><code>JWT.encode({ iss: "blog", sub: user.id.to_s, iat: Time.now.to_i, exp: 15.minutes.from_now.to_i, jti: SecureRandom.uuid },
-           Rails.application.credentials.blog_token_secret, "HS256")</code></pre>
-<p>In a handler behind <code>WithUser</code>, <code>middlewares.Subject(c)</code> is the token's subject, a Rails user id usually; nothing is loaded for you, because who the subject is is for the caller and the handler to agree on. A service that signs users in itself, rather than trusting Rails's token, mints its own with <code>s.Tokens().Mint(subject, ttl)</code>.</p>
+<p>A bearer token, JWT, HS256, signed with one shared secret: <code>token.secret</code> in the credentials file, <code>TOKEN_SECRET</code> in the environment. Whatever signs users in mints the token with any JWT library and the same secret, and this service only ever verifies. It requires <code>iss</code> (the app's name), a non-empty <code>sub</code> and an <code>exp</code>; tokens it mints itself also carry <code>iat</code> and <code>jti</code>:</p>
+<pre><code>{ "iss": "blog", "sub": "42", "iat": 1793000000, "exp": 1793000900, "jti": "…" }</code></pre>
+<p>In a handler behind <code>WithUser</code>, <code>middlewares.Subject(c)</code> is the token's subject, usually a user id; nothing is loaded for you, because who the subject is is for the caller and the handler to agree on. A service that signs users in itself, rather than trusting another service's token, mints its own with <code>s.Tokens().Mint(subject, ttl)</code>.</p>
 <p><code>Verify</code> refuses a token that is expired, signed with another secret, issued for another issuer, or signed with any algorithm but HS256, so a token claiming <code>"none"</code> or an asymmetric algorithm never reaches the key at all.</p>
 
 <h2>api_key</h2>

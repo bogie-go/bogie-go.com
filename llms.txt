@@ -1,10 +1,10 @@
 # Bogie
 
-> The Go service next to your Rails app. Bogie is a command-line tool that scaffolds an API-only, Postgres-only Go service with Rails-style generators (new, g scaffold, g model, g controller, g job, g seed, g authentication, g config) that also wire the code in. It builds on Gin, sqlc with pgx, goose, River and Kamal, and generated apps test with Ginkgo and Gomega. The generated app never imports Bogie. MIT licensed, v0.4.1. Generated apps need Go 1.26 or newer (the CLI itself builds with 1.25) and Docker with Compose v2 for the local Postgres.
+> A Go API service, from zero to production. Bogie is a command-line tool that scaffolds an API-only, Postgres-only Go service with generators (new, g scaffold, g model, g controller, g job, g seed, g authentication, g config) that also wire the code in. It builds on Gin, sqlc with pgx, goose, River (opt-in) and Kamal, and generated apps test with Ginkgo and Gomega. The generated app never imports Bogie. MIT licensed, v0.5.5. Generated apps need Go 1.26 or newer (the CLI itself builds with 1.25) and Docker with Compose v2 for the local Postgres.
 
 Install: `go install github.com/bogie-go/bogie@latest`. Then `bogie new blog && cd blog && make up && bogie db:prepare && bogie server`.
 
-Every generated app follows six rules: ctx first on anything doing I/O; interfaces declared where they are consumed; the domain package imports nothing third-party; constructors return (T, error); *gin.Context never travels below the controllers; no util, helpers or common packages. Each app ships an AGENTS.md with the rules, the commands and a recipe per task.
+Every generated app follows six rules: ctx first on anything doing I/O; interfaces declared where they are consumed; the models package imports nothing third-party; constructors return (T, error); *gin.Context never travels below the controllers; no util, helpers or common packages. Each app ships an AGENTS.md with the rules, the commands and a recipe per task.
 
 ## Guides
 
@@ -21,8 +21,8 @@ Every generated app follows six rules: ctx first on anything doing I/O; interfac
 - [Testing and CI](https://bogie-go.com/docs/testing.html): Ginkgo and Gomega specs, the test/ folder (testdb, testapp, factories, request specs), what bin/ci runs, and what doctor checks before either does.
 - [Deploying](https://bogie-go.com/docs/deploying.html): One Docker image, every role, shipped with Kamal 2 to staging and production.
 - [Upgrading an app](https://bogie-go.com/docs/upgrading.html): bogie app:update, a three-way merge to a newer layout that keeps your edits.
-- [Conventions and agents](https://bogie-go.com/docs/conventions.html): The six rules every generated app keeps, and why the layout is Rails-shaped on purpose.
-- [From Rails](https://bogie-go.com/docs/from-rails.html): A dictionary: what each Rails thing is called here, where it lives, and what has no equivalent.
+- [Conventions and agents](https://bogie-go.com/docs/conventions.html): The six rules every generated app keeps, and why the layout is the way it is.
+- [Rails equivalents](https://bogie-go.com/docs/from-rails.html): A lookup table: the Rails names for things, and where each one lives in a generated Bogie app.
 - [Command reference](https://bogie-go.com/docs/commands.html): Every Bogie command, every generator and every make target, in one place.
 - [Releases](https://bogie-go.com/docs/releases.html): What each Bogie version added or changed, newest first, with breaking changes marked.
 
@@ -32,8 +32,7 @@ Every generated app follows six rules: ctx first on anything doing I/O; interfac
 - [Repository](https://github.com/bogie-go/bogie): the tool, MIT
 - [DESIGN.md](https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md): every decision and its reasoning
 - [STATUS.md](https://github.com/bogie-go/bogie/blob/main/docs/STATUS.md): what works today and what is next
-- [FROM_RAILS.md](https://github.com/bogie-go/bogie/blob/main/docs/FROM_RAILS.md): the Rails-to-Bogie dictionary
 
 ## Not
 
-Not a framework, not full-stack (API-only, no views), Postgres only, not a Rails replacement: it runs beside the Rails app.
+Not a framework, not full-stack (API-only, no views), Postgres only.

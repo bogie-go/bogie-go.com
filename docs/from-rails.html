@@ -3,25 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>From Rails: Bogie</title>
-<meta name="description" content="A dictionary: what each Rails thing is called here, where it lives, and what has no equivalent.">
+<title>Rails equivalents: Bogie</title>
+<meta name="description" content="A lookup table: the Rails names for things, and where each one lives in a generated Bogie app.">
 <link rel="icon" type="image/png" href="../favicon.png">
 <link rel="stylesheet" href="../fonts.css">
 <link rel="stylesheet" href="../style.css">
 <link rel="canonical" href="https://bogie-go.com/docs/from-rails.html">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="Bogie">
-<meta property="og:title" content="From Rails: Bogie">
-<meta property="og:description" content="A dictionary: what each Rails thing is called here, where it lives, and what has no equivalent.">
+<meta property="og:title" content="Rails equivalents: Bogie">
+<meta property="og:description" content="A lookup table: the Rails names for things, and where each one lives in a generated Bogie app.">
 <meta property="og:url" content="https://bogie-go.com/docs/from-rails.html">
 <meta property="og:image" content="https://bogie-go.com/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="From Rails: Bogie">
-<meta name="twitter:description" content="A dictionary: what each Rails thing is called here, where it lives, and what has no equivalent.">
+<meta name="twitter:title" content="Rails equivalents: Bogie">
+<meta name="twitter:description" content="A lookup table: the Rails names for things, and where each one lives in a generated Bogie app.">
 <meta name="twitter:image" content="https://bogie-go.com/og.png">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "From Rails", "description": "A dictionary: what each Rails thing is called here, where it lives, and what has no equivalent.", "url": "https://bogie-go.com/docs/from-rails.html", "dateModified": "2026-10-19", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "From Rails", "item": "https://bogie-go.com/docs/from-rails.html"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Rails equivalents", "description": "A lookup table: the Rails names for things, and where each one lives in a generated Bogie app.", "url": "https://bogie-go.com/docs/from-rails.html", "dateModified": "2026-10-19", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "Rails equivalents", "item": "https://bogie-go.com/docs/from-rails.html"}]}]}</script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
 <script>
@@ -37,9 +37,9 @@
 <!-- @docs-start -->
 <article>
 <p class="guide-eyebrow">{{SECTION}}</p>
-<h1>From Rails</h1>
+<h1>Rails equivalents</h1>
 
-<p>A dictionary for the Rails developer reading or extending a Bogie app: what each Rails thing is called here, where it lives, and what has no equivalent. When Rails has a word for something, Bogie uses it; this guide is for the places the word is the same but the thing underneath is not, and for the places there is no word because there is no thing.</p>
+<p>A lookup table for anyone who knows Rails and is reading or extending a Bogie app: the Rails name for something, and where it lives here. It is reference only; the other guides cover how Bogie works on its own terms.</p>
 
 <p>The one idea to carry over: <strong>Go has no autoload and no <code>method_missing</code>.</strong> Nothing exists until it is written down and registered, so every "magic" Rails step has a visible line here, and the generators write those lines so you do not have to find them.</p>
 
@@ -51,9 +51,9 @@
 <tr><td><code>rails server</code>, <code>rails s</code></td><td><code>bogie server</code>, <code>bogie s</code></td><td>Migrates at boot, as a deployed container does. Reloads on save in development.</td></tr>
 <tr><td><code>bin/dev</code>, Spring</td><td>none; built into <code>bogie server</code> and <code>bogie worker</code></td><td>Save a file and Air rebuilds and restarts it; a new migration is picked up on the next boot too. Production runs the compiled binary, no watcher.</td></tr>
 <tr><td><code>rails g scaffold post title:string</code></td><td><code>bogie g scaffold post title:string</code></td><td>Model, views and a wired controller; no HTML.</td></tr>
-<tr><td><code>rails g model post title:string</code></td><td><code>bogie g model post title:string</code></td><td>Migration, queries, domain type, store; runs sqlc.</td></tr>
+<tr><td><code>rails g model post title:string</code></td><td><code>bogie g model post title:string</code></td><td>Migration, queries, model, store, specs and a factory; runs sqlc.</td></tr>
 <tr><td><code>rails g controller posts index show</code></td><td><code>bogie g controller posts index show</code></td><td>Writes it <em>and</em> registers it. <code>new</code> and <code>edit</code> are refused.</td></tr>
-<tr><td><code>rails g controller admin/reports</code></td><td><code>bogie g controller admin/reports</code></td><td>A namespace is a package, <code>app/controllers/admin_controller/</code>.</td></tr>
+<tr><td><code>rails g controller admin/reports</code></td><td><code>bogie g controller admin/reports</code></td><td>A namespace is a package, <code>app/controllers/admin_controllers/</code>.</td></tr>
 <tr><td><code>rails g migration add_slug_to_posts slug:string</code></td><td><code>bogie g migration add_slug_to_posts slug:string</code></td><td>SQL, not Ruby; <code>create_</code>, <code>add_x_to_</code>, <code>remove_x_from_</code> get their SQL written.</td></tr>
 <tr><td><code>rails routes</code></td><td><code>bogie routes</code></td><td>Method, path and handler for every mounted route, read from the booted app. Development only.</td></tr>
 <tr><td>(<code>db/seeds.rb</code>, by hand)</td><td><code>bogie g seed demo_posts</code></td><td><code>db/seeds/demo_posts.go</code>, registered above <code>// bogie:seeds</code>. See <a href="seeds.html">Seeds</a>.</td></tr>
@@ -73,7 +73,7 @@
 </table>
 </div>
 
-<p>There is also a <code>bogie doctor</code> with no Rails equivalent: it checks that the markers the generators insert above are intact and that every controller is both constructed and mounted, which Rails never needed to check because it autoloads.</p>
+<p>There is also <code>bogie doctor</code>, with no Rails equivalent: it checks that the markers the generators insert above are intact and that every controller is both constructed and mounted.</p>
 
 <h2>Where things live</h2>
 <div class="table-wrap">
@@ -81,9 +81,9 @@
 <tr><th>Rails</th><th>Bogie</th><th>Notes</th></tr>
 <tr><td><code>config/routes.rb</code></td><td><code>app/controllers/routes.go</code></td><td>The table; each controller's <code>SetupRoutes</code> adds its own routes under a group.</td></tr>
 <tr><td><code>app/controllers/posts_controller.rb</code></td><td><code>app/controllers/posts_controller.go</code></td><td>A <code>PostsController</code> type: its dependencies, routes and actions.</td></tr>
-<tr><td><code>app/controllers/admin/reports_controller.rb</code></td><td><code>app/controllers/admin_controller/reports_controller.go</code></td><td>The package holds a <code>Server</code> with one field per controller and a <code>routes.go</code> for the group's middleware.</td></tr>
-<tr><td><code>app/models/post.rb</code></td><td><code>app/domain/post.go</code> + <code>app/models/posts.go</code> + <code>db/queries/posts.sql</code></td><td>Split in three: the type and its validations; the store methods; the SQL. See below.</td></tr>
-<tr><td><code>app/views/posts/*.json.jbuilder</code></td><td><code>app/views/posts.go</code></td><td>Request and response structs. A domain type never doubles as a wire type.</td></tr>
+<tr><td><code>app/controllers/admin/reports_controller.rb</code></td><td><code>app/controllers/admin_controllers/reports_controller.go</code></td><td>The package holds a <code>Server</code> with one field per controller and a <code>routes.go</code> for the group's middleware.</td></tr>
+<tr><td><code>app/models/post.rb</code></td><td><code>app/models/post.go</code> + <code>db/adapter/posts.go</code> + <code>db/queries/posts.sql</code></td><td>Split in three: the type and its validations; the store methods; the SQL. See below.</td></tr>
+<tr><td><code>app/views/posts/*.json.jbuilder</code></td><td><code>app/views/posts.go</code></td><td>Request and response structs. A model type never doubles as a wire type.</td></tr>
 <tr><td><code>app/jobs/send_welcome_job.rb</code></td><td><code>app/jobs/send_welcome.go</code></td><td>An <code>Args</code> struct and a <code>Worker</code>, registered in <code>app/jobs/jobs.go</code>.</td></tr>
 <tr><td><code>app/services/</code></td><td><code>app/services/&lt;name&gt;/</code></td><td>One package per service, <code>ctx</code> first, knows nothing about HTTP.</td></tr>
 <tr><td><code>app/helpers/</code>, <code>lib/utils.rb</code></td><td>none</td><td>Rule 6: no <code>util</code>, <code>helpers</code> or <code>common</code>. A package is named for what it provides.</td></tr>
@@ -109,11 +109,11 @@
 <h2>A model, in three places</h2>
 <p>Rails's <code>Post</code> is one class that is a table, a type and a query builder. Here that is three files, each with one job:</p>
 <ul>
-  <li><strong><code>app/domain/post.go</code></strong> is the type and its <code>Validate</code>. It imports nothing third-party (rule 3). Ids are <code>int64</code> under the default <code>bigint</code> scheme, as in Rails, or strings in an app made with <code>--id=uuid</code>. See <a href="models.html#ids">Id schemes</a>.</li>
-  <li><strong><code>db/queries/posts.sql</code></strong> is the SQL, by name: <code>GetPost</code>, <code>ListPosts</code>, <code>CreatePost</code>. sqlc compiles it into <code>app/models/posts.sql.go</code>, and a query that names a column that does not exist fails at <code>make sqlc</code>, not in production.</li>
-  <li><strong><code>app/models/posts.go</code></strong> is the store: <code>CreatePost</code>, <code>GetPost</code> and so on, converting between the domain type and sqlc's row type, mapping "no rows" to <code>domain.ErrNotFound</code>, and running <code>Validate</code> before create and update.</li>
+  <li><strong><code>app/models/post.go</code></strong> is the type and its <code>Validate</code>. It imports nothing third-party (rule 3). Ids are <code>int64</code> under the default <code>bigint</code> scheme, as in Rails, or strings in an app made with <code>--id=uuid</code>. See <a href="models.html#ids">Id schemes</a>.</li>
+  <li><strong><code>db/queries/posts.sql</code></strong> is the SQL, by name: <code>GetPost</code>, <code>ListPosts</code>, <code>CreatePost</code>. sqlc compiles it into <code>db/sqlc/posts.sql.go</code>, and a query that names a column that does not exist fails at <code>make sqlc</code>, not in production.</li>
+  <li><strong><code>db/adapter/posts.go</code></strong> is the store: <code>CreatePost</code>, <code>GetPost</code> and so on, converting between the model and sqlc's row type, mapping "no rows" to <code>models.ErrNotFound</code>, and running <code>Validate</code> before create and update.</li>
 </ul>
-<p>So <code>Post.find(id)</code> is <code>store.GetPost(ctx, id)</code>, <code>Post.create(attrs)</code> is <code>store.CreatePost(ctx, domain.Post{...})</code>, and a new query is a new named statement in the <code>.sql</code> file plus a store method that calls it. There is no <code>where</code> builder; the SQL is written out, which is the point.</p>
+<p>So <code>Post.find(id)</code> is <code>store.GetPost(ctx, id)</code>, <code>Post.create(attrs)</code> is <code>store.CreatePost(ctx, models.Post{...})</code>, and a new query is a new named statement in the <code>.sql</code> file plus a store method that calls it. There is no <code>where</code> builder; the SQL is written out, which is the point.</p>
 <p>Associations are a foreign key and a query. <code>post:references</code> on a model writes the column, the constraint and the index; <code>has_many :comments</code> is <code>ListCommentsForPost</code> in <code>db/queries/comments.sql</code> when you need it.</p>
 
 <h2>In the code</h2>
@@ -124,7 +124,7 @@
 <tr><td><code>params.require(:post).permit(:title)</code></td><td><code>var req views.PostRequest; c.ShouldBindJSON(&amp;req)</code>; only the struct's fields come through</td></tr>
 <tr><td><code>render json: post</code></td><td><code>c.JSON(http.StatusOK, postView(post))</code></td></tr>
 <tr><td><code>head :no_content</code></td><td><code>c.Status(http.StatusNoContent)</code></td></tr>
-<tr><td><code>validates :title, presence: true</code></td><td><code>func (p Post) Validate() error { ... return fmt.Errorf("%w: title is required", ErrInvalid) }</code> in <code>app/domain</code>; runs on save</td></tr>
+<tr><td><code>validates :title, presence: true</code></td><td><code>func (p Post) Validate() error { ... return fmt.Errorf("%w: title is required", ErrInvalid) }</code> in <code>app/models</code>; runs on save</td></tr>
 <tr><td><code>rescue_from ActiveRecord::RecordNotFound</code></td><td><code>ctl.fail(c, err)</code>: <code>ErrNotFound</code> is 404, <code>ErrInvalid</code> is 422, anything else is a logged 500</td></tr>
 <tr><td><code>before_action :authenticate</code></td><td>middleware on the group, in <code>routes.go</code>, so the exposure boundary is visible in one place; <code>bogie g authentication</code> writes it and a <code>WithUser</code> group helper. See <a href="authentication.html">Authentication</a>.</td></tr>
 <tr><td><code>Current.user</code></td><td><code>middlewares.Subject(c)</code>, the verified token's subject; load the record if you need it</td></tr>
@@ -141,24 +141,24 @@
 </div>
 
 <h2>What is deliberately different</h2>
-<p>These have no Rails counterpart because Rails does them implicitly. In Go they are explicit, and the six rules in <a href="conventions.html">Conventions and agents</a> keep them that way.</p>
+<p>In Go these are explicit, and the six rules in <a href="conventions.html">Conventions and agents</a> keep them that way.</p>
 <ol>
   <li><strong>Dependencies are passed in, in <code>app/application.go</code>.</strong> Nothing reaches for a global. A controller gets its store on its wire line; a service's spec hands it a fake.</li>
-  <li><strong>Interfaces are declared by the consumer</strong> (rule 2), not by the thing implemented. <code>postsStore</code> lives beside <code>PostsController</code> and lists only the five methods it calls. That is why a controller test needs no database, and why there is no mocking library.</li>
+  <li><strong>Interfaces are declared by the consumer</strong> (rule 2), not by the thing implemented. <code>postsStore</code> lives beside <code>PostsController</code> and lists only the five methods it calls. That keeps each interface short, and is why there is no mocking library.</li>
   <li><strong><code>ctx context.Context</code> is the first parameter</strong> of anything that does I/O (rule 1). Cancellation, deadlines and tracing travel in it; a request that is abandoned stops its query.</li>
   <li><strong>Constructors return <code>(T, error)</code></strong> (rule 4); only <code>main</code> exits. A bad configuration fails at boot with a message, never with a panic in a handler.</li>
-  <li><strong><code>*gin.Context</code> stops at <code>app/controllers</code></strong> (rule 5). A handler converts HTTP into domain values, calls one function, and converts the result back. Below that, the code can be called from a job, a CLI or a test.</li>
+  <li><strong><code>*gin.Context</code> stops at <code>app/controllers</code></strong> (rule 5). A handler converts HTTP into model values, calls one function, and converts the result back. Below that, the code can be called from a job, a CLI or a test.</li>
   <li><strong>Registration is written down.</strong> A controller exists once it is held, constructed and mounted, three lines above three <code>// bogie:</code> markers. The generators write them; <code>bogie doctor</code> checks them.</li>
 </ol>
 
 <h2>What has no equivalent</h2>
-<p>Honest list. Some are API-only by design; some are Rails features Go does not need; some are gaps.</p>
+<p>Some are API-only by design; some are not needed in Go; some are gaps.</p>
 <ul>
   <li>Views, templates, the asset pipeline (no fingerprinting or compilation; <code>public/</code> serves files as they are), Turbo, sessions, flash, cookies, CSRF: the Rails app renders; this service is JSON.</li>
   <li><code>rails console</code>.</li>
   <li><code>ActiveRecord</code> associations, callbacks, scopes, <code>where</code> chains, N+1 helpers. SQL is written out and compiled.</li>
   <li><code>db/schema.rb</code> and <code>db:schema:load</code>; the migrations are the schema.</li>
-  <li>Fixtures, factories, <code>test/test_helper.rb</code>. Store tests truncate the test database and insert what they need.</li>
+  <li>Fixtures and <code>test/test_helper.rb</code>. Specs truncate the test database and insert what they need, through factories you write by hand in <code>test/factories</code>.</li>
   <li>Concerns, helpers, <code>lib/tasks</code>. Plain packages and the Makefile.</li>
   <li>Mailers, Action Cable, Active Storage, I18n, caching. Wire a library when a service needs one; see the "glue, then gaps" rule in <a href="https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md">docs/DESIGN.md</a>.</li>
   <li><code>rails g resource</code>, <code>rails g channel</code>, <code>rails g mailer</code>.</li>

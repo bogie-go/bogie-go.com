@@ -22,7 +22,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 OUT = ROOT / "_site"
 PROXY = "https://proxy.golang.org/github.com/bogie-go/bogie/@latest"
-FALLBACK_VERSION = "v0.4.1"
+FALLBACK_VERSION = "v0.5.5"
 SKIP = {"_site", "_includes", "build.py", "README.md", ".git", ".github", ".claude"}
 
 # Sidebar order is also prev/next order.
@@ -41,9 +41,9 @@ NAV = [
                ("deploying", "Deploying"),
                ("upgrading", "Upgrading an app")]),
     ("Reference", [("conventions", "Conventions and agents"),
-                   ("from-rails", "From Rails"),
                    ("commands", "Command reference"),
-                   ("releases", "Releases")]),
+                   ("releases", "Releases"),
+                   ("from-rails", "Rails equivalents")]),
 ]
 FLAT = [(slug, title, sec) for sec, items in NAV for slug, title in items]
 

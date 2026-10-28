@@ -38,7 +38,7 @@
 <article>
 <p class="guide-eyebrow">{{SECTION}}</p>
 <h1>Seeds</h1>
-<p>Rails's <code>db/seeds.rb</code> is a script that runs top to bottom every time, and stays safe because each line is a <code>find_or_create_by!</code>. Bogie's seeds work the same way: plain Go functions in <code>db/seeds</code>, no version table, all of them run on every <code>db:seed</code>. Since v0.2.6.</p>
+<p>Seeds are data every environment can load safely, any number of times: plain Go functions in <code>db/seeds</code>, no version table, all of them run on every <code>db:seed</code>. Since v0.2.6.</p>
 
 <h2>Write a seed</h2>
 <pre><code>bogie g seed demo_posts</code></pre>
@@ -48,7 +48,7 @@
 <pre><code>// SeedDemoPosts seeds demo_posts. db seed can run this any number of times, so
 // make it safe to run twice: insert with ON CONFLICT DO NOTHING, or
 // check before creating.
-func SeedDemoPosts(ctx context.Context, s *models.Store) error {
+func SeedDemoPosts(ctx context.Context, s *adapter.Store) error {
 	// TODO: s.Create...(ctx, ...), written so a second run does nothing new.
 	return nil
 }</code></pre>
@@ -59,7 +59,7 @@ bogie db:prepare   # create if needed, migrate, then seed</code></pre>
 <p><code>db/seeds/seeds.go</code> ships with every app from <code>bogie new</code>. Its <code>Run</code> calls each registered seed in the order it sits above <code>// bogie:seeds</code>, and the first error stops the rest, since a later seed may depend on rows an earlier one wrote.</p>
 
 <h2>Safe to run twice</h2>
-<p>There is no record of which seeds have run, so a seed that blindly inserts will insert again. Either check first (look the row up by a natural key, create it only if <code>domain.ErrNotFound</code>), or write a query with <code>ON CONFLICT DO NOTHING</code> in <code>db/queries</code> and call it from the seed. That is the same discipline <code>db/seeds.rb</code> already asks of you.</p>
+<p>There is no record of which seeds have run, so a seed that blindly inserts will insert again. Either check first (look the row up by a natural key, create it only on <code>models.ErrNotFound</code>), or write a query with <code>ON CONFLICT DO NOTHING</code> in <code>db/queries</code> and call it from the seed.</p>
 
 <h2>Taking one out</h2>
 <pre><code>bogie d seed demo_posts</code></pre>

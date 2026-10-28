@@ -62,11 +62,11 @@
 <p>production strictness, staging secrets, which is what "staging" means here: not a third environment, but production behaviour reading a different credentials file.</p>
 
 <h2>The credentials files</h2>
-<p>The Rails pattern: committed ciphertext, a key that is never committed.</p>
+<p>Committed ciphertext, and a key that is never committed:</p>
 <pre><code>config/credentials.yml.enc            + config/master.key              development
 config/credentials/staging.yml.enc    + config/credentials/staging.key
 config/credentials/production.yml.enc + config/credentials/production.key</code></pre>
-<p>Each file is groups at the top level, as Rails credentials are, with no section named after the app. A key's path gives its environment variable: <code>server.addr</code> is overridden by <code>SERVER_ADDR</code>, so a value can move between the file and the environment without renaming anything.</p>
+<p>Each file is groups at the top level, with no section named after the app. A key's path gives its environment variable: <code>server.addr</code> is overridden by <code>SERVER_ADDR</code>, so a value can move between the file and the environment without renaming anything.</p>
 <pre><code>database:
   url: postgres://postgres:postgres@localhost:5440/blog_development?sslmode=disable
 server:
