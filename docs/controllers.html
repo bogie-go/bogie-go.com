@@ -108,7 +108,7 @@ func (ctl *PostsController) Show(c *gin.Context) {
 <h3 id="only-some-actions">Only some actions, or only the controller</h3>
 <p><code>--only</code> writes just the actions you list, with their routes, store methods, views and request specs. The model half is always written whole:</p>
 <pre><code>bogie g scaffold category name:string:uniq --only index,show</code></pre>
-<p>That mounts <code>GET /categories</code> and <code>GET /categories/:id</code> and nothing else. To put the HTTP half over a model that already exists, in a namespace, use <code>scaffold_controller</code>. It reads the attributes back from <code>app/models</code> (so it takes none), shares the model's <code>app/views/categories.go</code>, which only gains the types it lacks, and takes <code>--only</code> too:</p>
+<p>That mounts <code>GET /categories</code> and <code>GET /categories/:id</code> and nothing else. To put the HTTP half over a model that already exists, in a namespace, use <code>scaffold_controller</code>. It reads the attributes back from <code>app/models</code> (so it takes none), writes views of its own, flat and prefixed like a model (<code>app/views/admin_categories.go</code>, <code>AdminCategoryResponse</code>; before v0.6.2 it shared the public views), and takes <code>--only</code> too:</p>
 <pre><code>bogie g scaffold_controller admin/categories</code></pre>
 <pre><code>      create  app/controllers/admin_controllers/server.go
       create  app/controllers/admin_controllers/routes.go
