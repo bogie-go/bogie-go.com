@@ -64,7 +64,7 @@ CREATE TABLE posts (
 
 -- +goose Down
 DROP TABLE posts;</code></pre>
-<p>Every generated column is <code>NOT NULL</code>, so sqlc emits plain Go types rather than pointers. Strings, numbers, booleans and <code>jsonb</code> also get a default; <code>datetime</code>, <code>uuid</code> and <code>references</code> columns have none, so every insert must supply them. A column that truly needs null is one edit to the migration, by hand, and sqlc then emits a pointer (<code>*string</code>, <code>*int32</code>) for it.</p>
+<p>Every generated column is <code>NOT NULL</code>, so sqlc emits plain Go types rather than pointers. Strings, numbers, booleans and <code>jsonb</code> also get a default; <code>datetime</code>, <code>uuid</code> and <code>references</code> columns have none, so every insert must supply them. A column that needs null takes <code>:null</code> (<code>archived_at:datetime:null</code>) in <code>g model</code> or <code>g migration</code>, and the model field is a pointer (<code>*string</code>, <code>*time.Time</code>).</p>
 
 <h2>The queries</h2>
 <p><code>db/queries/posts.sql</code>, named statements that sqlc compiles:</p>
@@ -151,6 +151,15 @@ ALTER TABLE posts ADD COLUMN slug varchar NOT NULL DEFAULT '' UNIQUE;
 -- +goose Down
 ALTER TABLE posts DROP COLUMN slug;</code></pre>
 <p>The migration generator runs sqlc immediately too, so <code>db/sqlc/*.sql.go</code> changes before the migration is ever applied, and a renamed column shows up as a compile error right away.</p>
+
+<h2 id="model-sync">Carrying a column into the model: model:sync</h2>
+<p>A migration changes the table and nothing else. To bring the model, its queries, its store and its factory along, commit, then run <code>model:sync</code>:</p>
+<pre><code>bogie g migration add_stock_to_products stock:integer
+git commit -am "Add stock to products"
+bogie model:sync products
+go build ./... &amp;&amp; bogie test</code></pre>
+<p>It reads the columns from sqlc's compile of <code>db/migrate/*.sql</code>, so a migration written by hand counts too. It adds a field for each new column and removes the field for each column a migration dropped or renamed away; a field you added that never had a column stays. The queries, the store and the factory are regenerated and merged into your copies the way <code>app:update</code> merges, so an edit of yours on the same lines gets conflict markers. <code>Validate</code>, the views, the controllers and the specs are left alone, and it says so: add the field to the views if the API should carry it. It refuses on a dirty git tree, so the result is one diff to review or undo; <code>bogie new</code> does not run <code>git init</code>, and outside a git repository the sync runs without that check, so start one first. Without a table name it syncs every model.</p>
+<p>Add <code>:null</code> to an attribute for a column that may be NULL (<code>archived_at:datetime:null</code>): the field is a pointer, and a nullable datetime is <code>*time.Time</code>. <code>g scaffold</code> does not take <code>:null</code> yet.</p>
 
 <h2>Running them</h2>
 <pre><code>bogie db:migrate

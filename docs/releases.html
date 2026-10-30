@@ -41,6 +41,34 @@
 <p>What each tagged release added or changed, newest first, in plain words. Each version links to its tag on GitHub, where the commit list lives. Changes marked <span class="badge-breaking">Breaking</span> can stop an existing app or setup working until you act; each one says what to do.</p>
 <pre><code>go install github.com/bogie-go/bogie@latest   # {{VERSION}} as of this build
 bogie version</code></pre>
+<section class="release" id="v0.6.2">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.6.2">v0.6.2</a> <span class="release-date">30 Oct 2026</span></h2>
+<ul>
+  <li>A namespaced <code>g scaffold_controller admin/products</code> writes views of its own, <code>app/views/admin_products.go</code> (<code>AdminProductRequest</code>, <code>AdminProductResponse</code>, <code>AdminProductsResponse</code>), flat and prefixed like a model, instead of sharing the public views. <code>g scaffold admin/products</code> already did, so the two agree. <code>d scaffold_controller</code> removes those views.</li>
+</ul>
+</section>
+<section class="release" id="v0.6.1">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.6.1">v0.6.1</a> <span class="release-date">30 Oct 2026</span></h2>
+<ul>
+  <li><code>model:sync</code> removes a field only when a migration dropped or renamed away its column. A field you added with no column, such as a count or a joined name, now stays.</li>
+  <li>With conflict markers in a file, <code>model:sync</code> no longer runs sqlc, which would only fail on them.</li>
+</ul>
+</section>
+<section class="release" id="v0.6.0">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.6.0">v0.6.0</a> <span class="release-date">30 Oct 2026</span></h2>
+<ul>
+  <li>New command <code>bogie model:sync [TABLE]</code>: after a migration, generated or hand-written, it adds the model field for each new column and removes the field for each dropped one, and merges the regenerated queries, store and factory into your copies. <code>Validate</code> and everything else of yours stays. See <a href="models.html#model-sync">Models and migrations</a>.</li>
+  <li>New attribute modifier <code>:null</code> for a column that may be NULL: a pointer in the model, and <code>*time.Time</code> for a datetime through <code>db/adapter/nullable.go</code>. <code>g scaffold</code> refuses it for now.</li>
+</ul>
+</section>
+<section class="release" id="v0.5.6">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.5.6">v0.5.6</a> <span class="release-date">28 Oct 2026</span></h2>
+<ul>
+  <li>The adapter suite is named "Adapter", generated comments say "model" where they said "domain", and route-group variables are camelCase for a two-word controller or namespace.</li>
+  <li>The <code>exit status 1</code> that <code>go run</code> adds after an app has already said what failed is dropped.</li>
+  <li>Factories note that their datetime defaults are placeholders.</li>
+</ul>
+</section>
 <section class="release" id="v0.5.5">
 <h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.5.5">v0.5.5</a> <span class="release-date">28 Oct 2026</span></h2>
 <ul>
