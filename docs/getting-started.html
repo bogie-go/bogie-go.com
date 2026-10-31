@@ -108,6 +108,60 @@ bogie test</code></pre>
 <p><code>bin/ci</code> needs golangci-lint v2, which Go does not bring with it; without it the lint step fails with the install line:</p>
 <pre><code>go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest</code></pre>
 <p><code>bogie doctor</code> is worth running any time the app feels off: it checks every marker the generators write is intact exactly once, that the pinned tools (goose, sqlc, credentials and Air) are still in <code>go.mod</code>, that the layout files generators depend on exist, and that every controller is both constructed and mounted. See <a href="testing.html">Testing and CI</a> for what each step of <code>bin/ci</code> does.</p>
+<h2>Your first resource</h2>
+<p>That app has no table yet. A scaffold writes a whole resource and registers it: the migration, the queries, the model, the store, the views, a controller and its tests.</p>
+<pre><code>bogie g scaffold product name:string price_cents:integer</code></pre>
+<p>It prints one line per file it wrote or edited (the migration's timestamp will be yours):</p>
+<pre><code>      create  db/migrate/20261031072511_create_products.sql
+      create  db/queries/products.sql
+      create  app/models/product.go
+      create  app/models/product_test.go
+      create  db/adapter/products.go
+      create  db/adapter/products_test.go
+      create  test/factories/products.go
+      create  app/views/products.go
+      create  app/controllers/products_controller.go
+      create  app/controllers/products_controller_test.go
+      insert  app/controllers/application.go: Products *ProductsController
+      insert  app/application.go: server.Products = controllers.NewProductsController(store, log)
+      insert  app/controllers/routes.go: s.Products.SetupRoutes(&amp;r.RouterGroup)
+         run  sqlc generate</code></pre>
+<p>Apply the migration. <code>bogie server</code> would do it at boot too.</p>
+<pre><code>bogie db:migrate</code></pre>
+<pre><code>time=2026-10-31T14:25:12.345+07:00 level=INFO msg="schema applied" service=blog from=0 to=20261031072511</code></pre>
+<p>The scaffolded <code>Validate</code> in <code>app/models/product.go</code> accepts everything until you give it rules. Make a name required (and add <code>"fmt"</code> to the imports):</p>
+<pre><code>func (p Product) Validate() error {
+	if p.Name == "" {
+		return fmt.Errorf("%w: name is required", ErrInvalid)
+	}
+	return nil
+}</code></pre>
+<p>Start the server if it is not running (<code>bogie server</code> reloads when you save a file), then call it. A blank name is refused with a 422, a good one is created, and the list shows it:</p>
+<pre><code>$ curl -i -X POST localhost:8080/products \
+    -H "Content-Type: application/json" -d '{"name":""}'
+HTTP/1.1 422 Unprocessable Entity
+Content-Type: application/json; charset=utf-8
+X-Request-Id: 0ce1b3a8-9270-47e1-a70c-63ce82ba808c
+Date: Sat, 31 Oct 2026 07:25:46 GMT
+Content-Length: 54
+
+{"status":"error","error":"invalid: name is required"}
+
+$ curl -i -X POST localhost:8080/products \
+    -H "Content-Type: application/json" -d '{"name":"Blue mug","price_cents":1250}'
+HTTP/1.1 201 Created
+Content-Type: application/json; charset=utf-8
+X-Request-Id: 19772870-4255-42bd-aace-4787be857598
+Date: Sat, 31 Oct 2026 07:25:46 GMT
+Content-Length: 141
+
+{"id":1,"name":"Blue mug","price_cents":1250,"created_at":"2026-10-31T14:25:46.054672+07:00","updated_at":"2026-10-31T14:25:46.054672+07:00"}
+
+$ curl localhost:8080/products
+{"products":[{"id":1,"name":"Blue mug","price_cents":1250,"created_at":"2026-10-31T14:25:46.054672+07:00","updated_at":"2026-10-31T14:25:46.054672+07:00"}]}</code></pre>
+<p>That output was captured from a real Bogie v0.6.8 app; the ids, timestamps and request ids will differ on yours.</p>
+
+<p>That's a working API: a migration, typed queries, validation, a controller and tests, all in plain Go you can read and change. Next, add your own fields with <code>bogie g scaffold</code>, or see the <a href="/docs/">guides</a> for what each piece does.</p>
 </article>
 <!-- @docs-end -->
 

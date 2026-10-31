@@ -40,6 +40,8 @@
 <h1>Working on a Bogie app</h1>
 <p>One guide per feature: the commands to run, in order, and what they produce. Read <a href="getting-started.html">Getting started</a> first; the rest stand on their own after that.</p>
 
+<h2 id="the-app">The app</h2>
+<p>Build the service: models, routes, seeds, auth, services and jobs.</p>
 <ul class="guide-list">
   <li><a href="getting-started.html">Getting started</a><p>Install Bogie, generate a new service, and get it migrating, seeded and serving.</p></li>
   <li><a href="models.html">Models and migrations</a><p>Add a table with <code>g model</code>, change one with <code>g migration</code>, and run it through <code>db:*</code>.</p></li>
@@ -49,11 +51,21 @@
   <li><a href="authentication.html">Authentication</a><p>Guard a route group with a middleware: a shared secret, a bearer token, or a machine client's key.</p></li>
   <li><a href="services.html">Services</a><p>Give logic that is not CRUD a package of its own, with no HTTP in it.</p></li>
   <li><a href="jobs.html">Background jobs</a><p>Add River with <code>--jobs</code> at <code>new</code> time, or later with <code>g job</code>, and write a worker that runs beside it.</p></li>
+</ul>
+
+<h2 id="infra">Infra</h2>
+<p>Configure, test, ship and keep it current.</p>
+<ul class="guide-list">
   <li><a href="configuration.html">Configuration and credentials</a><p>The environment variables, the encrypted settings file, and what staging means here.</p></li>
   <li><a href="own-postgres.html">Your own Postgres</a><p>Point the app at a Postgres you already run, without Docker.</p></li>
   <li><a href="testing.html">Testing and CI</a><p>Where tests live, what <code>bin/ci</code> runs, and what <code>doctor</code> checks before either does.</p></li>
   <li><a href="deploying.html">Deploying</a><p>One Docker image, every role, shipped with Kamal 2 to staging and production.</p></li>
   <li><a href="upgrading.html">Upgrading an app</a><p><code>bogie app:update</code>: a three-way merge to a newer layout that keeps your edits.</p></li>
+</ul>
+
+<h2 id="reference">Reference</h2>
+<p>Look things up.</p>
+<ul class="guide-list">
   <li><a href="conventions.html">Conventions and agents</a><p>The six rules every generated app keeps, and why the layout is the way it is.</p></li>
   <li><a href="from-rails.html">Rails equivalents</a><p>A lookup table: the Rails names for things, and where each one lives in a generated Bogie app.</p></li>
   <li><a href="commands.html">Command reference</a><p>Every <code>bogie</code> command, every generator and every <code>make</code> target, in one place.</p></li>
