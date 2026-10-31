@@ -38,7 +38,7 @@
 <article>
 <p class="guide-eyebrow">{{SECTION}}</p>
 <h1>Upgrading an app</h1>
-<p>The generated app never imports Bogie, so a new Bogie release changes nothing in an app until you ask. <code>bogie app:update</code> is the asking: a three-way merge between your app and the layout of the Bogie you have installed.</p>
+<p>Generated apps never import Bogie itself, and the only bogie-go library they use is <code>credentials</code>, so a new Bogie release changes nothing in an app until you ask. <code>bogie app:update</code> is the asking: a three-way merge between your app and the layout of the Bogie you have installed.</p>
 
 <h2>Upgrade</h2>
 <pre><code>go install github.com/bogie-go/bogie@latest   # {{VERSION}} as of this build
