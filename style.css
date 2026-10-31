@@ -91,14 +91,18 @@ h2.display { font-size: clamp(44px, 5.6vw, 80px); }
 .panel pre { padding: 20px 22px; }
 
 /* hero */
-.hero { padding: 72px 0 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(480px, 100%), 1fr)); gap: 56px; align-items: center; }
+.hero { padding-top: 72px; padding-bottom: 40px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(480px, 100%), 1fr)); gap: 56px; align-items: center; }
 .hero .copytext { display: flex; flex-direction: column; gap: 28px; min-width: 0; }
 .tags { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; font-family: var(--mono); font-size: 12.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
 .tags .pill { background: var(--ink); color: var(--on-ink); padding: 6px 10px; border-radius: 3px; }
 h1.display { font-size: clamp(64px, 8.4vw, 124px); line-height: 0.9; }
+.hero h1.display { font-size: clamp(44px, 5.4vw, 76px); line-height: 0.95; }
 h1.display .go { color: var(--accent); }
-.hero .lead { font-size: 20px; line-height: 1.55; max-width: 34em; text-wrap: pretty; }
-.hero .terminal { max-width: 560px; }
+.hero .lead { font-size: 18px; line-height: 1.55; max-width: 34em; text-wrap: pretty; }
+.hero .copytext { gap: 24px; }
+.try { padding-top: 40px; padding-bottom: 24px; }
+.try h2.display { font-size: clamp(32px, 3.6vw, 48px); line-height: 1; margin: 8px 0 28px; }
+.try-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); gap: 24px; align-items: start; }
 .mascot { margin: 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 18px; }
 .mascot .plate { position: relative; width: 100%; max-width: 540px; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; }
 .mascot .plate::before { content: ""; position: absolute; inset: 6% 4% 10% 4%; border-radius: 50%; background: var(--sand); border: 1.5px solid var(--line); }
@@ -300,4 +304,4 @@ a.pill { text-decoration: none; color: inherit; }
 }
 .measure h2 + p + .guide-list { margin-top: 16px; }
 .measure .guide-list { padding-left: 0; }
-.hero .terminal.scaffold pre { font-size: 12.5px; line-height: 1.5; padding: 14px 18px; }
+.try .terminal.scaffold pre { font-size: 12.5px; line-height: 1.5; padding: 14px 18px; }
