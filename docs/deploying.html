@@ -21,7 +21,7 @@
 <meta name="twitter:title" content="Deploying: Bogie">
 <meta name="twitter:description" content="One Docker image, every role, shipped with Kamal 2 to staging and production.">
 <meta name="twitter:image" content="https://bogie-go.com/og.png">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Deploying", "description": "One Docker image, every role, shipped with Kamal 2 to staging and production.", "url": "https://bogie-go.com/docs/deploying.html", "dateModified": "2026-10-03", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "Deploying", "item": "https://bogie-go.com/docs/deploying.html"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Deploying", "description": "One Docker image, every role, shipped with Kamal 2 to staging and production.", "url": "https://bogie-go.com/docs/deploying.html", "dateModified": "2026-10-31", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "Deploying", "item": "https://bogie-go.com/docs/deploying.html"}]}]}</script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
 <script>
@@ -81,8 +81,20 @@ KAMAL_REGISTRY_PASSWORD=$(go tool credentials get -e staging kamal.registry_pass
 <h2>Migrate at boot</h2>
 <p>On by default: the container applies pending migrations before it starts serving, so the database only has to exist, not already match the code. <code>&lt;NAME&gt;_MIGRATE_AT_BOOT=false</code> turns it off, for a deployment that migrates from one place on purpose.</p>
 
-<h2>The job role</h2>
-<p>Apps made with <code>--jobs</code> get a <code>job</code> role in both <code>deploy.yml</code> and the production overlay: the same image, started as <code>blog worker</code> instead of serving. Same host as <code>web</code> until the queue needs one of its own.</p>
+<h2 id="job-role">The job role</h2>
+<p>Apps made with <code>--jobs</code> get a <code>job</code> role in both <code>deploy.yml</code> and the production overlay: the same image, started with the argument <code>worker</code> instead of serving. Same host as <code>web</code> until the queue needs one of its own.</p>
+<pre><code>  job:
+    hosts:
+      - CHANGE-ME.example.com
+    cmd: worker</code></pre>
+<p><code>cmd</code> is only the argument, <code>worker</code>, not <code>blog worker</code>: the image's <code>ENTRYPOINT</code> is already <code>blog</code>, so <code>cmd: blog worker</code> runs <code>blog blog worker</code>, which is not a command, so the container prints <code>unknown command "blog"; serving instead</code> and serves HTTP where the worker should be working. Apps made before v0.6.6 (<code>deploy.yml</code>) or v0.6.7 (the production overlay) have the old line; see <a href="upgrading.html#v0-6">Moving an app from v0.5.5 to v0.6.8</a>.</p>
+<h3>Running a command in a container</h3>
+<p><code>deploy.yml</code> ends with three Kamal aliases, and its comments say how <code>app exec</code> treats the binary name. With <code>--reuse</code> it runs in the container that is up, so it takes the whole command, <code>kamal app exec --reuse "blog db seed"</code>. Without it Kamal starts a new container through the <code>ENTRYPOINT</code>, so leave the binary off: <code>kamal app exec "db seed"</code>.</p>
+<pre><code>aliases:
+  logs: app logs -f
+  shell: app exec --interactive --reuse "sh"
+  status: app exec --reuse -r web "wget -qO- http://localhost:8080/healthz"</code></pre>
+<p><code>kamal status</code> asks the web role only (<code>-r web</code>, since v0.6.7): a job container serves no HTTP, so asking it would fail.</p>
 
 <h2>The database</h2>
 <p>Not an accessory by default. The premise is a Postgres server you already run, so <code>database.url</code> in the credentials points at that server, as a database of this service's own. Uncommenting an <code>accessories.db</code> block in <code>deploy.yml</code> gives the service its own Postgres container instead, resolved by container name on Kamal's network; the schema is still applied by the container itself at boot.</p>

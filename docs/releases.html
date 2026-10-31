@@ -21,7 +21,7 @@
 <meta name="twitter:title" content="Releases: Bogie">
 <meta name="twitter:description" content="What each Bogie release added or changed, newest first, with breaking changes marked and what to do about them.">
 <meta name="twitter:image" content="https://bogie-go.com/og.png">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Releases", "description": "Every Bogie release, newest first, with breaking changes marked.", "url": "https://bogie-go.com/docs/releases.html", "dateModified": "2026-10-19", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "Releases", "item": "https://bogie-go.com/docs/releases.html"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Releases", "description": "Every Bogie release, newest first, with breaking changes marked.", "url": "https://bogie-go.com/docs/releases.html", "dateModified": "2026-10-31", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "Releases", "item": "https://bogie-go.com/docs/releases.html"}]}]}</script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
 <script>
@@ -41,6 +41,51 @@
 <p>What each tagged release added or changed, newest first, in plain words. Each version links to its tag on GitHub, where the commit list lives. Changes marked <span class="badge-breaking">Breaking</span> can stop an existing app or setup working until you act; each one says what to do.</p>
 <pre><code>go install github.com/bogie-go/bogie@latest   # {{VERSION}} as of this build
 bogie version</code></pre>
+<section class="release" id="v0.6.8">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.6.8">v0.6.8</a> <span class="release-date">31 Oct 2026</span></h2>
+<ul>
+  <li>When goose refuses a migration because its file is older than the newest one already applied (an "out-of-order" migration), the error now says what to do: rename the new file with a timestamp after the newest one, if no other database has applied it yet. It reads <code>migrate: up: detected 1 missing (out-of-order) migration lower than database version (...): version 20200101000000: a migration file is older than the newest one already applied; rename the new file with a timestamp after it (only if no other database has applied it yet)</code>. See <a href="models.html#out-of-order">Models and migrations</a>.</li>
+  <li>The header of a generated factory no longer says it is only ever written once: <code>model:sync</code> merges a new column's default into it and keeps your edits.</li>
+  <li>Existing apps: <code>bogie app:update</code> adds <code>app/services/migrate/</code> specs and the new error wording. Nothing to move. See <a href="upgrading.html#v0-6">Moving an app from v0.5.5 to v0.6.8</a>.</li>
+</ul>
+</section>
+<section class="release" id="v0.6.7">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.6.7">v0.6.7</a> <span class="release-date">31 Oct 2026</span></h2>
+<ul>
+  <li>The job role in <code>config/deploy.production.yml</code> is <code>cmd: worker</code>, as v0.6.6 made it in <code>deploy.yml</code>. v0.6.6 missed this file, so a production deploy still ran <code>blog blog worker</code>, which starts the web server instead of the worker.</li>
+  <li>The <code>status</code> alias asks the web role only (<code>app exec --reuse -r web ...</code>). It ran on every role, and a job container serves no HTTP, so it failed there. See <a href="deploying.html#job-role">Deploying</a>.</li>
+  <li>Existing apps with jobs: <code>bogie app:update</code> changes both deploy files, but if you have already put your own host in them it leaves conflict markers on the <code>job</code> lines. Keep your host and set <code>cmd: worker</code>. See <a href="upgrading.html#v0-6">Moving an app from v0.5.5 to v0.6.8</a>.</li>
+</ul>
+</section>
+<section class="release" id="v0.6.6">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.6.6">v0.6.6</a> <span class="release-date">31 Oct 2026</span></h2>
+<ul>
+  <li>The job role's <code>cmd</code> in <code>config/deploy.yml</code> is <code>worker</code>, not <code>blog worker</code>. The image's <code>ENTRYPOINT</code> is already the binary, so the old line ran <code>blog blog worker</code>, which prints <code>unknown command "blog"; serving instead</code> and starts a second web server where the worker should have run. Apps made with <code>--jobs</code>, or given jobs by <code>g job</code>, had the old line. The file's comments now say when <code>app exec</code> takes the binary name (with <code>--reuse</code>, which runs in the container that is up) and when it does not (without it, Kamal starts a new container through the <code>ENTRYPOINT</code>).</li>
+  <li>This release fixes <code>deploy.yml</code> only; v0.6.7 fixes the production overlay, so move straight to v0.6.8.</li>
+</ul>
+</section>
+<section class="release" id="v0.6.5">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.6.5">v0.6.5</a> <span class="release-date">30 Oct 2026</span></h2>
+<ul>
+  <li>The generated <code>test/testapp</code> has a <code>Put(path, body)</code>, beside <code>Get</code>, <code>Post</code>, <code>Patch</code> and <code>Delete</code>. See <a href="testing.html#request-specs">Request specs</a>.</li>
+  <li>Existing apps: <code>bogie app:update</code> adds it to <code>test/testapp/testapp.go</code>.</li>
+</ul>
+</section>
+<section class="release" id="v0.6.4">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.6.4">v0.6.4</a> <span class="release-date">30 Oct 2026</span></h2>
+<ul>
+  <li>In generated <code>Create</code> and <code>Update</code>, a <code>references</code> column whose foreign key names nothing (Postgres <code>23503</code>) is <code>ErrInvalid</code> ("post_id does not exist"), like a duplicate value, so a controller answers 422 where it answered 500. <code>g model</code> writes a <code>CreateX</code> spec for it on a model with a reference.</li>
+  <li>Existing apps: re-run <code>g model</code> (or <code>g scaffold</code>) for a resource that has a <code>references</code> column to get it; the files you changed are reported <code>conflict</code> until you pass <code>--force</code>.</li>
+</ul>
+</section>
+<section class="release" id="v0.6.3">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.6.3">v0.6.3</a> <span class="release-date">30 Oct 2026</span></h2>
+<ul>
+  <li>A <code>uuid</code> attribute in an app with the default bigint ids writes <code>db/adapter/uuid.go</code> (<code>parseUUID</code> and <code>uuidString</code>). Before, the store did not compile (<code>undefined: parseUUID</code>) because only a <code>--id=uuid</code> app had that file. <code>model:sync</code> writes it too, when a new column is a uuid.</li>
+  <li><code>model:sync</code> tells a uuid column from a string one, so an untouched uuid field no longer shows as a change.</li>
+  <li><code>g job --pretend</code> writes nothing, and on an app with no jobs it no longer adds <code>--jobs</code> first: it says <code>this app has no app/jobs yet; --jobs would be added first</code> and lists what the job would create.</li>
+</ul>
+</section>
 <section class="release" id="v0.6.2">
 <h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.6.2">v0.6.2</a> <span class="release-date">30 Oct 2026</span></h2>
 <ul>
