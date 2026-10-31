@@ -300,3 +300,4 @@ a.pill { text-decoration: none; color: inherit; }
 }
 .measure h2 + p + .guide-list { margin-top: 16px; }
 .measure .guide-list { padding-left: 0; }
+.hero .terminal.scaffold pre { font-size: 12.5px; line-height: 1.5; padding: 14px 18px; }

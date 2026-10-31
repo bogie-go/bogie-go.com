@@ -42,7 +42,7 @@
     <div class="tags"><a class="pill" href="https://github.com/bogie-go/bogie/releases">{{VERSION}}</a><span>A generator for Go services · MIT</span></div>
     <p class="eyebrow">Conventions, laid on Go track.</p>
     <h1 class="display"><span class="go">A Go API service,</span> from zero to production.</h1>
-    <p class="lead">Scaffold an API-only, Postgres-only Go service in minutes: plain Go on Gin, sqlc and goose, with Kamal deploys and optional River jobs. You get code you can read and own, and it never imports Bogie.</p>
+    <p class="lead">One command gives you a plain Go API on Gin, with sqlc, goose migrations, tests, CI and Kamal deploys.</p>
     <div class="terminal">
       <header><span>Install · new · run</span><button type="button" class="copy" data-copy="go install github.com/bogie-go/bogie@latest
 bogie new blog
@@ -50,6 +50,24 @@ cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server">
 <pre class="code"><span class="p">$</span> go install github.com/bogie-go/bogie@latest
 <span class="p">$</span> bogie new blog
 <span class="p">$</span> cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server</pre>
+    </div>
+    <div class="terminal scaffold">
+      <header><span>Scaffold a resource</span><button type="button" class="copy" data-copy="bogie g scaffold product name:string price_cents:integer">Copy</button></header>
+<pre class="code"><span class="p">$</span> bogie g scaffold product name:string price_cents:integer
+      <span class="s">create</span>  <span class="c">db/migrate/20261031072511_create_products.sql</span>
+      <span class="s">create</span>  <span class="c">db/queries/products.sql</span>
+      <span class="s">create</span>  <span class="c">app/models/product.go</span>
+      <span class="s">create</span>  <span class="c">app/models/product_test.go</span>
+      <span class="s">create</span>  <span class="c">db/adapter/products.go</span>
+      <span class="s">create</span>  <span class="c">db/adapter/products_test.go</span>
+      <span class="s">create</span>  <span class="c">test/factories/products.go</span>
+      <span class="s">create</span>  <span class="c">app/views/products.go</span>
+      <span class="s">create</span>  <span class="c">app/controllers/products_controller.go</span>
+      <span class="s">create</span>  <span class="c">app/controllers/products_controller_test.go</span>
+      <span class="f">insert</span>  <span class="c">app/controllers/application.go: Products *ProductsController</span>
+      <span class="f">insert</span>  <span class="c">app/application.go: server.Products = controllers.NewProductsController(store, log)</span>
+      <span class="f">insert</span>  <span class="c">app/controllers/routes.go: s.Products.SetupRoutes(&amp;r.RouterGroup)</span>
+         <span class="k">run</span>  <span class="c">sqlc generate</span></pre>
     </div>
     <div class="ctas">
       <a class="btn btn-primary" href="/docs/">Read the guides</a>
