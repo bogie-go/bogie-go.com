@@ -378,15 +378,5 @@ bin/ci">Copy</button></header>
 
 <!-- @footer -->
 
-<script>
-// The one script on the site: the Copy buttons. Nothing is fetched.
-for (const b of document.querySelectorAll('button.copy')) {
-  b.addEventListener('click', async () => {
-    try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = 'Copied'; }
-    catch (e) { b.textContent = 'Select it'; }
-    setTimeout(() => { b.textContent = 'Copy'; }, 1600);
-  });
-}
-</script>
 </body>
 </html>

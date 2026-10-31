@@ -4,7 +4,11 @@
 Pages are plain HTML with a few markers that this script fills in:
   <!-- @header --> / <!-- @footer -->     the shared _includes/*.html
   <!-- @docs-start --> ... <!-- @docs-end -->  docs pages: sidebar + prev/next
+  <!-- @script -->                         the one inline script (SCRIPT below), in the footer
   {{VERSION}} / {{VERSION_NUM}} / {{SECTION}}
+
+Docs pages also get an id and a "#" link on every <h2>/<h3>, and an "On this
+page" list of the <h2>s, written into the HTML here (no JS needed for those).
 
 The version is the latest tag from the Go module proxy. If that fetch fails,
 BOGIE_VERSION or the last known version in FALLBACK_VERSION is used.
@@ -46,6 +50,68 @@ NAV = [
                    ("from-rails", "Rails equivalents")]),
 ]
 FLAT = [(slug, title, sec) for sec, items in NAV for slug, title in items]
+
+
+# The one script on the site, inlined by the footer's <!-- @script --> marker.
+# Nothing is fetched. Home: the terminal's Copy button. Guides: a Copy button
+# on every code block.
+SCRIPT = r"""<script>
+// The one script on the site: Copy buttons. Nothing is fetched.
+function copyButton(b, text) {
+  b.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(text()); b.textContent = 'Copied'; }
+    catch (e) { b.textContent = 'Select it'; }
+    setTimeout(() => { b.textContent = 'Copy'; }, 1600);
+  });
+}
+for (const b of document.querySelectorAll('button.copy')) copyButton(b, () => b.dataset.copy);
+for (const pre of document.querySelectorAll('.doc-main pre')) {
+  const wrap = document.createElement('div'), b = document.createElement('button');
+  wrap.className = 'codewrap';
+  b.type = 'button'; b.className = 'copy copy-pre'; b.textContent = 'Copy';
+  b.setAttribute('aria-label', 'Copy this code block');
+  pre.replaceWith(wrap); wrap.append(pre, b);
+  copyButton(b, () => pre.textContent.replace(/\n$/, ''));
+}
+</script>"""
+
+HEADING = re.compile(r'<h([23])((?: id="[^"]*")?)>(.*?)</h\1>', re.S)
+
+
+def slugify(s):
+    return re.sub(r"[^a-z0-9]+", "-", html.unescape(re.sub(r"<[^>]+>", "", s)).lower()).strip("-") or "section"
+
+
+def anchors(article, slug):
+    """Give every <h2>/<h3> an id and a hover "#" link; add an "On this page"
+    list of the <h2>s after the intro paragraph. Releases keep their own ids."""
+    if slug in ("releases", "index"):
+        return article
+    used = set(re.findall(r'\bid="([^"]+)"', article))
+    toc = []
+
+    def fix(m):
+        level, idattr, inner = m.group(1), m.group(2), m.group(3)
+        hid = idattr[5:-1] if idattr else None
+        if not hid:
+            base = hid = slugify(inner)
+            n = 2
+            while hid in used:
+                hid, n = f"{base}-{n}", n + 1
+            used.add(hid)
+        if level == "2":
+            toc.append((hid, re.sub(r"<[^>]+>", "", inner)))
+        return (f'<h{level} id="{hid}">{inner}'
+                f'<a class="anchor" href="#{hid}" aria-label="Link to this section"></a></h{level}>')
+
+    article = HEADING.sub(fix, article)
+    if len(toc) >= 3:
+        items = "".join(f'<li><a href="#{i}">{t}</a></li>' for i, t in toc)
+        nav = (f'<nav class="onpage" aria-label="On this page"><p class="onpage-h">On this page</p>'
+               f'<ul>{items}</ul></nav>')
+        # after the first paragraph that follows the <h1> (the intro)
+        article = re.sub(r"(</h1>\s*<p>.*?</p>)", lambda m: m.group(1) + "\n" + nav, article, count=1, flags=re.S)
+    return article
 
 
 def latest_version():
@@ -114,11 +180,13 @@ def render(path, text, inc, version):
     if d:  # same source as the sitemap's <lastmod>; the typed date is the fallback
         text = re.sub(r'"dateModified": "\d{4}-\d{2}-\d{2}"', f'"dateModified": "{d}"', text)
     text = text.replace("<!-- @header -->", inc["header"]).replace("<!-- @footer -->", inc["footer"])
+    text = text.replace("<!-- @script -->", SCRIPT)
     if "<!-- @docs-start -->" in text:
         slug = path.stem
         section = next((sec for s, _, sec in FLAT if s == slug), "Guides")
         text = text.replace("<!-- @docs-start -->",
                             f'<div class="doclayout">\n{sidebar(slug)}\n<div class="measure doc-main">', 1)
+        text = re.sub(r"<article>.*?</article>", lambda m: anchors(m.group(0), slug), text, count=1, flags=re.S)
         text = text.replace("<!-- @docs-end -->", f"{prevnext(slug)}\n</div>\n</div>", 1)
         text = text.replace("{{SECTION}}", section)
     return text.replace("{{VERSION_NUM}}", version.lstrip("v")).replace("{{VERSION}}", version)
