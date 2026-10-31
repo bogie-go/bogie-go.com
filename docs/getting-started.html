@@ -39,7 +39,7 @@
 <p class="guide-eyebrow">{{SECTION}}</p>
 <h1>Getting started</h1>
 
-<p>Bogie is a CLI, not a library. It renders a new Go service onto disk and then gets out of the way: the app it generates never imports Bogie, so deleting the tool tomorrow does not touch the app.</p>
+<p>Bogie is a CLI, not a library. It renders a new Go service onto disk and then gets out of the way: the app it generates never imports Bogie itself, and the only bogie-go library it uses is <code>credentials</code>, so deleting the tool tomorrow does not touch the app.</p>
 
 <h2>Install</h2>
 <pre><code>go install github.com/bogie-go/bogie@latest</code></pre>
