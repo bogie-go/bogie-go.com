@@ -43,12 +43,83 @@
 
 <h2>The six rules</h2>
 <ol class="guide-rules">
-  <li><strong><code>ctx context.Context</code> is the first parameter of anything doing I/O.</strong> No <code>context.TODO()</code>. Cancellation, deadlines and tracing travel in it, so a request that is abandoned stops its query instead of finishing work nobody will read.</li>
-  <li><strong>Interfaces are declared where they are consumed</strong>, next to the code that uses them, holding only the methods that code actually calls, never exported from the package that implements them. A controller's store interface lists five methods, not the whole store, so each stays short and readable, and there is no mocking library anywhere in a generated app.</li>
-  <li><strong><code>app/models</code> imports nothing third-party.</strong> The type and its <code>Validate</code> can be read, and called from a test, without pulling in a database driver or an HTTP framework.</li>
-  <li><strong>Constructors return <code>(T, error)</code>.</strong> Only <code>main</code> exits. A bad configuration fails at boot with a message, never with a panic in the middle of a handler.</li>
-  <li><strong><code>*gin.Context</code> never travels below <code>app/controllers</code>.</strong> A handler converts HTTP into model values, calls one function, and converts the result back. Everything below that line can be called from a job, a CLI, or a test, not only from a request.</li>
-  <li><strong>No <code>util/</code>, <code>helpers/</code> or <code>common/</code>.</strong> A package is named for what it provides, which is a required prefix at every call site, so the name has to say something.</li>
+  <li><strong><code>ctx context.Context</code> is the first parameter of anything doing I/O.</strong> No <code>context.TODO()</code>. Cancellation, deadlines and tracing travel in it, so a request that is abandoned stops its query instead of finishing work nobody will read.
+<pre><code>func (s *Store) GetPost(
+	ctx context.Context, id string,
+) (models.Post, error) {
+	// ...
+	row, err := s.q.GetPost(ctx, pk)
+	// ...
+}
+
+// Not this: GetPost(id string), or
+// context.TODO() inside the body.</code></pre>
+</li>
+  <li><strong>Interfaces are declared where they are consumed</strong>, next to the code that uses them, holding only the methods that code actually calls, never exported from the package that implements them. A controller's store interface lists five methods, not the whole store, so each stays short and readable, and there is no mocking library anywhere in a generated app.
+<pre><code>// beside PostsController
+type postsStore interface {
+	GetPost(ctx context.Context, id string) (models.Post, error)
+	// ...four more
+}
+
+// Not this: exporting a Store interface
+// from db/adapter next to *Store.</code></pre>
+</li>
+  <li><strong><code>app/models</code> imports nothing third-party.</strong> The type and its <code>Validate</code> can be read, and called from a test, without pulling in a database driver or an HTTP framework.
+<pre><code>package models
+
+import "fmt"
+
+func (p Post) Validate() error {
+	if p.Title == "" {
+		return fmt.Errorf(
+			"%w: title is required", ErrInvalid)
+	}
+	return nil
+}
+
+// Not this: import "github.com/gin-gonic/gin"</code></pre>
+</li>
+  <li><strong>Constructors return <code>(T, error)</code>.</strong> Only <code>main</code> exits. A bad configuration fails at boot with a message, never with a panic in the middle of a handler.
+<pre><code>// config/config.go
+func Load() (Config, error)
+
+// db/adapter/store.go
+func Open(ctx context.Context, url string) (*Store, error) {
+	pool, err := pgxpool.New(ctx, url)
+	if err != nil {
+		return nil, fmt.Errorf("store: open database: %w", err)
+	}
+	// ...
+}
+
+// main.go: the only place that exits
+if err := run(ctx, args); err != nil {
+	fmt.Fprintln(os.Stderr, "blog:", err)
+	os.Exit(1)
+}</code></pre>
+</li>
+  <li><strong><code>*gin.Context</code> never travels below <code>app/controllers</code>.</strong> A handler converts HTTP into model values, calls one function, and converts the result back. Everything below that line can be called from a job, a CLI, or a test, not only from a request.
+<pre><code>func (ctl *PostsController) Show(c *gin.Context) {
+	p, err := ctl.Store.GetPost(
+		c.Request.Context(), c.Param("id"))
+	if err != nil {
+		ctl.fail(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, postView(p))
+}
+
+// Below the controller, no *gin.Context:
+// GetPost(ctx context.Context, id string)</code></pre>
+</li>
+  <li><strong>No <code>util/</code>, <code>helpers/</code> or <code>common/</code>.</strong> A package is named for what it provides, which is a required prefix at every call site, so the name has to say something.
+<pre><code>svc := publish_post.New(store, log)
+err := svc.Run(ctx)
+
+// Not this: util.Publish, helpers.Post,
+// or anything in common/</code></pre>
+</li>
 </ol>
 
 <h2>The layout is by role, on purpose</h2>
