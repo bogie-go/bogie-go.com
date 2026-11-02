@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bogie — A Go API service, from zero to production</title>
-<meta name="description" content="A CLI that scaffolds a production-ready Go API: plain Go on Gin, sqlc and goose, with Kamal deploys and optional River jobs. From `bogie new` to deploy.">
+<meta name="description" content="A CLI that scaffolds a production-ready Go API: plain Go on Gin, sqlc and goose, with Kamal deploys and optional River jobs. From bogie new to deploy.">
 <link rel="icon" type="image/png" href="favicon.png">
 <link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="style.css">
@@ -12,14 +12,14 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Bogie">
 <meta property="og:title" content="Bogie — A Go API service, from zero to production">
-<meta property="og:description" content="A CLI that scaffolds a production-ready Go API: plain Go on Gin, sqlc and goose, with Kamal deploys and optional River jobs. From `bogie new` to deploy.">
+<meta property="og:description" content="A CLI that scaffolds a production-ready Go API: plain Go on Gin, sqlc and goose, with Kamal deploys and optional River jobs. From bogie new to deploy.">
 <meta property="og:url" content="https://bogie-go.com/">
 <meta property="og:image" content="https://bogie-go.com/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Bogie — A Go API service, from zero to production">
-<meta name="twitter:description" content="A CLI that scaffolds a production-ready Go API: plain Go on Gin, sqlc and goose, with Kamal deploys and optional River jobs. From `bogie new` to deploy.">
+<meta name="twitter:description" content="A CLI that scaffolds a production-ready Go API: plain Go on Gin, sqlc and goose, with Kamal deploys and optional River jobs. From bogie new to deploy.">
 <meta name="twitter:image" content="https://bogie-go.com/og.png">
 <script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "WebSite", "@id": "https://bogie-go.com/#site", "name": "Bogie", "url": "https://bogie-go.com/", "description": "A Go API service, from zero to production. A CLI that scaffolds plain Go on Gin, sqlc and goose, with Kamal deploys and optional River jobs."}, {"@type": "SoftwareApplication", "@id": "https://bogie-go.com/#app", "name": "Bogie", "url": "https://bogie-go.com", "applicationCategory": "DeveloperApplication", "operatingSystem": "Linux, macOS, Windows", "softwareVersion": "{{VERSION_NUM}}", "programmingLanguage": "Go", "license": "https://github.com/bogie-go/bogie/blob/main/LICENSE", "codeRepository": "https://github.com/bogie-go/bogie", "downloadUrl": "https://github.com/bogie-go/bogie/releases", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "description": "A CLI that scaffolds an API-only, Postgres-only Go service, with generators that also wire the code in. Generated apps never import Bogie itself; the only bogie-go library they use is credentials."}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What is Bogie?", "acceptedAnswer": {"@type": "Answer", "text": "A command-line tool that scaffolds an API-only, Postgres-only Go service with generators that also wire the code in: bogie new, g scaffold, g model, g controller, g job, g seed, g authentication. It writes plain Go on top of Gin, sqlc, goose, River and Kamal. Generated apps never import Bogie itself; the only bogie-go library they use is credentials."}}, {"@type": "Question", "name": "How is Bogie different from go-on-rails / Go on Rails?", "acceptedAnswer": {"@type": "Answer", "text": "The go-on-rails gem generated Go code from an existing Rails app, and that project is separate and archived. Bogie is an unrelated standalone Go CLI: bogie new and g scaffold create a Go service from nothing. Generated apps never import Bogie itself; the only bogie-go library they use is credentials."}}, {"@type": "Question", "name": "Is Bogie a Go web framework?", "acceptedAnswer": {"@type": "Answer", "text": "No. There is no framework runtime, no base class and no DSL. Bogie renders templates and shells out to tools the Go ecosystem already ships. Delete the tool and the app does not notice. For a Go framework with views, see Andurel."}}, {"@type": "Question", "name": "Which databases does Bogie support?", "acceptedAnswer": {"@type": "Answer", "text": "Postgres only, by design. Background jobs run on River, which uses the same Postgres, so there is no Redis. SQLite was considered and declined until River's SQLite driver is stable."}}, {"@type": "Question", "name": "How do I install Bogie?", "acceptedAnswer": {"@type": "Answer", "text": "go install github.com/bogie-go/bogie@latest. Generated apps need Go 1.26 or newer (the CLI itself builds with 1.25). Postgres runs in Docker, with Compose v2, from the generated app's own compose file. There is no Homebrew tap and nothing prebuilt."}}, {"@type": "Question", "name": "How does a generated app get upgraded?", "acceptedAnswer": {"@type": "Answer", "text": "bogie app:update is a three-way merge: it renders what the recorded Bogie version generated, what the current version generates, and merges each template-owned file with your edits kept. Only a real overlap leaves conflict markers."}}, {"@type": "Question", "name": "Can an AI agent work in a Bogie app?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Every generated app ships an AGENTS.md with the six rules, every command and a recipe per task, and the generators register code above visible marker comments, so an agent's change is a diff a person can review."}}]}]}</script>
 <!-- Google tag (gtag.js) -->
@@ -44,7 +44,7 @@
     <h1 class="display"><span class="go">A Go API service,</span> from zero to production.</h1>
     <p class="lead">One command gives you a plain Go API on Gin and Postgres, with sqlc, goose migrations, tests, CI and Kamal deploys.</p>
     <div class="ctas">
-      <a class="btn btn-primary" href="/docs/">Read the guides</a>
+      <a class="btn btn-primary" href="/docs/getting-started.html">Get started</a>
       <a class="btn btn-outline" href="/docs/commands.html">Command reference</a>
     </div>
   </div>
@@ -62,7 +62,8 @@
       <header><span>Install · new · run</span><button type="button" class="copy" data-copy="go install github.com/bogie-go/bogie@latest
 bogie new blog
 cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server">Copy</button></header>
-<pre class="code"><span class="p">$</span> go install github.com/bogie-go/bogie@latest
+<pre class="code"><span class="c"># Needs Go 1.26+ and Docker</span>
+<span class="p">$</span> go install github.com/bogie-go/bogie@latest
 <span class="p">$</span> bogie new blog
 <span class="p">$</span> cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server</pre>
     </div>
@@ -82,7 +83,17 @@ cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server">
       <span class="f">insert</span>  <span class="c">app/controllers/application.go: Products *ProductsController</span>
       <span class="f">insert</span>  <span class="c">app/application.go: server.Products = controllers.NewProductsController(store, log)</span>
       <span class="f">insert</span>  <span class="c">app/controllers/routes.go: s.Products.SetupRoutes(&amp;r.RouterGroup)</span>
-         <span class="k">run</span>  <span class="c">sqlc generate</span></pre>
+         <span class="k">run</span>  <span class="c">sqlc generate</span>
+
+<span class="p">$</span> curl -i -X POST localhost:8080/products \
+    -H "Content-Type: application/json" -d '{"name":"Blue mug","price_cents":1250}'
+HTTP/1.1 201 Created
+Content-Type: application/json; charset=utf-8
+X-Request-Id: 19772870-4255-42bd-aace-4787be857598
+Date: Sat, 31 Oct 2026 07:25:46 GMT
+Content-Length: 141
+
+{"id":1,"name":"Blue mug","price_cents":1250,"created_at":"2026-10-31T14:25:46.054672+07:00","updated_at":"2026-10-31T14:25:46.054672+07:00"}</pre>
     </div>
   </div>
 </section>
@@ -378,8 +389,9 @@ cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server">
     <div class="title"><img src="bogie.webp" alt=""><h2 class="display">All aboard.</h2></div>
     <p class="lead">Four steps to a running JSON API on Postgres: <code>bogie new</code>, <code>make up</code>, <code>bogie db:prepare</code>, <code>bogie server</code>. Migrations, tests and a deploy path come already laid. You need Go 1.26 or newer, and Docker for the local Postgres.</p>
     <div class="ctas">
-      <a class="btn btn-primary" href="/docs/">Read the guides</a>
+      <a class="btn btn-primary" href="/docs/getting-started.html">Get started</a>
       <a class="btn btn-outline" href="https://github.com/bogie-go/bogie">Star on GitHub</a>
+      <a class="arrow" href="/docs/">Read the guides</a>
     </div>
   </div>
   <div class="terminal">
