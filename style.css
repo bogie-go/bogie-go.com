@@ -110,7 +110,7 @@ h1.display .go { color: var(--accent); }
 .mascot figcaption { text-align: center; }
 
 /* sections */
-.section { padding: 104px 0 96px; }
+.section { padding-block: 104px 96px; }
 .section.tight { padding-bottom: 64px; }
 .split { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr)); gap: 56px; align-items: center; }
 .split.top { align-items: start; }
@@ -188,13 +188,13 @@ tr:last-child td { border-bottom: 0; }
 
 /* proof */
 .proof { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--paper-3); }
-.proof .inner { padding: 104px 0; display: flex; flex-direction: column; gap: 24px; }
+.proof .inner { padding-block: 104px; display: flex; flex-direction: column; gap: 24px; }
 .proof .display { font-weight: 800; font-size: clamp(40px, 5vw, 72px); line-height: 1; max-width: 16em; }
 .proof .display span { color: var(--accent); }
 .proof p { margin: 0; font-size: 17px; line-height: 1.6; color: var(--ink-2); max-width: 40em; }
 
 /* all aboard */
-.aboard { padding: 120px 0 112px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 48px; align-items: center; }
+.aboard { padding-block: 120px 112px; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(420px, 100%), 1fr)); gap: 48px; align-items: center; }
 .aboard .copytext { display: flex; flex-direction: column; gap: 20px; }
 .aboard .title { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px 20px; }
 .aboard .title img { width: 150px; height: auto; display: block; }
@@ -203,13 +203,16 @@ tr:last-child td { border-bottom: 0; }
 
 /* footer */
 .foot { background: var(--ink); color: var(--on-ink-muted); }
-.foot .inner { padding: 48px 0 56px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 32px; }
+.foot .inner { padding-block: 48px 56px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 32px; }
 .foot .brand { color: var(--on-ink); }
 .foot .brand span { font-size: 34px; }
 .foot .about { display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
 .foot nav { display: flex; flex-wrap: wrap; gap: 12px 28px; font-size: 14px; align-items: center; }
 .foot nav a { color: var(--on-ink); text-decoration: none; }
 .foot nav a:hover { text-decoration: underline; text-underline-offset: 4px; }
+
+/* wide viewports: the 1200px frame is centred with free margin, so content keeps the full frame width */
+@media (min-width: 1232px) { .section, .aboard, .proof .inner, .foot .inner { padding-inline: 0; } }
 
 /* guides: the same nav and footer, a reading measure inside the 1200px frame */
 .measure { max-width: 1200px; margin: 0 auto; padding: 56px 32px 72px; }
@@ -225,6 +228,7 @@ tr:last-child td { border-bottom: 0; }
 .measure code { background: var(--sand); border-radius: 3px; padding: 0.05em 0.35em; color: var(--ink); }
 .measure pre { background: var(--code-bg); color: var(--code-fg); border-radius: 6px; padding: 18px 20px; overflow-x: auto; font-size: 13.5px; line-height: 1.65; margin: 16px 0; }
 .measure pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+.measure :not(pre) > code { overflow-wrap: break-word; }
 .measure ul, .measure ol { padding-left: 22px; }
 .measure .table-wrap { margin: 16px 0; }
 .measure table code { background: none; padding: 0; }
