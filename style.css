@@ -156,7 +156,7 @@ figure.drawing figcaption { margin-top: 10px; }
 
 /* the rulebook: a dark band */
 .band { background: var(--ink); color: var(--on-ink); }
-.band .inner { padding: 112px 0; }
+.band .inner { padding-top: 112px; padding-bottom: 112px; }
 .band .head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 24px; margin-bottom: 56px; }
 .band .eyebrow { color: var(--accent-dark-bg); }
 .band .lead { color: var(--on-ink-muted); max-width: 26em; font-size: 17px; }
@@ -164,6 +164,11 @@ figure.drawing figcaption { margin-top: 10px; }
 .rules li { background: var(--ink); padding: 32px; display: flex; flex-direction: column; gap: 14px; }
 .rules .n { font-family: var(--display); font-weight: 900; font-size: 56px; line-height: 1; color: var(--accent); }
 .rules .rule { font-size: 19px; line-height: 1.45; font-weight: 500; }
+.rules.why { grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr)); }
+.rules.why li.book { grid-column: 1 / -1; }
+.rules.why h3 { margin: 0; font-size: 26px; font-weight: 600; line-height: 1.2; }
+.rules.why .rule { margin: 0; font-size: 17px; line-height: 1.6; font-weight: 400; color: var(--on-ink-muted); }
+.rules.why .rule code { color: var(--on-ink); }
 
 /* tables */
 .table-wrap { border: 1.5px solid var(--ink); border-radius: 6px; overflow-x: auto; background: var(--paper-2); min-width: 0; }

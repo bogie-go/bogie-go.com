@@ -279,18 +279,16 @@ cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server">
   <div class="wrap inner">
     <div class="head">
       <div>
-        <p class="eyebrow">The rulebook</p>
-        <h2 class="display">Six rules. Every app.</h2>
+        <p class="eyebrow">The short version</p>
+        <h2 class="display">Why Bogie</h2>
       </div>
-      <p class="lead">Small enough to memorise, strict enough that two Bogie apps read the same. <code>bogie doctor</code> checks the wiring.</p>
     </div>
-    <ol class="rules">
-      <li><span class="n">1</span><span class="rule"><code>ctx</code> comes first on anything that does I/O.</span></li>
-      <li><span class="n">2</span><span class="rule">Interfaces are declared where they are consumed.</span></li>
-      <li><span class="n">3</span><span class="rule">The models layer imports nothing third-party.</span></li>
-      <li><span class="n">4</span><span class="rule">Constructors return <code>(T, error)</code>.</span></li>
-      <li><span class="n">5</span><span class="rule">The HTTP context never leaves the controllers.</span></li>
-      <li><span class="n">6</span><span class="rule">No <code>utils</code>, <code>helpers</code> or <code>common</code> packages.</span></li>
+    <ol class="rules why">
+      <li><span class="n">1</span><h3>How should I structure a Go API?</h3><p class="rule">You don't have to decide. <code>bogie new shop</code> picks Gin, Postgres, sqlc and goose and lays out the folders the same way in every app.</p></li>
+      <li><span class="n">2</span><h3>Will I be stuck with the framework?</h3><p class="rule">No. Generated apps are plain Go and never import Bogie itself, so there's nothing to upgrade around. The only bogie-go library they use is <code>credentials</code>.</p></li>
+      <li><span class="n">3</span><h3>Is it more than hello world?</h3><p class="rule">Yes. One <code>bogie g scaffold Product name:string price_cents:integer</code> gives you a migration, typed queries, a <code>Validate</code> hook, a controller and tests. <code>bin/ci</code> runs the checks from day one, and the Kamal deploy config comes with <code>bogie new</code>.</p></li>
+      <li><span class="n">4</span><h3>Can an AI agent work on it safely?</h3><p class="rule">Every app ships an <code>AGENTS.md</code> with its conventions, so changes land where you'd expect and you review them as plain diffs.</p></li>
+      <li class="book"><span class="n">5</span><h3>How do I learn it end to end?</h3><p class="rule">The book <em>Bogie: How to Go from Zero to Production</em> builds one real shop, Bogie Depot, from <code>bogie new</code> to production. Bogie is the guide, not the destination: what readers really learn is Go and its standard production tools, skills they can take to any Go service. Coming soon.</p></li>
     </ol>
   </div>
 </section>
@@ -342,7 +340,7 @@ cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server">
   <p class="eyebrow">In the box</p>
   <h2 class="display" style="max-width: 14em; margin-bottom: 56px">From first commit to production, on one track.</h2>
   <div class="features">
-    <div class="feature"><code>AGENTS.md · CLAUDE.md</code><h3>Written for agents and humans</h3><p>Every app ships the six rules, every command and a recipe per generator. Because nothing is implicit, an agent’s change is a diff you can actually review.</p></div>
+    <div class="feature"><code>AGENTS.md · CLAUDE.md</code><h3>Written for agents and humans</h3><p>Every app ships the <a href="/docs/conventions.html">six rules</a>, every command and a recipe per generator. Because nothing is implicit, an agent’s change is a diff you can actually review.</p></div>
     <div class="feature"><code>bin/ci</code><h3>CI runs on your machine</h3><p><code>bin/ci</code> is the whole pipeline: tests with race detection, gofmt, vet and golangci-lint. No hosted runner to wait on.</p></div>
     <div class="feature"><code>bogie server · bogie worker</code><h3>Reload on save</h3><p>Development runs the server and the worker under Air: save a file and it rebuilds and restarts. Migrations are embedded in the binary and applied at boot, so a new one is picked up on the next reload too. Production runs the compiled binary, untouched.</p></div>
     <div class="feature"><code>Kamal</code><h3>One deploy tool</h3><p>A container, a server, Kamal. The service migrates at boot, so shipping is one command.</p></div>
@@ -371,7 +369,7 @@ cd blog &amp;&amp; make up &amp;&amp; bogie db:prepare &amp;&amp; bogie server">
     <div class="qa"><h3>Which databases does Bogie support?</h3><p>Postgres only, by design. Background jobs run on River, which uses the same Postgres, so there is no Redis. SQLite was considered and declined until River&#x27;s SQLite driver is stable.</p></div>
     <div class="qa"><h3>How do I install Bogie?</h3><p>go install github.com/bogie-go/bogie@latest. Generated apps need Go 1.26 or newer (the CLI itself builds with 1.25). Postgres runs in Docker, with Compose v2, from the generated app&#x27;s own compose file. There is no Homebrew tap and nothing prebuilt.</p></div>
     <div class="qa"><h3>How does a generated app get upgraded?</h3><p>bogie app:update is a three-way merge: it renders what the recorded Bogie version generated, what the current version generates, and merges each template-owned file with your edits kept. Only a real overlap leaves conflict markers.</p></div>
-    <div class="qa"><h3>Can an AI agent work in a Bogie app?</h3><p>Yes. Every generated app ships an AGENTS.md with the six rules, every command and a recipe per task, and the generators register code above visible marker comments, so an agent&#x27;s change is a diff a person can review.</p></div>
+    <div class="qa"><h3>Can an AI agent work in a Bogie app?</h3><p>Yes. Every generated app ships an AGENTS.md with the <a href="/docs/conventions.html">six rules</a>, every command and a recipe per task, and the generators register code above visible marker comments, so an agent&#x27;s change is a diff a person can review.</p></div>
   </div>
 </section>
 
