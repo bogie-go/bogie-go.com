@@ -36,3 +36,8 @@ fails, `BOGIE_VERSION` from the environment or `FALLBACK_VERSION` in
 The workflow builds and deploys on every push to `main`, once a day (so a new
 Bogie release shows up within a day), and on demand from the Actions tab.
 The build fails if any marker is left unfilled.
+
+Each docs page also gets a Markdown copy (`_site/docs/<slug>.md`), converted by
+`build.py` from the rendered article, so it never drifts from the HTML. The
+copies are not in `sitemap.xml`; `llms.txt` lists them at its
+`<!-- @markdown-copies -->` marker, and the build checks them for stray tags.
