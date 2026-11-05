@@ -26,6 +26,12 @@ Every generated app follows six rules: ctx first on anything doing I/O; interfac
 - [Command reference](https://bogie-go.com/docs/commands.html): Every Bogie command, every generator and every make target, in one place.
 - [Releases](https://bogie-go.com/docs/releases.html): What each Bogie version added or changed, newest first, with breaking changes marked.
 
+## Markdown copies
+
+Every guide as plain Markdown, generated from the same source as the HTML:
+
+<!-- @markdown-copies -->
+
 ## Source and design
 
 - [Team](https://bogie-go.com/team.html): who builds and maintains Bogie
