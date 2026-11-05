@@ -113,9 +113,9 @@ func (ctl *PostsController) Show(c *gin.Context) {
 <pre><code>      create  app/controllers/admin_controllers/server.go
       create  app/controllers/admin_controllers/routes.go
       create  app/controllers/admin_controllers/admin_controllers_suite_test.go
+      create  app/views/admin_categories.go
       create  app/controllers/admin_controllers/categories_controller.go
       create  app/controllers/admin_controllers/categories_controller_test.go
-      update  app/views/categories.go: CategoryRequest
       insert  app/controllers/application.go: Admin *admin_controllers.Server
       insert  app/application.go: server.Admin = admin_controllers.NewServer(log)
       insert  app/controllers/routes.go: s.Admin.SetupRoutes(&amp;r.RouterGroup)
@@ -123,6 +123,8 @@ func (ctl *PostsController) Show(c *gin.Context) {
       insert  app/application.go: server.Admin.Categories = admin_controllers.NewCategoriesController(store, log)
       insert  app/controllers/admin_controllers/routes.go: s.Categories.SetupRoutes(admin)</code></pre>
 <p>The model is the last segment of the name, never namespaced. <code>bogie g scaffold admin/page title</code>, by contrast, is a model of its own in a namespace: the model is <code>admin_page</code> (table <code>admin_pages</code>, <code>app/models/admin_page.go</code>) and its <code>PagesController</code> answers at <code>/admin/pages</code>. <code>bogie d scaffold_controller admin/categories</code> removes the controller and its spec, and the emptied namespace package.</p>
+
+<p>A scaffold needs a name. <code>bogie g scaffold</code> alone prints the generator usage and ends with <strong>bogie: generate scaffold: NAME is required</strong>. Run it again with a name and attributes: <code>bogie g scaffold post title:string body:text</code>.</p>
 
 <h2>A controller by hand</h2>
 <pre><code>bogie g controller comments index show create</code></pre>
@@ -151,6 +153,16 @@ func (ctl *PostsController) Show(c *gin.Context) {
 
 <h2>Seeing what is mounted</h2>
 <pre><code>bogie routes</code></pre>
+<p>The table comes after a few lines of startup and Gin noise (trimmed here). This app has a scaffolded <code>products</code> and a hand-made <code>comments</code> controller:</p>
+<pre><code>GET      /healthz                        app/controllers.(*Server).SetupRoutes.func1
+GET      /products                       app/controllers.(*ProductsController).Index
+POST     /products                       app/controllers.(*ProductsController).Create
+GET      /products/:id                   app/controllers.(*ProductsController).Show
+PATCH    /products/:id                   app/controllers.(*ProductsController).Update
+DELETE   /products/:id                   app/controllers.(*ProductsController).Destroy
+GET      /comments                       app/controllers.(*CommentsController).Index
+GET      /comments/:id                   app/controllers.(*CommentsController).Show
+POST     /comments                       app/controllers.(*CommentsController).Create</code></pre>
 <p>Method, path and handler for every route, in the order it was wired. It boots the app the way <code>serve</code> does and prints through Gin's own debug route hook, so the list is what is really mounted, not a guess read off the files. Like Gin's debug output, it prints only in development; in <code>test</code> or <code>production</code> it exits 0 with nothing. A request no route answers falls through to <code>public/</code> and then <code>public/404.html</code>: see <a href="static-files.html">Static files and error pages</a>.</p>
 
 <h2>Giving a controller a dependency</h2>

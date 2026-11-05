@@ -43,6 +43,10 @@
 
 <h2>Install</h2>
 <pre><code>go install github.com/bogie-go/bogie@latest</code></pre>
+<p><code>go install</code> prints nothing when it works. If the next command fails with one of these, Go put the binary in a directory your shell does not search:</p>
+<pre><code>zsh:1: command not found: bogie
+bash: bogie: command not found</code></pre>
+<p><strong>command not found: bogie</strong> means <code>$(go env GOPATH)/bin</code> is not on your <code>PATH</code>. Add <code>export PATH="$PATH:$(go env GOPATH)/bin"</code> to your shell profile, open a new terminal, and run <code>bogie version</code>.</p>
 <p><code>@latest</code> is the newest tagged release, {{VERSION}} as of this build, and <code>bogie version</code> prints it. You need Go 1.26 or newer (the tool itself builds with 1.25, but the generated app pins an sqlc that needs 1.26) and Docker with Compose v2, which runs the app's Postgres on port 5440, clear of a Postgres already running on 5432. Already run Postgres yourself? See <a href="own-postgres.html">Your own Postgres</a>. For <code>main</code> as it stands, <code>go install github.com/bogie-go/bogie@main</code>; from a clone, <code>go install .</code>.</p>
 
 <h2>Generate a service</h2>
@@ -53,6 +57,28 @@
   <li><code>--id=uuid</code> makes every primary key a uuid instead of the default <code>bigint</code>. It is chosen once for the whole app and recorded in <code>bogie.toml</code>. See <a href="models.html#ids">Id schemes</a>.</li>
   <li><code>--jobs</code> adds River on the same Postgres: a worker role, <code>app/jobs</code>, and <code>g job</code>. See <a href="jobs.html">Background jobs</a>.</li>
 </ul>
+
+<p>It prints one line per file it writes, then the next steps (the list of <code>create</code> lines is trimmed here):</p>
+<pre><code>      create  blog/AGENTS.md
+      create  blog/CLAUDE.md
+      create  blog/Dockerfile
+...
+      create  blog/config/master.key
+      create  blog/config/credentials.yml.enc
+         run  go mod tidy
+
+Next:
+  cd blog
+  make up             # postgres on :5440, via docker compose
+  bogie db:prepare    # create, migrate, seed
+  bogie server
+  curl localhost:8080/healthz</code></pre>
+<p>Run <code>bogie new</code> again in a directory that already has the app and it lists each file as <code>identical</code> or <code>conflict</code>, then ends with a line saying the files that differ are only overwritten with <code>--force</code>:</p>
+<pre><code>    conflict  blog/AGENTS.md
+   identical  blog/CLAUDE.md
+...
+bogie: new: 18 files differ; rerun with --force to overwrite them</code></pre>
+<p><strong>rerun with --force to overwrite them</strong>: only do that if you want your edits to those files replaced.</p>
 
 <h2>The generated tree</h2>
 <p>Laid out by role, on purpose, so you know where to look:</p>
@@ -95,19 +121,131 @@ make up
 bogie db:prepare
 bogie server</code></pre>
 <p><code>make up</code> starts Postgres under Docker Compose on port 5440 and waits until it answers. <code>bogie db:prepare</code> creates the database if it does not exist, migrates it and seeds it. <code>bogie server</code> (or <code>bogie s</code>) runs the HTTP server; it migrates at boot, the way a deployed container does. In development it also runs under Air, so saving a file rebuilds and restarts it; since migrations are embedded in the binary and applied at boot, a new one is picked up on the next reload too. <code>bogie worker</code> reloads the same way, to its own binary, so the two run side by side in two terminals. Production runs the compiled binary, untouched; <code>make server</code> and <code>make worker</code> are the plain, one-boot equivalents.</p>
+<p>What each command prints. <code>make up</code>:</p>
+<pre><code>docker compose up -d --wait
+ Network blog-service_default Creating 
+ Network blog-service_default Created 
+ Volume blog-service_pgdata Creating 
+ Volume blog-service_pgdata Created 
+ Container blog-db Creating 
+ Container blog-db Created 
+ Container blog-db Starting 
+ Container blog-db Started 
+ Container blog-db Waiting 
+ Container blog-db Healthy 
+ready: postgres on :5440</code></pre>
+<p>Running <code>bogie db:prepare</code> on a database that is already set up prints:</p>
+<pre><code>time=2026-11-05T08:56:23.386+07:00 level=INFO msg="database already exists" service=blog database=blog_development
+time=2026-11-05T08:56:23.386+07:00 level=INFO msg="schema: nothing to apply" service=blog dir=migrate</code></pre>
+<p><code>bogie server</code> prints the app's settings and then <code>http listening</code> (Air's banner and the route list are trimmed):</p>
+<pre><code>blog: env=development settings="config/credentials.yml.enc" key="config/master.key"
+blog: addr=:8080 log_level=debug shutdown_grace=10s database=postgres://postgres:xxxxx@localhost:5440/blog_development?sslmode=disable migrate_at_boot=true
+time=2026-11-05T08:56:25.497+07:00 level=INFO msg="schema: nothing to apply" service=blog dir=migrate
+...
+time=2026-11-05T08:56:25.513+07:00 level=INFO msg="http listening" service=blog addr=:8080 env=development</code></pre>
+<p>In another terminal, <code>curl -i localhost:8080/healthz</code> answers:</p>
+<pre><code>HTTP/1.1 200 OK
+Content-Type: text/plain; charset=utf-8
+X-Request-Id: c74129d0-121d-4660-81f4-415221ddf261
+Date: Thu, 05 Nov 2026 01:56:35 GMT
+Content-Length: 2
+
+ok</code></pre>
+<p><strong>connection refused</strong> is what <code>bogie db:prepare</code> and <code>bogie server</code> print when Postgres is not running. Bogie adds its own hint under the error:</p>
+<pre><code>blog: database: create blog_development: failed to connect to `user=postgres database=postgres`:
+	[::1]:5440 (localhost): dial error: dial tcp [::1]:5440: connect: connection refused
+	127.0.0.1:5440 (localhost): dial error: dial tcp 127.0.0.1:5440: connect: connection refused
+
+Nothing is listening on localhost:5440, which is the bundled Postgres.
+Start it, then create the database:
+  make up
+  bogie db:prepare</code></pre>
+<p>Run <code>make up</code>, then <code>bogie db:prepare</code>, and try again.</p>
+<p><strong>listen tcp :8080: bind: address already in use</strong> means something else already holds port 8080, often another <code>bogie server</code> in a second terminal. Stop it and start again:</p>
+<pre><code>blog: listen tcp :8080: bind: address already in use</code></pre>
+<p>The reverse, <strong>curl: (7) Failed to connect to localhost port 8080 after 0 ms: Couldn't connect to server</strong>, means nothing is listening: start <code>bogie server</code> first.</p>
 <p>Visit <code>/</code> in development for a welcome page with the environment, the listen address and the Go version, and <code>GET /healthz</code> for the plain text a load balancer checks. The welcome page disappears the moment any controller claims <code>/</code>, or you add a <code>public/index.html</code>; in every other environment <code>/</code> answers with <code>public/404.html</code> until something is there. <code>bogie routes</code> lists what is actually mounted. See <a href="static-files.html">Static files and error pages</a>.</p>
 
 <h2>Run the tests</h2>
 <pre><code>BLOG_ENV=test bogie db:prepare   # once: the prefix is the app name, upper-cased
 bogie test</code></pre>
+<p>The test database prepare prints:</p>
+<pre><code>time=2026-11-05T08:57:31.328+07:00 level=INFO msg="database created" service=blog database=blog_test
+time=2026-11-05T08:57:31.328+07:00 level=INFO msg="schema: nothing to apply" service=blog dir=migrate</code></pre>
+<p>A passing <code>bogie test</code> ends with one line per package (trimmed):</p>
+<pre><code>ok  	blog/app/controllers	1.997s	coverage: 66.7% of statements
+ok  	blog/app/middlewares	(cached)	coverage: 0.0% of statements
+ok  	blog/app/models	(cached)	coverage: [no statements]
+...
+ok  	blog/test/requests	1.505s	coverage: [no statements]</code></pre>
+<p>Without the test database, each failing package prints these two lines (the rest of the output is trimmed):</p>
+<pre><code>  	127.0.0.1:5440 (localhost): server error: FATAL: database "blog_test" does not exist (SQLSTATE 3D000)
+  Is the database up, and the test database created? Run: make up &amp;&amp; BLOG_ENV=test bogie db:prepare (bin/ci does both)</code></pre>
+<p><strong>database "blog_test" does not exist</strong>: run <code>BLOG_ENV=test bogie db:prepare</code> once, as above.</p>
 <p>Tests use their own database, <code>blog_test</code>, so your development data survives a test run. <code>bogie db:prepare</code> on its own prepares only the development database, and <code>bogie test</code> without the test database fails with a hint to run the line above. <code>bin/ci</code> rebuilds the test database itself. See <a href="testing.html">Testing and CI</a>.</p>
 
 <h2>Check the app is sound</h2>
 <pre><code>bin/ci</code></pre>
 <p>The whole pipeline, run on the machine you already have: it rebuilds the test database from the migrations, rolls them down and back up, checks that sqlc's generated code in <code>db/sqlc</code> is current (<code>sqlc diff</code>), runs gofmt, vet, golangci-lint, the build, and the test suite. A green run on a clean tree signs the commit off with <code>gh signoff</code>, if that extension is installed.</p>
-<p><code>bin/ci</code> needs golangci-lint v2, which Go does not bring with it; without it the lint step fails with the install line:</p>
+<p>A green run prints a <code>==</code> header and an <code>ok</code> line for each step, and ends like this (the middle is trimmed):</p>
+<pre><code>== Setup: modules
+all modules verified
+   ok  Setup: modules (10s)
+
+== Setup: database
+...
+   ok  Setup: database (2s)
+
+== Schema: down and up
+...
+   ok  Schema: down and up (0s)
+
+== Schema: sqlc current
+   ok  Schema: sqlc current (1s)
+
+== Style: gofmt
+   ok  Style: gofmt (0s)
+
+== Style: go vet
+   ok  Style: go vet (0s)
+
+== Style: golangci-lint
+0 issues.
+   ok  Style: golangci-lint (6s)
+
+== Build
+   ok  Build (1s)
+
+== Tests
+...
+   ok  Tests (40s)
+
+== Worker: boots and drains
+...
+   ok  Worker: boots and drains (6s)
+
+All systems go in 66s. Ready for merge and deploy.</code></pre>
+<p>The last step needs a pushed branch. When the branch has not been pushed it fails with <strong>cannot verify the current branch is pushed</strong> after the checks have passed:</p>
+<pre><code>== Signoff
+Error: cannot verify the current branch is pushed (@{push} does not resolve; check push.default and branch tracking; -f to override)
+ FAIL  Signoff (1s)</code></pre>
+<p><code>bin/ci</code> needs golangci-lint v2, which Go does not bring with it; without it the lint step fails with the install line, and the run ends with <code>CI failed in 20s. Do not merge or deploy.</code>:</p>
+<pre><code>== Style: golangci-lint
+golangci-lint is not installed. Install it with:
+  go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
+ FAIL  Style: golangci-lint (0s)</code></pre>
+<p>The install line:</p>
 <pre><code>go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest</code></pre>
-<p><code>bogie doctor</code> is worth running any time the app feels off: it checks every marker the generators write is intact exactly once, that the pinned tools (goose, sqlc, credentials and Air) are still in <code>go.mod</code>, that the layout files generators depend on exist, and that every controller is both constructed and mounted. See <a href="testing.html">Testing and CI</a> for what each step of <code>bin/ci</code> does.</p>
+<p><code>bogie doctor</code> is worth running any time the app feels off: it checks every marker the generators write is intact exactly once, that the pinned tools (goose, sqlc, credentials and Air) are still in <code>go.mod</code>, that the layout files generators depend on exist, and that every controller is both constructed and mounted. See <a href="testing.html">Testing and CI</a> for what each step of <code>bin/ci</code> does. A healthy app prints one <code>ok</code> line per check (trimmed):</p>
+<pre><code>    ok  bogie.toml
+    ok  marker bogie:controllers in app/controllers/application.go
+...
+    ok  tool air
+    ok  db/sqlc.yaml
+...
+    ok  config/master.key
+
+All checks passed.</code></pre>
 <h2>Your first resource</h2>
 <p>That app has no table yet. A scaffold writes a whole resource and registers it: the migration, the queries, the model, the store, the views, a controller and its tests.</p>
 <pre><code>bogie g scaffold product name:string price_cents:integer</code></pre>
