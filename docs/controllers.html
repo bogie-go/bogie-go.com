@@ -103,6 +103,37 @@ func (ctl *PostsController) Show(c *gin.Context) {
 	}
 }</code></pre>
 <p><code>models.ErrNotFound</code> is 404, <code>models.ErrInvalid</code> is 422 (validation runs in the store, on save), and anything else is logged with its request id and answered 500 without leaking its text. The request specs check the 404 and the 400 for a malformed body through the real app and the test database.</p>
+<p>Try it: each call below fails on purpose and shows the real response. The app is the one from getting started with <code>bogie g scaffold post title:string body:text</code>, and a <code>Validate</code> that requires a title, as getting started shows for products. The <code>X-Request-Id</code>, <code>Date</code> and <code>Content-Length</code> headers are left out here, and the request id differs on every call.</p>
+<p><strong>HTTP/1.1 404 Not Found</strong> is a post that does not exist; <code>/posts/abc</code> gives the same 404 with <code>no such post</code>.</p>
+<pre><code>$ curl -i localhost:8080/posts/999
+HTTP/1.1 404 Not Found
+Content-Type: application/json; charset=utf-8
+
+{"status":"error","error":"no such post"}</code></pre>
+<p>PATCH and DELETE on <code>/posts/999</code> answer the same 404 with the same body.</p>
+<p><strong>HTTP/1.1 422 Unprocessable Entity</strong> is a post the model refuses to save, here an empty title (<code>invalid: title is required</code>):</p>
+<pre><code>$ curl -i -X POST localhost:8080/posts -H "Content-Type: application/json" -d '{"title":"","body":"hello"}'
+HTTP/1.1 422 Unprocessable Entity
+Content-Type: application/json; charset=utf-8
+
+{"status":"error","error":"invalid: title is required"}</code></pre>
+<p>A PATCH with an empty title gives the same 422.</p>
+<p><strong>HTTP/1.1 400 Bad Request</strong> is a body that is not JSON, here one cut short (<code>unexpected EOF</code>); a POST with no body at all gives <code>EOF</code>.</p>
+<pre><code>$ curl -i -X POST localhost:8080/posts -H "Content-Type: application/json" -d '{"title":'
+HTTP/1.1 400 Bad Request
+Content-Type: application/json; charset=utf-8
+
+{"status":"error","error":"unexpected EOF"}</code></pre>
+<p><strong>HTTP/1.1 404 Not Found</strong> for a path with no route at all is not JSON but the page in <code>public/404.html</code>, whose title says <code>404 Not Found</code> and whose heading says <code>Off the map</code>:</p>
+<pre><code>$ curl -i localhost:8080/nope
+HTTP/1.1 404 Not Found
+Content-Type: text/html; charset=utf-8
+
+...
+    &lt;title&gt;404 Not Found&lt;/title&gt;
+...
+      &lt;h1&gt;Off the map&lt;/h1&gt;
+...</code></pre>
 <p>Done with a scaffold: <code>bogie d scaffold post</code> removes all of it, registration included. When a resource outgrows CRUD, <a href="services.html">a service</a> gives the logic a home that knows nothing about HTTP.</p>
 
 <h3 id="only-some-actions">Only some actions, or only the controller</h3>

@@ -88,12 +88,12 @@ bogie g authentication api_key     # a machine client presents a key</code></pre
 <h2>secret</h2>
 <p>A shared secret in the <code>X-&lt;App&gt;-Secret</code> header (the constant <code>middlewares.SecretHeader</code>), compared with <code>crypto/subtle.ConstantTimeCompare</code> so a wrong guess cannot be timed into a right one. A Basic auth fallback lets a browser open a guarded page too, since a browser cannot send a custom header; any username works and the password is the secret. For a caller it is one header on the request:</p>
 <pre><code>curl -H "X-Blog-Secret: $BLOG_SECRET" https://blog.example.com/posts</code></pre>
-<p>A request without the header, or with a wrong value, is refused the same way:</p>
-<pre><code>HTTP/1.1 401 Unauthorized
-Www-Authenticate: Basic realm="blog", charset="UTF-8"
-X-Request-Id: 707b9183-7906-48a6-b362-7b9ed02ba948
-Date: Thu, 05 Nov 2026 01:59:06 GMT
-Content-Length: 0</code></pre>
+<p>Try it: the app is the one from getting started with <code>Posts</code> mounted on the guarded group. The <code>X-Request-Id</code>, <code>Date</code> and <code>Content-Length</code> headers are left out of the responses on this page, and the request id differs on every call. A request without the header is refused:</p>
+<p><strong>HTTP/1.1 401 Unauthorized</strong></p>
+<pre><code>$ curl -i localhost:8080/posts
+HTTP/1.1 401 Unauthorized
+Www-Authenticate: Basic realm="blog", charset="UTF-8"</code></pre>
+<p>The body is empty. A wrong value (<code>-H "X-Blog-Secret: wrong"</code>) and the Basic fallback with a wrong password (<code>-u x:wrong</code>) answer identically. The <code>Www-Authenticate: Basic realm="blog", charset="UTF-8"</code> header is what makes a browser prompt for a password. <code>/healthz</code> is outside the guard and answers <code>200 OK</code> with the body <code>ok</code> and no such header. With the right secret, <code>curl -i localhost:8080/posts -H "X-Blog-Secret: $BLOG_SECRET"</code> is a <code>200 OK</code> with the posts as JSON.</p>
 
 <h2>token</h2>
 <p>A bearer token, JWT, HS256, signed with one shared secret: <code>token.secret</code> in the credentials file, <code>TOKEN_SECRET</code> in the environment. Whatever signs users in mints the token with any JWT library and the same secret, and this service only ever verifies. It requires <code>iss</code> (the app's name), a non-empty <code>sub</code> and an <code>exp</code>; tokens it mints itself also carry <code>iat</code> and <code>jti</code>:</p>
@@ -113,6 +113,23 @@ Content-Length: 0</code></pre>
       insert  config/credentials.yml.enc: token.secret
          run  go mod tidy
         next  mount the routes it guards in app/controllers/routes.go: s.Posts.SetupRoutes(s.WithUser(&amp;r.RouterGroup))</code></pre>
+<p>Try it: with no token, the guard answers 401 and says what is missing:</p>
+<pre><code>$ curl -i localhost:8080/posts
+HTTP/1.1 401 Unauthorized
+Content-Type: application/json; charset=utf-8
+Www-Authenticate: Bearer realm="blog"
+
+{"status":"error","error":"a bearer token is required"}</code></pre>
+<p>A wrong scheme word, as in <code>Authorization: Token ...</code>, is treated as no token and gets the same answer. A token the guard cannot accept is <strong>HTTP/1.1 401 Unauthorized</strong> with a different header and body; garbage (<code>-H "Authorization: Bearer not-a-token"</code>), a token signed with another secret and a token with another issuer all give the identical <strong>token: invalid</strong>:</p>
+<pre><code>$ curl -i localhost:8080/posts -H "Authorization: Bearer not-a-token"
+HTTP/1.1 401 Unauthorized
+Content-Type: application/json; charset=utf-8
+Www-Authenticate: Bearer realm="blog", error="invalid_token"
+
+{"status":"error","error":"token: invalid"}</code></pre>
+<p>An expired token gets the same status and header with the body <strong>token: expired</strong>:</p>
+<pre><code>{"status":"error","error":"token: expired"}</code></pre>
+<p>A good token is a <code>200 OK</code>.</p>
 <p>In a handler behind <code>WithUser</code>, <code>middlewares.Subject(c)</code> is the token's subject, usually a user id; nothing is loaded for you, because who the subject is is for the caller and the handler to agree on. A service that signs users in itself, rather than trusting another service's token, mints its own with <code>s.Tokens().Mint(subject, ttl)</code>.</p>
 <p><code>Verify</code> refuses a token that is expired, signed with another secret, issued for another issuer, or signed with any algorithm but HS256, so a token claiming <code>"none"</code> or an asymmetric algorithm never reaches the key at all.</p>
 
@@ -152,6 +169,21 @@ api key "ci" made (1); it is shown once:</code></pre>
 ...
 blog: api_keys: create NAME is the one command</code></pre>
 <p><strong>api_keys: create NAME is the one command</strong>: give the key a name, as in <code>bogie api_keys:create ci</code>.</p>
+
+<p>Try it: with no key, the guard answers 401:</p>
+<pre><code>$ curl -i localhost:8080/posts
+HTTP/1.1 401 Unauthorized
+Content-Type: application/json; charset=utf-8
+Www-Authenticate: Bearer realm="blog"
+
+{"status":"error","error":"an api key is required"}</code></pre>
+<p>A key that does not verify is <strong>HTTP/1.1 401 Unauthorized</strong> with <strong>invalid api key</strong>, and no <code>Www-Authenticate</code> header. Garbage (<code>-H "Authorization: Bearer not-a-key"</code>) and the real prefix with a wrong secret part answer the same:</p>
+<pre><code>$ curl -i localhost:8080/posts -H "Authorization: Bearer not-a-key"
+HTTP/1.1 401 Unauthorized
+Content-Type: application/json; charset=utf-8
+
+{"status":"error","error":"invalid api key"}</code></pre>
+<p>The real key, sent the same way, is a <code>200 OK</code>. The generated guards answer 401 for every refusal; none of them answers 403.</p>
 
 <h2>Removing</h2>
 <p><code>bogie d authentication &lt;shape&gt;</code> removes the middleware, its test, and the group helper, and removes its group from <code>config/</code> and <code>config/config.go</code>. The development value stays behind in the credentials file; it guards nothing once the field that read it is gone, so it is harmless left in place.</p>
