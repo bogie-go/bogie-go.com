@@ -78,8 +78,8 @@ docker exec &lt;container&gt; blog migrate down --yes</code></pre>
 KAMAL_REGISTRY_PASSWORD=$(go tool credentials get -e staging kamal.registry_password)</code></pre>
 <p><code>.kamal/secrets.production</code> is the same shape, reading <code>config/credentials/production.key</code> instead; Kamal picks whichever file matches the destination. <code>make credentials ENV=staging</code> makes the credentials file and its key the first time, before the first deploy to that environment can work; the service refuses to boot without a database URL in it.</p>
 
-<h2>Migrate at boot</h2>
-<p>On by default: the container applies pending migrations before it starts serving, so the database only has to exist, not already match the code. <code>&lt;NAME&gt;_MIGRATE_AT_BOOT=false</code> turns it off, for a deployment that migrates from one place on purpose.</p>
+<h2 id="migrate-at-boot">Migrate at boot</h2>
+<p>On by default: the container applies pending migrations before it starts serving, so the database only has to exist, not already match the code. <code>DATABASE_MIGRATE_AT_BOOT=false</code> (see <a href="configuration.html">Configuration</a>) turns it off, for a deployment that migrates from one place on purpose.</p>
 
 <h2 id="job-role">The job role</h2>
 <p>Apps made with <code>--jobs</code> get a <code>job</code> role in both <code>deploy.yml</code> and the production overlay: the same image, started with the argument <code>worker</code> instead of serving. Same host as <code>web</code> until the queue needs one of its own.</p>
@@ -95,6 +95,24 @@ KAMAL_REGISTRY_PASSWORD=$(go tool credentials get -e staging kamal.registry_pass
   shell: app exec --interactive --reuse "sh"
   status: app exec --reuse -r web "wget -qO- http://localhost:8080/healthz"</code></pre>
 <p><code>kamal status</code> asks the web role only (<code>-r web</code>, since v0.6.7): a job container serves no HTTP, so asking it would fail.</p>
+
+<h3>Migrations and tasks in production</h3>
+<p>By default there is nothing to run: the container migrates at boot (see <a href="#migrate-at-boot">Migrate at boot</a>). To check and apply by hand, run the image's own commands in the container that is up. The outputs below come from a generated app, run with the environment <code>deploy.yml</code> sets, in a container started with <code>DATABASE_MIGRATE_AT_BOOT=false</code>. The commands were run inside that container, not through Kamal against a server, but they are the ones <code>deploy.yml</code> documents. For production add <code>-d production</code>; <code>-r web</code> limits a command to one role (Kamal: "Run commands on these roles instead of all").</p>
+<pre><code>$ kamal app exec --reuse "blog migrate status"
+state       applied at              migration
+applied     2026-11-05 02:27:23     20261105022613_create_posts.sql
+pending     pending                 20261105022940_add_slug_to_posts.sql</code></pre>
+<pre><code>$ kamal app exec --reuse "blog migrate up"
+{"time":"2026-11-05T02:30:24.013645796Z","level":"INFO","msg":"schema applied","service":"blog","from":20261105022613,"to":20261105022940}</code></pre>
+<p>Afterwards <code>migrate status</code> shows both rows as <code>applied</code> and <code>blog migrate version</code> prints <code>20261105022940</code>.</p>
+<p>To roll back the most recent migration, run <code>kamal app exec --reuse "blog migrate down --yes"</code>, which logs <code>"msg":"schema rolled back"</code>. Migrations drop tables on the way down, and there is no undo. Without <code>--yes</code> it refuses.</p>
+<p><strong>pass --yes to confirm</strong> is how <code>migrate down</code> refuses without the flag:</p>
+<pre><code>blog: migrate: down drops the most recent migration's tables; pass --yes to confirm</code></pre>
+<p>A one-off task has the same shape: <code>kamal app exec --reuse "blog db seed"</code> prints nothing and exits 0 when the seeds succeed. Every seed runs again each time.</p>
+<p>Without <code>--reuse</code>, Kamal starts a new container through the <code>ENTRYPOINT</code>, so leave the binary off: <code>kamal app exec "migrate status"</code> (the same arguments, run with <code>docker run</code>, printed the status table). A common mistake is to keep the name off while using <code>--reuse</code>, as in <code>kamal app exec --reuse "migrate status"</code>. With <code>--reuse</code> the command runs inside the running container, which has no program called <code>migrate</code>, and Docker's message for that is the block below (captured with <code>docker exec</code>).</p>
+<p><strong>executable file not found in $PATH</strong> is Docker's message when the command names a program the container does not have:</p>
+<pre><code>OCI runtime exec failed: exec failed: unable to start container process: exec: "migrate": executable file not found in $PATH</code></pre>
+<p>With <code>--reuse</code> the binary name is required: <code>"blog migrate status"</code>.</p>
 
 <h2>The database</h2>
 <p>Not an accessory by default. The premise is a Postgres server you already run, so <code>database.url</code> in the credentials points at that server, as a database of this service's own. Uncommenting an <code>accessories.db</code> block in <code>deploy.yml</code> gives the service its own Postgres container instead, resolved by container name on Kamal's network; the schema is still applied by the container itself at boot.</p>
