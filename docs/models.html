@@ -50,6 +50,16 @@
       create  db/adapter/posts_test.go
       create  test/factories/posts.go
          run  sqlc generate</code></pre>
+<p>Running the same command again is safe. It reports each file as <code>identical</code> and writes nothing new:</p>
+<pre><code>   identical  db/migrate/20261105015802_create_posts.sql
+   identical  db/queries/posts.sql
+   identical  app/models/post.go
+   identical  app/models/post_test.go
+   identical  db/adapter/posts.go
+   identical  db/adapter/posts_test.go
+   identical  test/factories/posts.go
+         run  sqlc generate</code></pre>
+<p>Leave the name off and it stops with <strong>bogie: generate model: NAME is required</strong>, after printing the generator usage. Give it a name: <code>bogie g model post</code>.</p>
 
 <h2>The migration</h2>
 <p>goose SQL, stamped with the UTC time it was generated (<code>20261028094447</code> is 28 Oct 2026, 09:44:47 UTC), embedded in the binary:</p>
@@ -126,6 +136,9 @@ func (p Post) Validate() error {
 <h2>Attribute types</h2>
 <p><code>string text integer bigint boolean datetime uuid jsonb references</code>, each optionally followed by <code>:index</code> or <code>:uniq</code>:</p>
 <pre><code>bogie g model comment body:text post:references score:integer</code></pre>
+<p>A misspelled type is refused before anything is written. For <code>bogie g model tag name:strng</code>:</p>
+<pre><code>bogie: generate model: "name:strng": unknown type "strng"; one of bigint, boolean, datetime, integer, jsonb, references, string, text, uuid</code></pre>
+<p><strong>unknown type "strng"</strong> means the word after the colon is not one of the listed types. Fix the spelling and run it again.</p>
 <p><code>string</code> is Postgres <code>varchar</code> (unlimited) and <code>text</code> is <code>text</code>: the distinction is kept, not collapsed. Columns written by v0.2.3 and earlier keep whatever their migration already says.</p>
 <p><code>post:references</code> writes the column <code>post_id</code> as <code>bigint NOT NULL REFERENCES posts (id)</code>, with its own index (<code>uuid</code> in an <code>--id=uuid</code> app: a foreign key is always made of whatever its target's id is). <code>slug:string:uniq</code> adds a unique constraint.</p>
 <p>A <code>references</code> column whose foreign key names nothing is <code>ErrInvalid</code> on <code>Create</code> and <code>Update</code> (<code>invalid: post_id does not exist</code>), the way a duplicate value in a <code>:uniq</code> column is, so a controller answers 422 and not 500 (before v0.6.4 it was a 500). <code>g model</code> writes a <code>CreateComment</code> spec for it when a model has a reference.</p>
@@ -152,6 +165,10 @@ ALTER TABLE posts ADD COLUMN slug varchar NOT NULL DEFAULT '' UNIQUE;
 
 -- +goose Down
 ALTER TABLE posts DROP COLUMN slug;</code></pre>
+<p><code>bogie g migration add_slug_to_posts slug:string:uniq</code> prints:</p>
+<pre><code>      create  db/migrate/20261105015804_add_slug_to_posts.sql
+         run  sqlc generate</code></pre>
+<p>A name that fits none of the three shapes, like <code>bogie g migration add_slug</code>, prints the same two lines for its own file. Nothing warns you, and <code>bogie db:migrate:status</code> lists it as <code>pending</code> (see below) until you have filled it in and applied it.</p>
 <p>The migration generator runs sqlc immediately too, so <code>db/sqlc/*.sql.go</code> changes before the migration is ever applied, and a renamed column shows up as a compile error right away.</p>
 
 <h2 id="model-sync">Carrying a column into the model: model:sync</h2>
@@ -161,6 +178,9 @@ git commit -am "Add stock to products"
 bogie model:sync products
 go build ./... &amp;&amp; bogie test</code></pre>
 <p>It reads the columns from sqlc's compile of <code>db/migrate/*.sql</code>, so a migration written by hand counts too. It adds a field for each new column and removes the field for each column a migration dropped or renamed away; a field you added that never had a column stays. The queries, the store and the factory are regenerated and merged into your copies the way <code>app:update</code> merges, so an edit of yours on the same lines gets conflict markers. <code>Validate</code>, the views, the controllers and the specs are left alone, and it says so: add the field to the views if the API should carry it. It refuses on a dirty git tree, so the result is one diff to review or undo; <code>bogie new</code> does not run <code>git init</code>, and outside a git repository the sync runs without that check, so start one first. Without a table name it syncs every model.</p>
+<p>With uncommitted changes, <code>bogie model:sync posts</code> stops with:</p>
+<pre><code>bogie: model:sync: the git tree has uncommitted changes; commit or stash them first, so the sync can be undone with git</code></pre>
+<p><strong>the git tree has uncommitted changes</strong>: <code>git commit</code> or <code>git stash</code>, then run it again.</p>
 <p>Add <code>:null</code> to an attribute for a column that may be NULL (<code>archived_at:datetime:null</code>): the field is a pointer, and a nullable datetime is <code>*time.Time</code>. <code>g scaffold</code> does not take <code>:null</code> yet.</p>
 
 <h2>Running them</h2>
@@ -171,6 +191,16 @@ bogie db:reset
 bogie db:seed
 bogie db:version</code></pre>
 <p>All through the app's own binary, never the goose CLI directly, so development runs exactly what a deployed container runs. <code>db:reset</code> drops the database and rebuilds it from the migrations; there is no schema dump to load instead. Seeds are not migrations: they are plain Go, written with <code>bogie g seed</code> and run, every one of them, by <code>bogie db:seed</code>. See <a href="seeds.html">Seeds</a>.</p>
+<p>Each command logs what it did. <code>bogie db:migrate</code>, then <code>bogie db:rollback</code> (one migration at a time):</p>
+<pre><code>time=2026-11-05T08:58:04.706+07:00 level=INFO msg="schema applied" service=blog from=20261105015750 to=20261105015805
+time=2026-11-05T08:58:05.147+07:00 level=INFO msg="schema rolled back" service=blog from=20261105015805 to=20261105015804</code></pre>
+<p><code>bogie db:migrate:status</code> lists every migration file and whether it has run:</p>
+<pre><code>state       applied at              migration
+applied     2026-11-05 08:57:52     20261105015750_create_products.sql
+applied     2026-11-05 08:58:04     20261105015802_create_posts.sql
+applied     2026-11-05 08:58:04     20261105015803_create_comments.sql
+applied     2026-11-05 08:58:04     20261105015804_add_slug_to_posts.sql
+pending     pending                 20261105015805_add_slug.sql</code></pre>
 
 <h3 id="out-of-order">A migration that is older than one already applied</h3>
 <p>goose applies migrations in the order of their timestamps and refuses one whose file is older than the newest already applied, which happens when a branch brings a migration stamped before one you have run. Since v0.6.8 the error says what to do:</p>

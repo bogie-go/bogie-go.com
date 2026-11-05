@@ -63,7 +63,7 @@
      updated  config/deploy.yml
      updated  db/adapter/store.go
         kept  db/seeds/seeds.go
-     updated  main.go
+      merged  main.go
      updated  test/testapp/testapp.go
      updated  test/testdb/testdb.go
       insert  main.go: "worker": runWorker,
@@ -128,6 +128,13 @@ app.Jobs.InsertTx(ctx, tx, jobs.SendWelcomeArgs{}, nil)</code></pre>
 <h2>Running the worker</h2>
 <pre><code>bogie worker</code></pre>
 <p>Or <code>make worker</code>. It is its own process, separate from <code>bogie server</code>, so a backlog in the queue never slows a request. In development <code>bogie worker</code> runs under Air and builds to its own binary, so it rebuilds and restarts on save independently of the server; <code>make worker</code> is one boot, no reload. River's own schema (the tables it needs to track jobs) is applied by <code>migrate</code>, through <code>rivermigrate</code>, not copied into <code>db/migrate</code>: it arrives the same way the app's own migrations do, at boot or with <code>bogie db:migrate</code>.</p>
+
+<p>The first <code>bogie db:migrate</code> after jobs are added applies River's schema before your own:</p>
+<pre><code>time=2026-11-05T08:59:34.576+07:00 level=INFO msg="river schema applied" service=blog versions=8
+time=2026-11-05T08:59:34.584+07:00 level=INFO msg="schema up to date" service=blog version=20261105015917</code></pre>
+<p>With the worker running, these two lines say it is up (the debug lines between them are trimmed, and the client id differs on every run):</p>
+<pre><code>time=2026-11-05T08:59:36.115+07:00 level=INFO msg="worker started" service=blog env=development
+time=2026-11-05T08:59:36.115+07:00 level=INFO msg="River client started" service=blog client_id=...</code></pre>
 
 <h2>Removing one</h2>
 <pre><code>bogie d job send_welcome</code></pre>

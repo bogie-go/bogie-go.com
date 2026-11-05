@@ -44,6 +44,9 @@
 <pre><code>bogie g seed demo_posts</code></pre>
 <pre><code>      create  db/seeds/demo_posts.go
       insert  db/seeds/seeds.go: func() error { return SeedDemoPosts(ctx, s) },</code></pre>
+<p>Run the same command again (this run was <code>bogie g seed demo_products</code>, so the names differ from the example above) and each line says <code>identical</code>, so the generator does not register a seed twice:</p>
+<pre><code>   identical  db/seeds/demo_products.go
+   identical  db/seeds/seeds.go: func() error { return SeedDemoProducts(ctx, s) },</code></pre>
 <p>The new file is one function with the store in hand, so a seed calls the same methods a controller would, validation included:</p>
 <pre><code>// SeedDemoPosts seeds demo_posts. db seed can run this any number of times, so
 // make it safe to run twice: insert with ON CONFLICT DO NOTHING, or
@@ -56,6 +59,7 @@ func SeedDemoPosts(ctx context.Context, s *adapter.Store) error {
 <h2>Run them</h2>
 <pre><code>bogie db:seed      # or: make db-seed, blog db seed
 bogie db:prepare   # create if needed, migrate, then seed</code></pre>
+<p><code>bogie db:seed</code> prints nothing when every seed succeeds and exits 0, so a quiet terminal is a good result.</p>
 <p><code>db/seeds/seeds.go</code> ships with every app from <code>bogie new</code>. Its <code>Run</code> calls each registered seed in the order it sits above <code>// bogie:seeds</code>, and the first error stops the rest, since a later seed may depend on rows an earlier one wrote.</p>
 
 <h2>Safe to run twice</h2>

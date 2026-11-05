@@ -88,10 +88,31 @@ bogie g authentication api_key     # a machine client presents a key</code></pre
 <h2>secret</h2>
 <p>A shared secret in the <code>X-&lt;App&gt;-Secret</code> header (the constant <code>middlewares.SecretHeader</code>), compared with <code>crypto/subtle.ConstantTimeCompare</code> so a wrong guess cannot be timed into a right one. A Basic auth fallback lets a browser open a guarded page too, since a browser cannot send a custom header; any username works and the password is the secret. For a caller it is one header on the request:</p>
 <pre><code>curl -H "X-Blog-Secret: $BLOG_SECRET" https://blog.example.com/posts</code></pre>
+<p>A request without the header, or with a wrong value, is refused the same way:</p>
+<pre><code>HTTP/1.1 401 Unauthorized
+Www-Authenticate: Basic realm="blog", charset="UTF-8"
+X-Request-Id: 707b9183-7906-48a6-b362-7b9ed02ba948
+Date: Thu, 05 Nov 2026 01:59:06 GMT
+Content-Length: 0</code></pre>
 
 <h2>token</h2>
 <p>A bearer token, JWT, HS256, signed with one shared secret: <code>token.secret</code> in the credentials file, <code>TOKEN_SECRET</code> in the environment. Whatever signs users in mints the token with any JWT library and the same secret, and this service only ever verifies. It requires <code>iss</code> (the app's name), a non-empty <code>sub</code> and an <code>exp</code>; tokens it mints itself also carry <code>iat</code> and <code>jti</code>:</p>
 <pre><code>{ "iss": "blog", "sub": "42", "iat": 1793000000, "exp": 1793000900, "jti": "…" }</code></pre>
+<p><code>bogie g authentication token</code> prints:</p>
+<pre><code>      create  app/services/token/token.go
+      create  app/services/token/token_suite_test.go
+      create  app/services/token/token_test.go
+      create  app/middlewares/require_user.go
+      create  app/middlewares/require_user_test.go
+      create  app/controllers/authentication_token.go
+      create  test/testapp/authentication_token.go
+      create  config/token.go
+      insert  config/config.go: Token TokenConfig `mapstructure:"token"`
+      insert  config/config.go: c.Token.defaults(env)
+      insert  config/config.go: c.Token.validate(c.Env),
+      insert  config/credentials.yml.enc: token.secret
+         run  go mod tidy
+        next  mount the routes it guards in app/controllers/routes.go: s.Posts.SetupRoutes(s.WithUser(&amp;r.RouterGroup))</code></pre>
 <p>In a handler behind <code>WithUser</code>, <code>middlewares.Subject(c)</code> is the token's subject, usually a user id; nothing is loaded for you, because who the subject is is for the caller and the handler to agree on. A service that signs users in itself, rather than trusting another service's token, mints its own with <code>s.Tokens().Mint(subject, ttl)</code>.</p>
 <p><code>Verify</code> refuses a token that is expired, signed with another secret, issued for another issuer, or signed with any algorithm but HS256, so a token claiming <code>"none"</code> or an asymmetric algorithm never reaches the key at all.</p>
 
@@ -99,6 +120,38 @@ bogie g authentication api_key     # a machine client presents a key</code></pre
 <p>A machine client presents a key rather than a session. The generator adds an <code>api_keys</code> table (<code>name</code>, a public <code>prefix</code>, and a bcrypt <code>digest</code>, never the key itself) and a subcommand:</p>
 <pre><code>bogie api_keys:create NAME</code></pre>
 <p>which prints the key once, as <code>&lt;prefix&gt;.&lt;secret&gt;</code>; there is no way to see it again, only to verify it or make another. The client sends it as a bearer token, the same header shape as <code>token</code>, and a handler behind <code>WithAPIKey</code> reads <code>middlewares.APIKeyName(c)</code> to see which key the request presented. Because this shape adds a migration, run <code>bogie db:migrate</code> (or restart the app, since it migrates at boot) before <code>api_keys:create</code> works.</p>
+<p><code>bogie g authentication api_key</code> prints:</p>
+<pre><code>      create  db/migrate/20261105015917_create_api_keys.sql
+      create  db/queries/api_keys.sql
+      create  app/models/api_key.go
+      create  app/models/api_key_test.go
+      create  db/adapter/api_keys.go
+      create  db/adapter/api_keys_test.go
+      create  test/factories/api_keys.go
+      create  app/services/api_keys/api_keys.go
+      create  app/services/api_keys/api_keys_suite_test.go
+      create  app/services/api_keys/api_keys_test.go
+      create  app/middlewares/require_api_key.go
+      create  app/middlewares/require_api_key_test.go
+      create  app/controllers/authentication_api_key.go
+      create  cli_api_keys.go
+      insert  app/controllers/application.go: APIKeys *api_keys.Service
+      insert  app/application.go: server.APIKeys = api_keys.New(store)
+      insert  main.go: "api_keys": runAPIKeys,
+         run  go mod tidy
+        next  mount the routes it guards in app/controllers/routes.go: s.Posts.SetupRoutes(s.WithAPIKey(&amp;r.RouterGroup))
+         run  sqlc generate</code></pre>
+<p>After the migration, <code>bogie api_keys:create ci</code> prints the key and then confirms it. The key is shown once; the real one is longer than the <code>…</code> here:</p>
+<pre><code>dc43792c3668.…
+api key "ci" made (1); it is shown once:</code></pre>
+<p>Before the migration has run, the same command fails:</p>
+<pre><code>blog: store: create api_key: ERROR: relation "api_keys" does not exist (SQLSTATE 42P01)</code></pre>
+<p><strong>relation "api_keys" does not exist</strong> means the table is not there yet. Run <code>bogie db:migrate</code>, then <code>bogie api_keys:create ci</code> again.</p>
+<p>Without a name, it prints a usage text and ends with:</p>
+<pre><code>Usage: blog api_keys create NAME
+...
+blog: api_keys: create NAME is the one command</code></pre>
+<p><strong>api_keys: create NAME is the one command</strong>: give the key a name, as in <code>bogie api_keys:create ci</code>.</p>
 
 <h2>Removing</h2>
 <p><code>bogie d authentication &lt;shape&gt;</code> removes the middleware, its test, and the group helper, and removes its group from <code>config/</code> and <code>config/config.go</code>. The development value stays behind in the credentials file; it guards nothing once the field that read it is gone, so it is harmless left in place.</p>

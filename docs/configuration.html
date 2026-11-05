@@ -80,6 +80,23 @@ server:
 bogie g config database pool_size:int=10                         # keys into an app group
 bogie g config hello=world                                       # a flat top-level key
 bogie d config smtp                                               # remove a group</code></pre>
+<p><code>bogie g config smtp address:req port:int=1025 username password:secret</code> prints one line per edit, then how to read the value:</p>
+<pre><code>      create  config/smtp.go
+      insert  config/config.go: Smtp SmtpConfig `mapstructure:"smtp"`
+      insert  config/config.go: c.Smtp.defaults(env)
+      insert  config/config.go: c.Smtp.validate(c.Env),
+      insert  config/credentials.yml.enc: smtp.address
+      insert  config/credentials.yml.enc: smtp.port
+      insert  config/credentials.yml.enc: smtp.username
+      insert  config/credentials.yml.enc: smtp.password
+        next  read it as s.Config.Smtp.Address; set it in production with make credentials ENV=production, or SMTP_ADDRESS</code></pre>
+<p>A flat key, <code>bogie g config support_email=help@example.com</code>, writes no file of its own:</p>
+<pre><code>      insert  config/config.go: SupportEmail string `mapstructure:"support_email"`
+      insert  config/credentials.yml.enc: support_email
+        next  read it as s.Config.SupportEmail; set it in production with make credentials ENV=production, or SUPPORT_EMAIL</code></pre>
+<p>A type Bogie does not know is refused. <code>bogie g config smtp port:float</code> prints:</p>
+<pre><code>bogie: generate config: port: "float" is neither a type (string int bool duration) nor a flag (req secret)</code></pre>
+<p><strong>neither a type (string int bool duration) nor a flag (req secret)</strong>: use one of those words after the colon.</p>
 <p>Types are <code>string</code> (the default), <code>int</code>, <code>bool</code> (<code>yes</code>/<code>no</code>/<code>on</code>/<code>off</code>) and <code>duration</code>; flags are <code>req</code> and <code>secret</code>. A secret gets no development value: set it with <code>make credentials</code>. New top-level entries go in alphabetical order; keys in a group stay in the order typed. The app's own <code>server</code> and <code>database</code> groups take new keys but are never created or removed. Read a value as <code>s.Config.Smtp.Address</code>; its variable is <code>SMTP_ADDRESS</code>.</p>
 <pre><code>bogie credentials:edit
 bogie credentials:edit -e production
