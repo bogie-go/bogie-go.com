@@ -13,6 +13,7 @@ by `.github/workflows/pages.yml`.
                     over a local server); the values to match live in its styles
     CNAME           bogie-go.com
     _includes/      the shared header and footer
+    sponsors.json   book sponsors for the homepage Supporters section
     build.py        fills the pages in and writes _site/
 
 ## Building
@@ -24,6 +25,9 @@ Pages are still plain HTML, with a few markers that `build.py` fills in:
   the left-hand guide menu and the previous/next links. The menu order and
   groups live in `NAV` at the top of `build.py`; add a new guide there.
 - `{{VERSION}}` (e.g. `v0.2.3`), `{{VERSION_NUM}}` (`0.2.3`), `{{SECTION}}`
+- `<!-- @supporters -->` on the homepage, directly under the book mention:
+  the Supporters block, built from `sponsors.json`. An empty list leaves
+  the marker blank, so the section is not on the page.
 
 The version is the latest Bogie tag from
 `https://proxy.golang.org/github.com/bogie-go/bogie/@latest`. If that fetch
