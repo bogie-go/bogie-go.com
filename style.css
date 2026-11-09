@@ -170,6 +170,21 @@ figure.drawing figcaption { margin-top: 10px; }
 .rules.why .rule { margin: 0; font-size: 17px; line-height: 1.6; font-weight: 400; color: var(--on-ink-muted); }
 .rules.why .rule code { color: var(--on-ink); }
 
+/* book supporters, under the Why Bogie book line. The block is omitted when sponsors.json is empty. */
+.supporters { padding-top: 40px; padding-bottom: 12px; }
+.supporters .inner { display: flex; flex-direction: column; align-items: flex-start; gap: 32px; }
+.supporters .tier { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+.supporters .eyebrow { margin: 0; }
+.supporters a { display: inline-flex; align-items: center; text-decoration: none; border-radius: 2px; }
+.supporters a:focus-visible { outline: 2px solid var(--rust); outline-offset: 4px; }
+.supporters .presenting a { flex-direction: column; align-items: flex-start; gap: 10px; }
+.supporters .name { font-size: 15px; font-weight: 600; line-height: 1.3; }
+.supporters img { display: block; width: auto; height: 32px; max-width: 200px; object-fit: contain; object-position: left center; }
+.supporters .presenting img { height: 64px; max-width: 320px; }
+.supporters .logos { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 40px; }
+.supporters .logos a { min-height: 44px; }
+.supporters a:hover img { outline: 1.5px solid var(--rust); outline-offset: 4px; }
+
 /* tables */
 .table-wrap { border: 1.5px solid var(--ink); border-radius: 6px; overflow-x: auto; background: var(--paper-2); min-width: 0; }
 table { border-collapse: collapse; width: 100%; font-size: 15px; }

@@ -5,6 +5,7 @@ Pages are plain HTML with a few markers that this script fills in:
   <!-- @header --> / <!-- @footer -->     the shared _includes/*.html
   <!-- @docs-start --> ... <!-- @docs-end -->  docs pages: sidebar + prev/next
   <!-- @script -->                         the one inline script (SCRIPT below), in the footer
+  <!-- @supporters -->                     homepage book sponsors, from sponsors.json
   {{VERSION}} / {{VERSION_NUM}} / {{SECTION}}
 
 Docs pages also get an id and a "#" link on every <h2>/<h3>, and an "On this
@@ -181,12 +182,105 @@ def prevnext(current):
     return f'<footer class="guide-nav">\n  {cell("prev", "Previous", prev)}\n  {cell("next", "Next", nxt)}\n</footer>'
 
 
-def render(path, text, inc, version):
+def read_sponsors(path):
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        sys.exit(f"error: {path.name}: {e}")
+    return data
+
+
+def parse_sponsors(data, root):
+    """Validate the book-sponsor list. Empty is valid and renders nothing."""
+    if not isinstance(data, list):
+        sys.exit("error: sponsors.json must be a list of sponsor objects")
+    sponsors = []
+    for i, item in enumerate(data):
+        where = f"sponsors.json[{i}]"
+        if not isinstance(item, dict):
+            sys.exit(f"error: {where} must be an object")
+        tier = item.get("tier")
+        name = item.get("name")
+        url = item.get("url")
+        logo = item.get("logo")
+        if not isinstance(tier, str) or tier.strip() not in ("presenting", "supporting"):
+            sys.exit(f'error: {where}.tier must be "presenting" or "supporting"')
+        tier = tier.strip()
+        for key, val in (("name", name), ("url", url), ("logo", logo)):
+            if not isinstance(val, str) or not val.strip():
+                sys.exit(f"error: {where}.{key} must be a non-empty string")
+        name, url, logo = name.strip(), url.strip(), logo.strip()
+        if not url.startswith(("https://", "http://")):
+            sys.exit(f"error: {where}.url must be an http(s) URL")
+        logo_path = Path(logo)
+        if logo_path.is_absolute() or ".." in logo_path.parts:
+            sys.exit(f"error: {where}.logo must be a relative path inside this repo")
+        full = (root / logo_path).resolve()
+        if not full.is_relative_to(root.resolve()) or not full.is_file():
+            sys.exit(f"error: {where}.logo not found: {logo}")
+        sponsors.append({"tier": tier, "name": name, "url": url, "logo": logo})
+    presenting = sum(s["tier"] == "presenting" for s in sponsors)
+    supporting = sum(s["tier"] == "supporting" for s in sponsors)
+    if presenting > 1:
+        sys.exit("error: sponsors.json: only one presenting sponsor")
+    if supporting > 3:
+        sys.exit("error: sponsors.json: at most three supporting sponsors")
+    return sponsors
+
+
+def load_sponsors():
+    return parse_sponsors(read_sponsors(ROOT / "sponsors.json"), ROOT)
+
+
+def _sponsor_img(sponsor, height):
+    return (f'<img src="{html.escape(sponsor["logo"], quote=True)}" '
+            f'alt="{html.escape(sponsor["name"], quote=True)}" height="{height}">')
+
+
+def supporters_markup(sponsors):
+    """Homepage Supporters block. Empty list, and a tier with nobody in it, render nothing."""
+    if not sponsors:
+        return ""
+    parts = []
+    presenting = [s for s in sponsors if s["tier"] == "presenting"]
+    supporting = [s for s in sponsors if s["tier"] == "supporting"]
+    if presenting:
+        s = presenting[0]
+        parts.append(
+            '    <div class="tier presenting">\n'
+            '      <p class="eyebrow">Presenting Sponsor</p>\n'
+            f'      <a href="{html.escape(s["url"], quote=True)}">\n'
+            f'        {_sponsor_img(s, 64)}\n'
+            f'        <span class="name" aria-hidden="true">{html.escape(s["name"])}</span>\n'
+            '      </a>\n'
+            '    </div>')
+    if supporting:
+        items = "\n".join(
+            f'        <li><a href="{html.escape(s["url"], quote=True)}">{_sponsor_img(s, 32)}</a></li>'
+            for s in supporting)
+        parts.append(
+            '    <div class="tier supporting">\n'
+            '      <p class="eyebrow">Supporting Sponsors</p>\n'
+            '      <ul class="logos">\n'
+            f'{items}\n'
+            '      </ul>\n'
+            '    </div>')
+    body = "\n".join(parts)
+    return ('<section class="wrap supporters" id="supporters" aria-label="Supporters">\n'
+            '  <div class="inner">\n'
+            f'{body}\n'
+            '  </div>\n'
+            '</section>\n')
+
+
+def render(path, text, inc, version, supporters=""):
     d = git_date(path.relative_to(ROOT))
     if d:  # same source as the sitemap's <lastmod>; the typed date is the fallback
         text = re.sub(r'"dateModified": "\d{4}-\d{2}-\d{2}"', f'"dateModified": "{d}"', text)
     text = text.replace("<!-- @header -->", inc["header"]).replace("<!-- @footer -->", inc["footer"])
     text = text.replace("<!-- @script -->", SCRIPT)
+    if path.name == "index.html":
+        text = text.replace("<!-- @supporters -->", supporters)
     if "<!-- @docs-start -->" in text:
         slug = path.stem
         section = next((sec for s, _, sec in FLAT if s == slug), "Guides")
@@ -463,17 +557,20 @@ def markdown_copies_list():
 
 def main():
     version = latest_version()
+    if "<!-- @supporters -->" not in (ROOT / "index.html").read_text(encoding="utf-8"):
+        sys.exit("error: index.html is missing <!-- @supporters -->")
+    supporters = supporters_markup(load_sponsors())
     inc = {n: (ROOT / "_includes" / f"{n}.html").read_text().rstrip("\n") for n in ("header", "footer")}
     if OUT.exists():
         shutil.rmtree(OUT)
     for src in ROOT.rglob("*"):
         rel = src.relative_to(ROOT)
-        if rel.parts[0] in SKIP or src.is_dir():
+        if rel.parts[0] in SKIP or src.is_dir() or rel == Path("sponsors.json"):
             continue
         dst = OUT / rel
         dst.parent.mkdir(parents=True, exist_ok=True)
         if src.suffix == ".html" and rel.parts[0] != "design":
-            out = render(src, src.read_text(), inc, version)
+            out = render(src, src.read_text(), inc, version, supporters)
             left = [m for m in ("{{VERSION}}", "{{VERSION_NUM}}", "{{SECTION}}", "<!-- @") if m in out]
             if left:
                 sys.exit(f"error: unfilled {left} in {rel}")
