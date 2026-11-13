@@ -21,7 +21,7 @@
 <meta name="twitter:title" content="Models and migrations: Bogie">
 <meta name="twitter:description" content="Add a table with g model, change one with g migration, and run it through db:*.">
 <meta name="twitter:image" content="https://bogie-go.com/og.png">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Models and migrations", "description": "Add a table with g model, change one with g migration, and run it through db:*.", "url": "https://bogie-go.com/docs/models.html", "dateModified": "2026-10-31", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "Models and migrations", "item": "https://bogie-go.com/docs/models.html"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Models and migrations", "description": "Add a table with g model, change one with g migration, and run it through db:*.", "url": "https://bogie-go.com/docs/models.html", "dateModified": "2026-11-13", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "Models and migrations", "item": "https://bogie-go.com/docs/models.html"}]}]}</script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
 <script>
@@ -191,6 +191,22 @@ bogie db:reset
 bogie db:seed
 bogie db:version</code></pre>
 <p>All through the app's own binary, never the goose CLI directly, so development runs exactly what a deployed container runs. <code>db:reset</code> drops the database and rebuilds it from the migrations; there is no schema dump to load instead. Seeds are not migrations: they are plain Go, written with <code>bogie g seed</code> and run, every one of them, by <code>bogie db:seed</code>. See <a href="seeds.html">Seeds</a>.</p>
+<p>Since v0.7.0, <code>bogie db:status</code> (and <code>bogie db status</code>) is the one database task the tool runs itself. It only reads: it resolves the database the way <code>config.Load</code> does (<code>&lt;NAME&gt;_ENV</code>, the credentials file, <code>DATABASE_URL</code> over the file, and test from <code>&lt;NAME&gt;_TEST_DATABASE_URL</code> only), opens a read-only pgx session, and prints host, port, database, Postgres version, the latest applied goose migration and how many files are still pending, and how many tables. A generated app gains no command and no import. This is not <code>db:migrate:status</code>, which still lists every migration file through the app's binary.</p>
+
+<h3 id="db-status">Looking at the database the server would use</h3>
+<p>On a connection failure the driver's error is kept, one hint line is added, and the process exits non-zero. With Postgres stopped:</p>
+<pre><code>bogie: failed to connect to `user=postgres database=blog_development`:
+	127.0.0.1:5440 (localhost): dial error: dial tcp 127.0.0.1:5440: connect: connection refused
+	[::1]:5440 (localhost): dial error: dial tcp [::1]:5440: connect: connection refused
+Postgres isn't running (try `docker compose up -d`)</code></pre>
+<p>A bad password is hinted with <code>check credentials</code>; a missing database with <code>run `bogie db:prepare`</code>. A successful run prints one fact per line, in this shape (the Postgres version string is whatever the server reports):</p>
+<pre><code>host:      localhost
+port:      5440
+database:  blog_development
+postgres:  16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)
+migration: 0 (0 pending)
+tables:    0</code></pre>
+<p>After a migration has been applied and another file is only on disk, <code>migration:</code> shows the latest applied stamp and how many files are still pending, for example <code>20261105000000 (1 pending)</code>, and <code>tables:</code> counts the tables that are there.</p>
 <p>Each command logs what it did. <code>bogie db:migrate</code>, then <code>bogie db:rollback</code> (one migration at a time):</p>
 <pre><code>time=2026-11-05T08:58:04.706+07:00 level=INFO msg="schema applied" service=blog from=20261105015750 to=20261105015805
 time=2026-11-05T08:58:05.147+07:00 level=INFO msg="schema rolled back" service=blog from=20261105015805 to=20261105015804</code></pre>

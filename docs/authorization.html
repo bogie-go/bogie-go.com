@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Authorization: Bogie</title>
+<meta name="description" content="Authorize with bogie g policy: plain Go, a 403 on a denial, and an optional role claim on a token.">
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="stylesheet" href="../fonts.css">
+<link rel="stylesheet" href="../style.css">
+<link rel="canonical" href="https://bogie-go.com/docs/authorization.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Bogie">
+<meta property="og:title" content="Authorization: Bogie">
+<meta property="og:description" content="Authorize with bogie g policy: plain Go, a 403 on a denial, and an optional role claim on a token.">
+<meta property="og:url" content="https://bogie-go.com/docs/authorization.html">
+<meta property="og:image" content="https://bogie-go.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Authorization: Bogie">
+<meta name="twitter:description" content="Authorize with bogie g policy: plain Go, a 403 on a denial, and an optional role claim on a token.">
+<meta name="twitter:image" content="https://bogie-go.com/og.png">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Authorization", "description": "Authorize with bogie g policy: plain Go, a 403 on a denial, and an optional role claim on a token.", "url": "https://bogie-go.com/docs/authorization.html", "dateModified": "2026-11-13", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "Authorization", "item": "https://bogie-go.com/docs/authorization.html"}]}]}</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-MPVQ83E1Z9');
+</script>
+</head>
+<body>
+<!-- @header -->
+
+<!-- @docs-start -->
+<article>
+<p class="guide-eyebrow">{{SECTION}}</p>
+<h1>Authorization</h1>
+
+<p>Since v0.7.0, <code>bogie g policy</code> writes authorization as plain Go. There is no Bogie import, no role table, and no framework runtime. <a href="authentication.html">Authentication</a> is who is asking; a policy is whether they may. The generated guards still answer 401 when the request is not authenticated. A policy denial is 403.</p>
+
+<h2>The commands</h2>
+<p>The usual path is token authentication first, then a scaffold with <code>--policy</code>:</p>
+<pre><code>bogie g authentication token
+bogie g scaffold post title:string body:text --policy</code></pre>
+<p>The second command prints:</p>
+<pre><code>      create  db/migrate/20261113092202_create_posts.sql
+      create  db/queries/posts.sql
+      create  app/models/post.go
+      create  app/models/post_test.go
+      create  db/adapter/posts.go
+      create  db/adapter/posts_test.go
+      create  test/factories/posts.go
+      create  app/views/posts.go
+      create  app/controllers/posts_controller.go
+      create  app/controllers/posts_controller_test.go
+      create  app/policies/actor.go
+      create  app/policies/policies_suite_test.go
+      create  app/policies/post_policy.go
+      create  app/policies/post_policy_test.go
+      create  app/services/posts/posts.go
+      create  app/services/posts/posts_suite_test.go
+      create  app/services/posts/posts_test.go
+      insert  app/controllers/application.go: Posts *PostsController
+      insert  app/application.go: server.Posts = controllers.NewPostsController(posts.New(store, log), log)
+      insert  app/controllers/routes.go: s.Posts.SetupRoutes(s.WithUser(&amp;r.RouterGroup))
+         run  sqlc generate</code></pre>
+<p>The migration stamp is the UTC time it was generated; yours will differ. The controller is constructed with the new service, not the store, and the route is mounted on <code>s.WithUser</code>. The model gains a <code>user_id</code> string when it does not already have one.</p>
+<p><code>--policy</code> needs token authentication already in the app. Without it, the generator writes nothing and says:</p>
+<pre><code>bogie: generate scaffold: --policy reads the actor from token authentication (middlewares.Subject and middlewares.Role); run bogie g authentication token first</code></pre>
+<p>When the model already exists and has a <code>user_id</code> string, generate the policy alone:</p>
+<pre><code>bogie g policy note</code></pre>
+<pre><code>   identical  app/policies/actor.go
+   identical  app/policies/policies_suite_test.go
+      create  app/policies/note_policy.go
+      create  app/policies/note_policy_test.go
+      create  app/services/notes/notes.go
+      create  app/services/notes/notes_suite_test.go
+      create  app/services/notes/notes_test.go</code></pre>
+<p>A second run reports each of those files <code>identical</code>. There is no model, or it has no <code>UserID</code> field:</p>
+<pre><code>bogie: generate policy: no model widget (app/models/widget.go); bogie g model widget user_id:string first, or bogie g scaffold widget --policy
+bogie: generate policy: app/models/widget.go: no UserID field; add user_id:string</code></pre>
+<p><code>--policy</code> also works on <code>g scaffold_controller</code>, when the model already has <code>user_id</code>.</p>
+
+<h2>The policy file</h2>
+<p><code>app/policies/post_policy.go</code> has one method per action on <code>policies.Post</code>: <code>CanIndex</code>, <code>CanShow</code>, <code>CanCreate</code>, <code>CanUpdate</code>, <code>CanDestroy</code>. Each takes an <code>Actor</code> and a <code>*models.Post</code> and returns bool. They are methods, not package functions, so <code>policies.Note</code> can define the same five actions in the same package.</p>
+<pre><code>// Post is the authorization for a post. Call it as policies.Post.CanShow(actor, post).
+var Post PostPolicy
+
+// PostPolicy is one function per action. Each takes the actor and the post
+// and returns whether the actor may do it. The default allows only what the
+// actor owns.
+type PostPolicy struct{}
+
+// CanShow reports whether actor may read a post. Allowed only when the actor owns it.
+func (PostPolicy) CanShow(actor Actor, post *models.Post) bool {
+	return PostPolicy{}.owns(actor, post)
+}
+
+// owns reports whether actor owns post. The owner is post.UserID, the same
+// string authentication records as the subject. An actor with no id owns
+// nothing, and a nil post is not owned by anyone. A role does not widen
+// this: an admin owns only their own post until a method above says so.
+func (PostPolicy) owns(actor Actor, post *models.Post) bool {
+	return actor.ID != "" &amp;&amp; post != nil &amp;&amp; post.UserID == actor.ID
+}</code></pre>
+<p>The other four actions call the same <code>owns</code> helper. Change a method when a role should widen that default. The actor is an id and a role string, already put on the request by token authentication (<code>middlewares.Subject</code>, <code>middlewares.Role</code>). Nothing in this package loads a user or a role:</p>
+<pre><code>// ErrDenied is a policy that refused. A controller maps it to 403 the same
+// way it maps models.ErrNotFound to 404, with errors.Is, in the one place
+// that mapping lives.
+var ErrDenied = errors.New("denied")
+
+// Actor is who is asking. ID is the subject authentication put on the
+// request (a user id, usually) and Role is the role string it put beside
+// the subject. Both are already on the request context; nothing here loads
+// a user or a role.
+type Actor struct {
+	ID   string
+	Role string
+}</code></pre>
+<p>The spec beside the policy is a table: one row per role (<code>member</code>, <code>admin</code>) and action, for the owner (<code>user-1</code>) and for someone else (<code>user-2</code>). Under the default, a member and an admin are allowed only for their own post; a role is not a grant until you change a method. Two extra examples deny an actor with no id and a nil post.</p>
+
+<h2>The service and the 403</h2>
+<p><code>--policy</code> also writes <code>app/services/posts</code>, which checks the policy and then the store. It knows nothing about HTTP. A refusal is <code>policies.ErrDenied</code>. Create stamps the owner from the actor before it asks the policy, so the body cannot choose one; update keeps the stored <code>UserID</code>. Index returns only the rows the actor may list:</p>
+<pre><code>func (s *Service) Create(ctx context.Context, actor policies.Actor, p models.Post) (models.Post, error) {
+	p.UserID = actor.ID
+	if !policies.Post.CanCreate(actor, &amp;p) {
+		s.deny(ctx, "create", actor)
+		return models.Post{}, policies.ErrDenied
+	}
+	return s.store.CreatePost(ctx, p)
+}
+
+func (s *Service) Index(ctx context.Context, actor policies.Actor, limit int32) ([]models.Post, error) {
+	posts, err := s.store.ListPosts(ctx, limit)
+	if err != nil {
+		return nil, err
+	}
+	owned := make([]models.Post, 0, len(posts))
+	for i := range posts {
+		if policies.Post.CanIndex(actor, &amp;posts[i]) {
+			owned = append(owned, posts[i])
+		}
+	}
+	return owned, nil
+}</code></pre>
+<p>The controller reads the actor off the request, calls one service method, and maps errors in <code>fail</code>. A denial is 403, in the same switch as 404 and 422:</p>
+<pre><code>func (ctl *PostsController) actor(c *gin.Context) policies.Actor {
+	return policies.Actor{ID: middlewares.Subject(c), Role: middlewares.Role(c)}
+}
+
+func (ctl *PostsController) fail(c *gin.Context, err error) {
+	switch {
+	case errors.Is(err, models.ErrNotFound):
+		c.JSON(http.StatusNotFound, views.ErrorMessage("no such post"))
+	case errors.Is(err, models.ErrInvalid):
+		c.JSON(http.StatusUnprocessableEntity, views.Error(err))
+	case errors.Is(err, policies.ErrDenied):
+		c.JSON(http.StatusForbidden, views.ErrorMessage("forbidden"))
+	default:
+		ctl.Log.ErrorContext(c.Request.Context(), "posts: request failed",
+			"path", c.FullPath(), "err", err, "request_id", c.GetString("request_id"))
+		c.JSON(http.StatusInternalServerError, views.ErrorMessage("internal error"))
+	}
+}</code></pre>
+<p><code>views.ErrorMessage("forbidden")</code> is the body <code>{"status":"error","error":"forbidden"}</code>. Create takes only <code>title</code> and <code>body</code> from the JSON; the service sets <code>UserID</code>. Update loads the post through <code>Show</code> first (so a non-owner is already denied) and passes the stored <code>UserID</code> through.</p>
+<p>A non-owner's <code>GET /posts/1</code> is 403. Their <code>GET /posts</code> is 200 with <code>{"posts":[]}</code>: index returns only rows the actor owns. A request with no token is still 401 from the guard, <code>{"status":"error","error":"a bearer token is required"}</code>, the same as on the <a href="authentication.html">Authentication</a> page.</p>
+
+<h2>The role claim and MintFor</h2>
+<p>The token-auth generator now keeps an optional <code>role</code> claim. <code>Mint(subject, ttl)</code> still signs a token with no role; it is a wrapper around <code>MintFor</code>:</p>
+<pre><code>func (m Maker) Mint(subject string, ttl time.Duration) (string, error) {
+	return m.MintFor(subject, "", ttl)
+}
+
+// MintFor signs a token for subject in role. An empty role is the same as Mint.
+func (m Maker) MintFor(subject, role string, ttl time.Duration) (string, error) {
+	if subject == "" {
+		return "", fmt.Errorf("%w: empty subject", ErrInvalid)
+	}
+	now := time.Now()
+	claims := signedClaims{
+		Role: role,
+		RegisteredClaims: jwt.RegisteredClaims{
+			Issuer:    m.Issuer,
+			Subject:   subject,
+			IssuedAt:  jwt.NewNumericDate(now),
+			ExpiresAt: jwt.NewNumericDate(now.Add(ttl)),
+			ID:        uuid.NewString(),
+		},
+	}
+	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(m.Secret)
+}</code></pre>
+<p>The JWT payload is the registered claims plus <code>`json:"role,omitempty"`</code>. Verify copies that string onto <code>Claims.Role</code>. The guard puts it on the context beside the subject, and <code>middlewares.Role(c)</code> reads it (empty when the token carried none, or when the route is not behind <code>RequireUser</code>). A role still does not widen the default policy until you change a method.</p>
+<p>The request helper <code>.As(subject)</code> still calls <code>Mint</code>, so a request spec mints a token with an empty role. To send a role, mint with <code>MintFor</code> and pass the token in yourself (<code>WithAuthorization</code>).</p>
+<p>An app that already had token authentication before v0.7.0 does not get these files from <code>app:update</code>. Re-run <code>bogie g authentication token</code> after porting any hand edits, or add the claim and <code>MintFor</code> by hand. See <a href="upgrading.html#v0-7">Upgrading an app</a>.</p>
+
+<h2>Removing</h2>
+<pre><code>bogie d policy post</code></pre>
+<p>removes the policy, its spec and its service. It refuses when a controller is still wired to that service:</p>
+<pre><code>bogie: destroy policy: the posts controller is wired to this policy's service; bogie d scaffold post removes the resource and the policy together</code></pre>
+<p><code>bogie d scaffold post</code> removes the resource and the policy together. <code>bogie d policy note</code>, on a policy with no controller wired, removes the five files it created (the policy, its spec, and the service package).</p>
+</article>
+<!-- @docs-end -->
+
+<!-- @footer -->
+
+</body>
+</html>
