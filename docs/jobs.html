@@ -21,7 +21,7 @@
 <meta name="twitter:title" content="Background jobs: Bogie">
 <meta name="twitter:description" content="Add River with --jobs at new time, or later with g job, and write a worker that runs beside it.">
 <meta name="twitter:image" content="https://bogie-go.com/og.png">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Background jobs", "description": "Add River with --jobs at new time, or later with g job, and write a worker that runs beside it.", "url": "https://bogie-go.com/docs/jobs.html", "dateModified": "2026-10-31", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "Background jobs", "item": "https://bogie-go.com/docs/jobs.html"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Background jobs", "description": "Add River with --jobs at new time, or later with g job, and write a worker that runs beside it.", "url": "https://bogie-go.com/docs/jobs.html", "dateModified": "2026-11-13", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "Background jobs", "item": "https://bogie-go.com/docs/jobs.html"}]}]}</script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
 <script>
@@ -118,6 +118,38 @@ func (w *SendWelcomeWorker) Work(ctx context.Context, job *river.Job[SendWelcome
 <pre><code>registered += add(workers, &amp;SendWelcomeWorker{Log: log})
 // bogie:jobs</code></pre>
 
+<h2 id="periodic">Periodic jobs</h2>
+<p>Since v0.7.0, <code>--every</code> also registers the job as a River periodic job on a cron schedule:</p>
+<pre><code>bogie g job daily_digest --every "0 9 * * *"</code></pre>
+<pre><code>      create  app/jobs/daily_digest.go
+      create  app/jobs/daily_digest_test.go
+      insert  app/jobs/jobs.go: registered += add(workers, &amp;DailyDigestWorker{Log: log})
+      insert  app/jobs/jobs.go: periodic = append(periodic, DailyDigestPeriodic())
+         run  go get github.com/robfig/cron/v3@v3.0.1</code></pre>
+<p>Without <code>--every</code>, <code>g job</code> still writes the worker and the same one registration line as before. The schedule is robfig/cron's <code>ParseStandard</code>: five fields (minute, hour, day of month, month, day of week), a descriptor such as <code>@daily</code> or <code>@every 1h</code>, and an optional <code>CRON_TZ=UTC</code> prefix. With no prefix it is the process's local time. <code>0 9 * * *</code> is 09:00 every day. Generated apps that use <code>--every</code> gain <code>github.com/robfig/cron/v3</code>.</p>
+<p>The generator writes a <code>DailyDigestPeriodic</code> helper in the job file and a second line above <code>// bogie:jobs</code>. <code>jobs.Workers</code> returns that slice, and <code>app/application.go</code> sets <code>river.Config.PeriodicJobs</code>:</p>
+<pre><code>registered += add(workers, &amp;DailyDigestWorker{Log: log})
+periodic = append(periodic, DailyDigestPeriodic())
+// bogie:jobs</code></pre>
+<pre><code>func DailyDigestPeriodic() *river.PeriodicJob {
+	schedule, err := cron.ParseStandard("0 9 * * *")
+	if err != nil {
+		// bogie g job only writes an expression ParseStandard accepts.
+		panic(err)
+	}
+	return river.NewPeriodicJob(
+		schedule,
+		func() (river.JobArgs, *river.InsertOpts) {
+			return DailyDigestArgs{}, nil
+		},
+		&amp;river.PeriodicJobOpts{RunOnStart: false},
+	)
+}</code></pre>
+<p><code>RunOnStart</code> is off, so a deploy or a new leader does not enqueue one immediately. Enqueue one by hand the same way as any other job, with <code>Insert</code>. River elects one leader per database and schema, and only that client inserts periodic jobs, so several worker processes do not each enqueue a copy. The web process never starts its River client, so it does not lead. The leader holds the schedule in memory, so after a restart the new leader starts from the current time and a run can be skipped.</p>
+<p>An app generated before v0.7.0 has no periodic slice for the schedule line to append to. <code>--every</code> then stops, before any write, and says to run <code>bogie app:update</code>. See <a href="upgrading.html#v0-7">Upgrading an app</a>.</p>
+<p><code>--pretend</code> with <code>--every</code> prints the create and insert lines, including <code>periodic = append(...)</code>, and writes nothing: no files, no registration edit, no <code>go get</code>.</p>
+<p><code>bogie d job daily_digest</code> removes the schedule line with the worker.</p>
+
 <h2>Enqueuing</h2>
 <p>From anywhere that holds the application, including inside a transaction so the job commits with the row it depends on or not at all:</p>
 <pre><code>app.Jobs.Insert(ctx, jobs.SendWelcomeArgs{}, nil)
@@ -138,7 +170,7 @@ time=2026-11-05T08:59:36.115+07:00 level=INFO msg="River client started" service
 
 <h2>Removing one</h2>
 <pre><code>bogie d job send_welcome</code></pre>
-<p>Removes the file and the registration line.</p>
+<p>Removes the file and the registration line. If the job was registered with <code>--every</code>, the periodic line is removed with it; any other job's lines are left alone.</p>
 </article>
 <!-- @docs-end -->
 

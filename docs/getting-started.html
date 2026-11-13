@@ -134,6 +134,7 @@ bogie server</code></pre>
  Container blog-db Waiting 
  Container blog-db Healthy 
 ready: postgres on :5440</code></pre>
+<p>Since v0.7.0 the ready line reports the published port (<code>docker compose port db 5432</code>), not a hardcoded <code>:5440</code>. The default is still 5440; if you have moved the Compose port, the line follows. The app still dials whatever <code>config.go</code> and the credentials (or <code>DATABASE_URL</code>) say.</p>
 <p>Running <code>bogie db:prepare</code> on a database that is already set up prints:</p>
 <pre><code>time=2026-11-05T08:56:23.386+07:00 level=INFO msg="database already exists" service=blog database=blog_development
 time=2026-11-05T08:56:23.386+07:00 level=INFO msg="schema: nothing to apply" service=blog dir=migrate</code></pre>

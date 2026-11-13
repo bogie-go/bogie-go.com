@@ -21,7 +21,7 @@
 <meta name="twitter:title" content="Authentication: Bogie">
 <meta name="twitter:description" content="Guard a route group with a middleware: a shared secret, a bearer token, or a machine client&#x27;s key.">
 <meta name="twitter:image" content="https://bogie-go.com/og.png">
-<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Authentication", "description": "Guard a route group with a middleware: a shared secret, a bearer token, or a machine client's key.", "url": "https://bogie-go.com/docs/authentication.html", "dateModified": "2026-10-03", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "Authentication", "item": "https://bogie-go.com/docs/authentication.html"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "TechArticle", "headline": "Authentication", "description": "Guard a route group with a middleware: a shared secret, a bearer token, or a machine client's key.", "url": "https://bogie-go.com/docs/authentication.html", "dateModified": "2026-11-13", "inLanguage": "en", "author": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "proficiencyLevel": "Beginner"}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/docs/"}, {"@type": "ListItem", "position": 3, "name": "Authentication", "item": "https://bogie-go.com/docs/authentication.html"}]}]}</script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
 <script>
@@ -98,6 +98,7 @@ Www-Authenticate: Basic realm="blog", charset="UTF-8"</code></pre>
 <h2>token</h2>
 <p>A bearer token, JWT, HS256, signed with one shared secret: <code>token.secret</code> in the credentials file, <code>TOKEN_SECRET</code> in the environment. Whatever signs users in mints the token with any JWT library and the same secret, and this service only ever verifies. It requires <code>iss</code> (the app's name), a non-empty <code>sub</code> and an <code>exp</code>; tokens it mints itself also carry <code>iat</code> and <code>jti</code>:</p>
 <pre><code>{ "iss": "blog", "sub": "42", "iat": 1793000000, "exp": 1793000900, "jti": "…" }</code></pre>
+<p>Since v0.7.0 the payload may also carry an optional <code>role</code> claim. <code>Mint(subject, ttl)</code> still signs a token with no role; <code>MintFor(subject, role, ttl)</code> sets that claim, and <code>middlewares.Role(c)</code> reads it. See <a href="authorization.html">Authorization</a>.</p>
 <p><code>bogie g authentication token</code> prints:</p>
 <pre><code>      create  app/services/token/token.go
       create  app/services/token/token_suite_test.go
@@ -130,7 +131,7 @@ Www-Authenticate: Bearer realm="blog", error="invalid_token"
 <p>An expired token gets the same status and header with the body <strong>token: expired</strong>:</p>
 <pre><code>{"status":"error","error":"token: expired"}</code></pre>
 <p>A good token is a <code>200 OK</code>.</p>
-<p>In a handler behind <code>WithUser</code>, <code>middlewares.Subject(c)</code> is the token's subject, usually a user id; nothing is loaded for you, because who the subject is is for the caller and the handler to agree on. A service that signs users in itself, rather than trusting another service's token, mints its own with <code>s.Tokens().Mint(subject, ttl)</code>.</p>
+<p>In a handler behind <code>WithUser</code>, <code>middlewares.Subject(c)</code> is the token's subject, usually a user id, and <code>middlewares.Role(c)</code> is the role string the token carried, or empty when it carried none. Nothing is loaded for you, because who the subject is is for the caller and the handler to agree on. A service that signs users in itself, rather than trusting another service's token, mints its own with <code>s.Tokens().Mint(subject, ttl)</code>, or <code>MintFor(subject, role, ttl)</code> when the token should carry a role.</p>
 <p><code>Verify</code> refuses a token that is expired, signed with another secret, issued for another issuer, or signed with any algorithm but HS256, so a token claiming <code>"none"</code> or an asymmetric algorithm never reaches the key at all.</p>
 
 <h2>api_key</h2>
@@ -183,7 +184,7 @@ HTTP/1.1 401 Unauthorized
 Content-Type: application/json; charset=utf-8
 
 {"status":"error","error":"invalid api key"}</code></pre>
-<p>The real key, sent the same way, is a <code>200 OK</code>. The generated guards answer 401 for every refusal; none of them answers 403.</p>
+<p>The real key, sent the same way, is a <code>200 OK</code>. The generated guards still answer 401 for every authentication refusal. Since v0.7.0, authorization is a separate step: <code>bogie g policy</code> writes a policy and a service, and a denial is 403. See <a href="authorization.html">Authorization</a>.</p>
 
 <h2>Removing</h2>
 <p><code>bogie d authentication &lt;shape&gt;</code> removes the middleware, its test, and the group helper, and removes its group from <code>config/</code> and <code>config/config.go</code>. The development value stays behind in the credentials file; it guards nothing once the field that read it is gone, so it is harmless left in place.</p>
