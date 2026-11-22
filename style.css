@@ -349,8 +349,8 @@ a.pill { text-decoration: none; color: inherit; }
   display: block;
   background: var(--paper-2);
 }
-.book-hero .copy { display: flex; flex-direction: column; gap: 18px; }
-.book-hero .copy h1 { margin-bottom: 0; }
+.book-hero .copytext { display: flex; flex-direction: column; gap: 18px; }
+.book-hero .copytext h1 { margin-bottom: 0; }
 .book-hero .subtitle {
   font-family: var(--display);
   font-weight: 700;
