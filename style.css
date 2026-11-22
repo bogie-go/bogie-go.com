@@ -330,3 +330,47 @@ a.pill { text-decoration: none; color: inherit; }
 .measure .guide-list { padding-left: 0; }
 .try .terminal.scaffold pre { font-size: 12.5px; line-height: 1.5; padding: 14px 18px; }
 @media (max-width: 600px) { .mascot .plate { max-width: 270px; } }
+
+/* Book page: cover beside the pitch, Amazon as the main CTA.
+   A second, smaller link can be added inside .book-buy later. */
+.book-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
+  gap: 48px;
+  align-items: start;
+  margin: 8px 0 8px;
+}
+.book-hero .cover {
+  width: 100%;
+  max-width: 280px;
+  height: auto;
+  border: 1.5px solid var(--ink);
+  border-radius: 4px;
+  display: block;
+  background: var(--paper-2);
+}
+.book-hero .copy { display: flex; flex-direction: column; gap: 18px; }
+.book-hero .copy h1 { margin-bottom: 0; }
+.book-hero .subtitle {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(22px, 3vw, 30px);
+  text-transform: uppercase;
+  letter-spacing: -0.005em;
+  line-height: 1.15;
+  color: var(--ink);
+  margin: 0;
+}
+.book-hero .byline { margin: 0; font-size: 16px; }
+.book-buy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 8px;
+}
+.book-buy .formats { margin: 0; font-size: 15px; }
+@media (max-width: 800px) {
+  .book-hero { grid-template-columns: 1fr; gap: 28px; }
+  .book-hero .cover { max-width: 220px; }
+}
