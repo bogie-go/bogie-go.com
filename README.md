@@ -5,6 +5,7 @@ Python script (`build.py`, standard library only) and published to GitHub Pages
 by `.github/workflows/pages.yml`.
 
     index.html      the front page
+    book.html       the book, Bogie: How to Go from Zero to Production
     docs/           the guides, one page each; docs/index.html lists them
     style.css       the one stylesheet, shared by every page
     fonts.css       the three self-hosted families under fonts/ (all OFL-licensed)
