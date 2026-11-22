@@ -36,6 +36,7 @@ Every guide as plain Markdown, generated from the same source as the HTML:
 ## Source and design
 
 - [The book](https://bogie-go.com/book.html): Bogie: How to Go from Zero to Production, by Roonglit Chareonsupkul. Kindle and paperback on Amazon.
+- [Free chapters](https://bogie-go.com/free-chapters.html): the Introduction and Chapters 1 and 2, the same sample Leanpub offers.
 - [Team](https://bogie-go.com/team.html): who builds and maintains Bogie
 - [Repository](https://github.com/bogie-go/bogie): the tool, MIT
 - [DESIGN.md](https://github.com/bogie-go/bogie/blob/main/docs/DESIGN.md): every decision and its reasoning

@@ -1,0 +1,862 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Free chapters: Bogie — How to Go from Zero to Production</title>
+<meta name="description" content="Read the free sample of Bogie: How to Go from Zero to Production — Conventions for AI-Assisted Go. The Introduction and Chapters 1 and 2, the same sample Leanpub offers. Then get the full book on Leanpub or Kindle.">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="style.css">
+<link rel="canonical" href="https://bogie-go.com/free-chapters.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Bogie">
+<meta property="og:title" content="Free chapters: Bogie — How to Go from Zero to Production">
+<meta property="og:description" content="Read the free sample of Bogie: How to Go from Zero to Production — Conventions for AI-Assisted Go. The Introduction and Chapters 1 and 2, the same sample Leanpub offers. Then get the full book on Leanpub or Kindle.">
+<meta property="og:url" content="https://bogie-go.com/free-chapters.html">
+<meta property="og:image" content="https://bogie-go.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Free chapters: Bogie — How to Go from Zero to Production">
+<meta name="twitter:description" content="Read the free sample of Bogie: How to Go from Zero to Production — Conventions for AI-Assisted Go. The Introduction and Chapters 1 and 2, the same sample Leanpub offers. Then get the full book on Leanpub or Kindle.">
+<meta name="twitter:image" content="https://bogie-go.com/og.png">
+<script type="application/ld+json">{"@context": "https://schema.org","@graph": [{"@type": "WebPage","name": "Free chapters: Bogie","url": "https://bogie-go.com/free-chapters.html","description": "Read the free sample of Bogie: How to Go from Zero to Production — Conventions for AI-Assisted Go. The Introduction and Chapters 1 and 2, the same sample Leanpub offers. Then get the full book on Leanpub or Kindle.","isPartOf": {"@id": "https://bogie-go.com/#site"},"mainEntity": {"@type": "Book","name": "Bogie: How to Go from Zero to Production: Conventions for AI-Assisted Go","url": "https://bogie-go.com/book.html"}},{"@type": "BreadcrumbList","itemListElement": [{"@type": "ListItem","position": 1,"name": "Bogie","item": "https://bogie-go.com/"},{"@type": "ListItem","position": 2,"name": "The book","item": "https://bogie-go.com/book.html"},{"@type": "ListItem","position": 3,"name": "Free chapters","item": "https://bogie-go.com/free-chapters.html"}]}]}</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-MPVQ83E1Z9');
+</script>
+</head>
+<body>
+<!-- @header -->
+
+<div class="measure">
+<article class="book-sample">
+<p class="guide-eyebrow"><a href="book.html">The book</a></p>
+<h1>Free chapters</h1>
+<p class="sample-lead">This is the same free sample Leanpub offers: the Introduction and Chapters 1 and 2 of <em>Bogie: How to Go from Zero to Production</em>. The rest of the book is in the full edition, on Leanpub and Kindle.</p>
+<nav class="chapter-nav" aria-label="Sample chapters"><p class="onpage-h">In this sample</p><ol><li><a href="#introduction">Introduction</a></li><li><a href="#ch01-hello-bogie-depot">Chapter 1: Hello, Bogie Depot</a></li><li><a href="#ch02-just-enough-go">Chapter 2: Just Enough Go</a></li></ol></nav>
+<section class="sample-chapter" aria-labelledby="introduction">
+<h1 id="introduction">Introduction<a class="anchor" href="#introduction" aria-label="Link to this section"></a></h1>
+<p>Welcome to <em>Bogie: How to Go from Zero to Production — Conventions for AI-Assisted Go</em>.</p>
+<p>I'm Mac, and I lead engineering teams for a living. For most of my career, my main tool was Ruby on Rails. Then Go came into my work, and I found that learning Go has one challenging part, and it isn't the language: there's too much information out there, and everyone does Go their own way.</p>
+<p>I work at a software agency, and we have many, many experts in Go. But when I asked for help setting up a project for a client, each one went a different way, and no one could say which way to go. I know that learning to code takes time. Delivering work for a client can't wait. We needed something reliable, and just enough.</p>
+<p>So for years, I coded Go with conventions I built for myself. Then I hit the next problem: even when I knew exactly what to do, Go needed a lot of typing, and a lot of places to check to make everything work together. It was time-consuming, and it was another pain. Then an idea came: what if we could work like Rails, but in Go? What if a generator saved us the time? AI can write code too nowadays, but a generator plus AI saves you a lot more time than either alone. And so Bogie was born.</p>
+<p>This book is what I wish I'd had at the start of it.</p>
+<h2 id="who-this-book-is-for">Who This Book Is For<a class="anchor" href="#who-this-book-is-for" aria-label="Link to this section"></a></h2>
+<p>The main reader I had in mind is me, a few years ago: an experienced programmer who wants to deliver value with Go, quickly. You've built web applications before, in Ruby, Python, JavaScript, PHP, Java, or something else. You know what a route, a database migration, and an HTTP status code are. What you don't have yet is Go, or a way to structure a Go web app that a whole team can share.</p>
+<p>If you're newer to programming, or to Go, you're welcome too. You don't need any Go experience: Chapter 2 teaches the Go you need to read the shop's code, and short "Knowing Go" boxes teach the rest at the moment the shop needs it. I'll compare with Rails now and then, because it's what I know best, but you don't need to know Rails to follow along.</p>
+<p>And if you already work with an AI coding assistant, this book is for you too. The conventions you'll learn here are exactly what an assistant needs to follow, and Chapter 20 shows how to make sure it does.</p>
+<p>Either way, I hope Bogie saves you the time it saves me.</p>
+<h2 id="before-you-start">Before You Start<a class="anchor" href="#before-you-start" aria-label="Link to this section"></a></h2>
+<p>One piece of advice: open your mind. Some of what I do in this book may not be the usual "Go way". Experienced Go developers will notice generators, conventions borrowed from Rails, and opinions about where each piece of code belongs. I'm not asking you to agree with all of them. I'm hoping the good things I've brought will make your life easier, and that by the end, you'll know exactly why each decision was made, so you can keep it, change it, or break it on purpose.</p>
+<h2 id="what-youll-build">What You'll Build<a class="anchor" href="#what-youll-build" aria-label="Link to this section"></a></h2>
+<p>You'll build <strong>Bogie Depot</strong>, a complete online shop for Bogie merchandise: stickers, mugs, desk mats, keycaps. The name is a nod to the Depot store from <em>Agile Web Development with Rails</em>, the book many developers first learned Rails from.</p>
+<p>The purpose of this book is to teach you to do the real thing, the right way, so the shop is real too. It's the backend: a JSON API, with small HTML pages in front of it that call the API, so you can see every feature in a browser. Along the way, it gets a catalog, a cart for every visitor, customer accounts, sales and coupons that chain together in a pricing pipeline, checkout with real transactions, an admin area for staff, confirmation emails sent in the background, and the monitoring and backups a live shop needs. A real shop is living proof: by the end, you won't have to take my word for what Bogie is worth, because you'll have seen it.</p>
+<p>And it goes all the way to production. In Chapter 16, you'll deploy your own copy to a server and a domain of your own. Then you'll ship a change while a loop of requests runs against the shop in another terminal, and watch it print <code>200</code>, again and again, as the new version quietly takes over from the old one. Not one request fails. When you start Chapter 1, you won't have written a line of Go.</p>
+<p>I play the shop's owner, and most chapters start the way real work does: with a request or a problem report, one at a time. Usually it's from me ("I want customers to see what we sell", "How do I know the shop is OK while I'm asleep?"); sometimes it's from a customer, a reviewer on the team, my staff, or a friend who wants to build a mobile app against the API. Each chapter delivers what it asks for.</p>
+<h2 id="the-tool-bogie">The Tool: Bogie<a class="anchor" href="#the-tool-bogie" aria-label="Link to this section"></a></h2>
+<p>The shop is built with <strong>Bogie</strong>, a code generator for Go web apps. Bogie makes the decisions every Go web app needs and few teams want to argue about: where code goes, how it talks to the database, how errors are answered, how tests are written, how the app is deployed. Then it generates code that follows those decisions, so every part of the app is built the same way.</p>
+<p>Bogie isn't a framework. There's nothing running underneath your app: the code it generates is ordinary Go, with comments explaining why it's written the way it is, and it belongs to you. Your app doesn't even import Bogie. Chapter 19 explains every decision it makes.</p>
+<p>I believe that cool code shows itself over time, but working with others to deliver business value together can't wait. Let something draft the code, then focus on the logic: that's the way to go in the AI era. I hope Bogie brings you joy in doing that, with Go. Every Bogie app comes with a guide that teaches an AI assistant its conventions, and Chapter 20 adds a small guard that keeps an assistant from hand-editing the files the generators own.</p>
+<h2 id="how-this-book-is-structured">How This Book Is Structured<a class="anchor" href="#how-this-book-is-structured" aria-label="Link to this section"></a></h2>
+<p>The book has twenty-one chapters, in three parts.</p>
+<p><strong>Part I, Getting Started</strong> (Chapters 1 and 2), gets a Go web app running, and its first API endpoint answering, before you write a line of Go. Then it teaches just enough Go to read the code Bogie generated, from that code itself.</p>
+<p><strong>Part II, Building Bogie Depot</strong> (Chapters 3 to 17), builds the shop, one request at a time: reading and owning the catalog, rules and tests, carts, a sale, accounts, orders, staff, email, a deployment, and monitoring. From Chapter 4 on, every feature comes with its tests, and from Chapter 5, they're written from the outside in: starting from what a client of the API sees. Three of these chapters are optional: Chapters 12 and 13 extend the shop, and Chapter 15 writes a contract for its API. Each one says, at its top, how to skip it and carry on.</p>
+<p><strong>Part III, Beyond the Depot</strong> (Chapters 18 to 21), steps back to look at Bogie itself: what the shop would have taken with Go's standard library alone, what Bogie generates and why, how to make an AI assistant follow its conventions, and when to break them. It ends with where to go next.</p>
+<p>Six appendices follow, for quick reference: the SQL the book uses (A), Rails ideas and their Bogie equivalents (B), Bogie's commands and the tools it brings (C), a deploy and troubleshooting cheat sheet (D), Go essentials, explained through the shop (E), and a Go quick reference (F).</p>
+<p>The chapters build on each other, so read them in order the first time. Part II especially: each chapter starts from the code the previous one ended with.</p>
+<h2 id="what-youll-need">What You'll Need<a class="anchor" href="#what-youll-need" aria-label="Link to this section"></a></h2>
+<ul>
+<li><strong>A computer</strong> running macOS, Linux, or Windows with WSL.</li>
+<li><strong>Go 1.26 or newer.</strong> Chapter 1 installs it.</li>
+<li><strong>Docker.</strong> The shop's database runs in Docker during development, so you don't install Postgres yourself.</li>
+<li><strong>Bogie v1.0.0.</strong> Chapter 1 installs exactly this version, so everything you see matches the book.</li>
+<li><strong>A code editor</strong> with Go support. Appendix F suggests a couple.</li>
+<li><strong>Git,</strong> and some familiarity with the command line.</li>
+<li><strong>A reading knowledge of SQL.</strong> You'll write queries, but each new piece of SQL is explained when it first appears.</li>
+</ul>
+<p>Two chapters need a little more. Chapter 14 sends email, which runs against a fake mail server in development; for the live shop, you'll want an account with an email provider. And Chapter 16 deploys the shop, which needs a small virtual server, a domain name you control, and Kamal, the deployment tool, which Chapter 16 installs. You can read both chapters without them, and come back when you're ready to go live.</p>
+<h2 id="how-to-read-the-code">How to Read the Code<a class="anchor" href="#how-to-read-the-code" aria-label="Link to this section"></a></h2>
+<p>The book has a lot of code, and every listing follows the same conventions.</p>
+<p><strong>Every listing has a label</strong> that says where to find it in the companion repository, described below: <code>ch03-show-the-catalog/app/views/products.go</code> is the file <code>app/views/products.go</code>, in Chapter 3's folder. That folder holds the file as it is at the <em>end</em> of the chapter, so a listing from earlier in the chapter may show an earlier version of it; the ➤ marks show what that listing changes. Chapters 2 and 18 are small programs written step by step, so every step has its own folder, and a label like <code>ch02-just-enough-go/checkpoints/ch02_03/scratch/main.go</code> matches the listing exactly.</p>
+<p><strong>A new file is shown in full. A changed file shows only what changed.</strong> It starts with the file's first line, the <code>package</code> line in Go, so you always know which file you're in. Then <code>// ...</code> stands for everything that stays the same, in SQL <code>-- ...</code>, and the lines you add or change are marked with ➤ in the margin. When a file's imports change, the import block is shown, with ➤ on the new imports.</p>
+<p><strong>Command-line examples</strong> show what you type, and, where it helps, what you should see in reply. A <code>\</code> at the end of a line means the command continues on the next line.</p>
+<p><strong>Screenshots</strong> show the shop's pages at the moment they first appear.</p>
+<h2 id="boxes">Boxes<a class="anchor" href="#boxes" aria-label="Link to this section"></a></h2>
+<p>A few kinds of box add to the main text.</p>
+<ul>
+<li><strong>Knowing Go</strong> teaches one Go idea, at the moment the shop first uses it. If you're new to Go, read these; Appendix E explains the same ideas in more depth.</li>
+<li><strong>Background</strong> explains an idea in more depth: how something works underneath, or where it comes from.</li>
+<li><strong>Watch Out</strong> warns about a mistake that's easy to make, or a step that's easy to miss.</li>
+<li><strong>Under the Hood</strong> looks inside something you've been using, like what's really inside a token.</li>
+<li><strong>Playtime</strong> suggests an exercise at the end of a chapter, to try on your own with everything you've learned so far.</li>
+</ul>
+<h2 id="the-companion-repository">The Companion Repository<a class="anchor" href="#the-companion-repository" aria-label="Link to this section"></a></h2>
+<p>Everything you build is in the companion repository:</p>
+<pre><code>github.com/bogie-go/book-bogie-how-to-go-from-zero-to-production
+</code></pre>
+<p>It has one folder per chapter, named like the chapter's file: <code>ch03-show-the-catalog</code>, <code>ch10-take-orders</code>, and so on. Each folder holds the code as it stands at the <em>end</em> of that chapter, with a README saying how to run it. From Chapter 1 on, each shop folder is a full copy of the app at the end of the chapter; Chapters 2 and 18's folders also have a <code>checkpoints/</code> folder with every step. If you get stuck partway through a chapter, compare your files with the end-of-chapter folder, or start the next chapter from it. That's also how the optional chapters work: skip one, and start the next chapter from the skipped chapter's folder.</p>
+<p>The repository never contains credentials or their keys. To run a folder's code, create your own development credentials; the folder's README shows how.</p>
+<p>The repository also has the shop's web pages. This is a book about the backend, so you won't write HTML or JavaScript. Instead, each chapter that changes the pages tells you which files to copy from that chapter's <code>public/</code> folder into your app's <code>public/</code> folder. The pages are plain HTML, each one a single file with its own CSS and JavaScript, and they call the API you've built, so you can see each feature working in a browser. <code>UI-PAGES.md</code>, at the top of the repository, lists every page, chapter by chapter, with what changed.</p>
+<h2 id="a-note-on-versions">A Note on Versions<a class="anchor" href="#a-note-on-versions" aria-label="Link to this section"></a></h2>
+<p>Bogie is young, and it changed while I wrote this book; writing the book was one of the ways it improved. To keep what you see matching what you read, the book pins Bogie to one version, v1.0.0, and Chapter 1 installs exactly that one. Bogie follows semantic versioning, so anything that would break what this book shows ships as a new major version, and <code>@v1.0.0</code> keeps working. When you've finished the book, upgrading to the newest Bogie is one command, and Appendix C shows how <code>bogie app:update</code> brings an existing app along with it.</p>
+<h2 id="getting-help">Getting Help<a class="anchor" href="#getting-help" aria-label="Link to this section"></a></h2>
+<p>If something in the book doesn't match what you see, or doesn't work, first compare your code with the chapter's folder in the companion repository. If that doesn't explain it, open an issue on the repository, saying which chapter and listing you're on. Every report makes the book better for the next reader.</p>
+<p>Now, let's get started. In Chapter 1, you'll have a Go web app answering its first request before you write a line of Go.</p>
+</section>
+
+<section class="sample-chapter" aria-labelledby="ch01-hello-bogie-depot">
+<h1 id="ch01-hello-bogie-depot">Chapter 1: Hello, Bogie Depot<a class="anchor" href="#ch01-hello-bogie-depot" aria-label="Link to this section"></a></h1>
+<p>By the end of this chapter, a Go web app will be running on your machine, and it will answer your first API request with real data from a real database. You won't type a line of Go to get there. That comes in the next chapter, once you have something worth reading.</p>
+<p>In this chapter, you'll:</p>
+<ol>
+<li>Install Go and Bogie.</li>
+<li>Create Bogie Depot, the shop you'll build in this book.</li>
+<li>Install Docker for its database, run it, and see its welcome page.</li>
+<li>Generate the shop's first API endpoint, and ask it for products.</li>
+<li>Take a quick tour of what Bogie created, and what's yours.</li>
+</ol>
+<h2 id="install-the-tools">Install the Tools<a class="anchor" href="#install-the-tools" aria-label="Link to this section"></a></h2>
+<p>You need two things to start: Go, and Bogie. Docker comes in a little later, when the app needs its database.</p>
+<h3 id="go">Go<a class="anchor" href="#go" aria-label="Link to this section"></a></h3>
+<p>Download Go 1.26 or newer from <a href="https://go.dev/dl/">go.dev/dl</a>.<sup id="fnref:1"><a class="footnote-ref" href="#fn:1">1</a></sup> On macOS and Windows, run the installer. On Linux, there's no installer, just an archive: follow the short installation steps on that same page, which unpack it into <code>/usr/local/go</code> and add <code>/usr/local/go/bin</code> to your <code>PATH</code>. If you skip that last step, <code>go</code> will be <code>command not found</code>. Then check it worked:</p>
+<pre><code class="language-sh">go version
+</code></pre>
+<pre><code>go version go1.26.0 darwin/arm64
+</code></pre>
+<p>Your version and platform may differ; any 1.26 or newer is fine.</p>
+<p>Programs installed with Go land in Go's own <code>bin</code> folder, which needs to be on your <code>PATH</code> so your terminal can find them. On macOS and Linux, add this line to your shell's startup file, such as <code>~/.zshrc</code> or <code>~/.bashrc</code>, then open a new terminal:</p>
+<pre><code class="language-sh">export PATH=&quot;$PATH:$(go env GOPATH)/bin&quot;
+</code></pre>
+<aside class="book-box book-box-background">
+<p class="box-label">Background: Windows</p>
+<p>The commands in this book assume a Unix-style shell. On Windows, use WSL, the Windows Subsystem for Linux: install it with Ubuntu, then follow this book's Linux instructions <em>inside</em> it: install Go there now, and, when this chapter gets to it, Docker too.</p>
+</aside>
+
+<h3 id="bogie">Bogie<a class="anchor" href="#bogie" aria-label="Link to this section"></a></h3>
+<p>Bogie is a Go program, so Go installs it:</p>
+<pre><code class="language-sh">go install github.com/bogie-go/bogie@v1.0.0
+bogie version
+</code></pre>
+<p>This book is written against Bogie v1.0.0, and installing that exact version means everything on your screen will match the book. If <code>bogie version</code> says <code>command not found</code>, Go's <code>bin</code> folder isn't on your <code>PATH</code> yet; check the step above, and open a new terminal.</p>
+<aside class="book-box book-box-knowing">
+<p class="box-label">Knowing Go: <code>go install</code>, <code>go.mod</code>, and Pinned Tools</p>
+<p><code>go install</code> downloads a Go program at an exact version, builds it, and puts it in Go's <code>bin</code> folder. That's all a Go program needs: there's no runtime to install alongside it.</p>
+<p>Every Go project has a <code>go.mod</code> file, which names the project and records the exact version of every library it uses. Go can also record <em>tools</em> there. That's how a Bogie app pins the tools it needs, such as sqlc, which turns SQL into Go: they're listed in the app's <code>go.mod</code>, run with <code>go tool sqlc</code>, and every developer on a team gets exactly the same version, with nothing extra to install.</p>
+</aside>
+
+<h2 id="create-bogie-depot">Create Bogie Depot<a class="anchor" href="#create-bogie-depot" aria-label="Link to this section"></a></h2>
+<p>Move to the folder where you keep your projects, and create the app:</p>
+<pre><code class="language-sh">bogie new depot
+cd depot
+</code></pre>
+<p><code>bogie new</code> creates a complete, empty app in a folder called <code>depot</code>. Put it under version control right away, and save this starting point:</p>
+<pre><code class="language-sh">git init
+git add .
+git commit -m &quot;Create Bogie Depot&quot;
+</code></pre>
+<p>From here on, commit after each step, so you always have a recent point to come back to. The companion repository's <code>ch01-hello-bogie-depot</code> folder has the app as it stands at the end of this chapter.</p>
+<h2 id="run-it">Run It<a class="anchor" href="#run-it" aria-label="Link to this section"></a></h2>
+<h3 id="docker">Docker<a class="anchor" href="#docker" aria-label="Link to this section"></a></h3>
+<p>Bogie Depot keeps its data in Postgres, and in development, Postgres runs in Docker, so you don't install or configure Postgres yourself. A Bogie app needs its database before it can start, so install Docker Desktop on macOS or Windows, or Docker Engine with the Compose plugin on Linux.<sup id="fnref:2"><a class="footnote-ref" href="#fn:2">2</a></sup> Then check that Compose v2 is there:</p>
+<pre><code class="language-sh">docker compose version
+</code></pre>
+<p>Note the space: it's <code>docker compose</code>, not the older <code>docker-compose</code>. Any v2 version is fine.</p>
+<h3 id="start-the-database-and-the-app">Start the Database and the App<a class="anchor" href="#start-the-database-and-the-app" aria-label="Link to this section"></a></h3>
+<p>Now start Postgres, from inside the <code>depot</code> folder:</p>
+<pre><code class="language-sh">make up
+</code></pre>
+<p>The first time, Docker downloads the Postgres image, which takes a minute. Then <code>make up</code> waits until the database is ready:</p>
+<pre><code>ready: postgres on :5440
+</code></pre>
+<p>Postgres usually listens on port 5432. Bogie apps publish it on 5440 by default instead, so they don't clash with a Postgres you might already be running, and <code>make up</code> prints the port it really uses.</p>
+<p>Now prepare the app's database, and start the server:</p>
+<pre><code class="language-sh">bogie db:prepare
+bogie s
+</code></pre>
+<p><code>db:prepare</code> creates the development database if it doesn't exist and brings it up to date. You'll most likely see <code>database already exists</code>, because Docker created it when Postgres first started; that's fine. <code>bogie s</code> builds the app, starts it on port 8080, and keeps watching your files: whenever you save a change, it rebuilds and restarts.</p>
+<p>Open http://localhost:8080.</p>
+<figure class="book-figure"><img alt="The welcome page of a new Bogie app, showing the app's name, environment, address and Go version" src="images/ch01-welcome.png" width="1280" height="800"><figcaption>The welcome page of a new Bogie app, showing the app&#x27;s name, environment, address and Go version</figcaption></figure>
+<p>That's the page Bogie shows in development before the app has a home page of its own: the app's name, its environment, its address, and the Go version it was built with. In a second terminal, ask the app whether it's healthy:</p>
+<pre><code class="language-sh">curl localhost:8080/healthz
+</code></pre>
+<pre><code>ok
+</code></pre>
+<p>Every Bogie app answers at <code>/healthz</code>.</p>
+<h2 id="your-first-endpoint">Your First Endpoint<a class="anchor" href="#your-first-endpoint" aria-label="Link to this section"></a></h2>
+<p>Keep <code>bogie s</code> running in its terminal, and type everything from here on in your second one.</p>
+<p>A shop needs products. Here's the whole of a product, described to Bogie in one command: a name, a description, a price, a stock count, and a photo.</p>
+<pre><code class="language-sh">bogie g model product name description:text price_cents:integer stock:integer image_url
+</code></pre>
+<p><code>g</code> is short for <code>generate</code>. Each <code>name:type</code> after the model's name is a column, and a column with no type, like <code>name</code>, is text. Prices are whole cents in an integer, so $3.00 is <code>300</code>. Bogie writes a lot in response:</p>
+<pre><code>      create  db/migrate/20261031071211_create_products.sql
+      create  db/queries/products.sql
+      create  app/models/product.go
+      create  app/models/product_test.go
+      create  db/adapter/products.go
+      create  db/adapter/products_test.go
+      create  test/factories/products.go
+         run  sqlc generate
+</code></pre>
+<p>Your migration's timestamp will differ. That's everything from the database table up to the Go code that reads and writes it, with tests. But there's nothing on the web yet: a model has no routes. Customers need two: a list of products, and one product. Ask for exactly those:</p>
+<pre><code class="language-sh">bogie g scaffold_controller products --only index,show
+</code></pre>
+<pre><code>      create  app/views/products.go
+      create  app/controllers/products_controller.go
+      create  app/controllers/products_controller_test.go
+      insert  app/controllers/application.go: Products *ProductsController
+      insert  app/application.go: server.Products = controllers.NewProductsController(store, log)
+      insert  app/controllers/routes.go: s.Products.SetupRoutes(&amp;r.RouterGroup)
+</code></pre>
+<p><code>scaffold_controller</code> writes a working controller over a model that exists, and <code>--only index,show</code> limits it to the two actions customers need: <code>GET /products</code> and <code>GET /products/:id</code>. There's no route to create, change, or delete a product, because customers must never be able to. Managing products is staff work, and it comes much later, behind a login.</p>
+<p><code>bogie s</code> noticed the new code, rebuilt the app, and applied the new migration as it restarted, so the <code>products</code> table already exists. (If <code>bogie s</code> isn't running, <code>bogie db:migrate</code> applies it.) The rebuild takes a few seconds: wait until the terminal running <code>bogie s</code> prints its <code>http listening</code> line again, or the next request gets a "connection refused". Then ask for the products:</p>
+<pre><code class="language-sh">curl localhost:8080/products
+</code></pre>
+<pre><code>{&quot;products&quot;:[]}
+</code></pre>
+<p>A real answer, from a real table: it's just empty. Look at the terminal running <code>bogie s</code>, too: your request is there, as a line with <code>msg=request</code>, its method and path, its status, how long it took, and a request ID. Every request the app answers is logged that way.</p>
+<p>Put two products in it, straight in the database. <code>make psql</code> opens a Postgres shell on the development database:</p>
+<pre><code class="language-sh">make psql
+</code></pre>
+<pre><code class="language-sql">INSERT INTO products (name, description, price_cents, stock, image_url) VALUES
+  ('Bogie Logo Sticker', 'Die-cut vinyl sticker, 3 inches wide. Waterproof and laptop-safe.', 300, 500, '/images/products/bogie-logo-sticker.webp'),
+  ('Bogie Ceramic Mug', '11 oz white ceramic mug with the Bogie logo. Dishwasher and microwave safe.', 1400, 150, '/images/products/bogie-ceramic-mug.webp');
+</code></pre>
+<p>Type <code>\q</code> to leave <code>psql</code>. Now ask again:</p>
+<pre><code class="language-sh">curl localhost:8080/products
+</code></pre>
+<pre><code>{&quot;products&quot;:[{&quot;id&quot;:2,&quot;name&quot;:&quot;Bogie Ceramic Mug&quot;,&quot;description&quot;:&quot;11 oz white ceramic mug ...&quot;,&quot;price_cents&quot;:1400,&quot;stock&quot;:150,...},{&quot;id&quot;:1,&quot;name&quot;:&quot;Bogie Logo Sticker&quot;,...}]}
+</code></pre>
+<p>And one product:</p>
+<pre><code class="language-sh">curl localhost:8080/products/1
+</code></pre>
+<pre><code>{&quot;id&quot;:1,&quot;name&quot;:&quot;Bogie Logo Sticker&quot;,&quot;description&quot;:&quot;Die-cut vinyl sticker, 3 inches wide. Waterproof and laptop-safe.&quot;,&quot;price_cents&quot;:300,&quot;stock&quot;:500,&quot;image_url&quot;:&quot;/images/products/bogie-logo-sticker.webp&quot;,&quot;created_at&quot;:&quot;...&quot;,&quot;updated_at&quot;:&quot;...&quot;}
+</code></pre>
+<p>The <code>image_url</code> paths point at product photos that don't exist yet; they arrive with the shop's pages in Chapter 3.</p>
+<p>That's a JSON API, answering from Postgres, newest products first, and you haven't written a line of Go. Commit it.</p>
+<h2 id="a-quick-tour">A Quick Tour<a class="anchor" href="#a-quick-tour" aria-label="Link to this section"></a></h2>
+<p>Before a Go web app can show its first product, someone has to decide how its code is organized, how it talks to the database, how it answers errors, and dozens of things more. Bogie made those decisions for you, so every part of the app is built the same way. And everything it wrote is ordinary Go that you own: the app never imports Bogie (its only Bogie-made dependency is a small library for reading credentials, which you'll see in <code>go.mod</code>), so if you removed the <code>bogie</code> tool tomorrow, it would still build and run, and its generators never overwrite a file you've edited unless you ask with <code>--force</code>.</p>
+<p>Open the <code>depot</code> folder in your editor. You'll get to know each part as the shop needs it; for now, here's the map:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Folder</th>
+<th>What lives there</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>app/controllers</code></td>
+<td>the HTTP layer: requests in, responses out; <code>routes.go</code> lists every route</td>
+</tr>
+<tr>
+<td><code>app/middlewares</code></td>
+<td>code that runs around every request: request IDs, crash recovery, logging</td>
+</tr>
+<tr>
+<td><code>app/models</code></td>
+<td>the shop's own vocabulary and rules, in plain Go</td>
+</tr>
+<tr>
+<td><code>app/views</code></td>
+<td>the JSON the API sends and takes</td>
+</tr>
+<tr>
+<td><code>db/migrate</code></td>
+<td>the history of the database's tables, one step per file</td>
+</tr>
+<tr>
+<td><code>db/queries</code></td>
+<td>the SQL the app runs</td>
+</tr>
+<tr>
+<td><code>db/adapter</code></td>
+<td>the store: the one part of the app that talks to the database</td>
+</tr>
+<tr>
+<td><code>config</code></td>
+<td>typed settings, and encrypted secrets</td>
+</tr>
+<tr>
+<td><code>test</code></td>
+<td>what every test needs: a test database, a test app, factories</td>
+</tr>
+<tr>
+<td><code>public</code></td>
+<td>static files, where the shop's pages will go</td>
+</tr>
+<tr>
+<td><code>db/sqlc</code></td>
+<td>Go code sqlc generates from the queries: generated, never edited</td>
+</tr>
+<tr>
+<td><code>AGENTS.md</code>, <code>CLAUDE.md</code></td>
+<td>a guide for AI assistants (Chapter 20)</td>
+</tr>
+</tbody>
+</table></div>
+<p>A handful of well-known tools do the work underneath, each chosen and wired up for you. <strong>Gin</strong> handles HTTP. <strong>sqlc</strong> turns the SQL in <code>db/queries</code> into typed Go functions. <strong>goose</strong> applies the migrations in <code>db/migrate</code>. <strong>Ginkgo</strong> and <strong>Gomega</strong> run the tests. Later, <strong>River</strong> will run background jobs, and <strong>Kamal</strong> will deploy the shop. Appendix C has all of them in one place.</p>
+<p>One of those choices is worth a closer look now, because it's the one that surprises people: there's no ORM. The shop's queries are plain SQL, and sqlc turns each one into a typed Go function. From this query, in <code>db/queries/products.sql</code>:</p>
+<pre><code class="language-sql">-- name: GetProduct :one
+SELECT * FROM products WHERE id = $1;
+</code></pre>
+<p>sqlc generated this function, which the store calls:</p>
+<pre><code class="language-go">func (q *Queries) GetProduct(ctx context.Context, id int64) (Product, error)
+</code></pre>
+<p>The reason isn't speed, though the generated code is as fast as hand-written Go. It's trust. sqlc checks every query against the real database schema when it generates the code, so a query that names a column that doesn't exist fails right away, not when a customer opens that page. That matters more now than it used to: an AI assistant can write a query in seconds, and the hard part isn't writing SQL anymore, it's trusting it. AI makes writing SQL cheap. sqlc makes trusting it cheap.</p>
+<p>Two more things are worth knowing now. The <code>Makefile</code> has everyday shortcuts, and <code>make help</code> lists them all. These are the ones the book uses, each explained when you first need it:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Command</th>
+<th>What it does</th>
+<th>Chapter</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>make up</code>, <code>make down</code></td>
+<td>start the database in Docker, and stop it, keeping the data</td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>make psql</code></td>
+<td>a Postgres shell on the development database</td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>make sqlc</code></td>
+<td>turn the queries in <code>db/queries</code> into Go</td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>make test</code></td>
+<td>run every test, like <code>bogie test</code></td>
+<td>4</td>
+</tr>
+<tr>
+<td><code>make credentials ENV=...</code></td>
+<td>edit an environment's encrypted settings</td>
+<td>16</td>
+</tr>
+</tbody>
+</table></div>
+<p>One more is worth knowing so you never run it by accident: <code>make reset</code> stops the database and <em>destroys</em> its data. And <code>bogie routes</code> lists every route the app serves:</p>
+<pre><code class="language-sh">bogie routes
+</code></pre>
+<pre><code>GET      /healthz         app/controllers.(*Server).SetupRoutes.func1
+GET      /products        app/controllers.(*ProductsController).Index
+GET      /products/:id    app/controllers.(*ProductsController).Show
+</code></pre>
+<p>It prints a few lines about the app's configuration first, then one line per route: the method, the path, and the Go function that answers it. Three routes: the health check, and your two product routes. By the end of the book, it will be the whole shop.</p>
+<h2 id="when-youre-done">When You're Done<a class="anchor" href="#when-youre-done" aria-label="Link to this section"></a></h2>
+<p>To stop the app, press <code>Ctrl+C</code> in the terminal running <code>bogie s</code>. The database keeps running in Docker, so it's ready next time; to stop it too, run <code>make down</code>, and <code>make up</code> starts it again, with your data still there. Bogie apps publish their database on port 5440 by default, so if you ever work on a second Bogie app, run <code>make down</code> in one before <code>make up</code> in the other.</p>
+<h2 id="whats-next">What's Next?<a class="anchor" href="#whats-next" aria-label="Link to this section"></a></h2>
+<p>In this chapter, you installed Go, Docker, and Bogie, created Bogie Depot, and ran it. With two commands, you generated a product model and a read-only API over it, filled the table by hand, and got JSON back from Postgres, without writing any Go. Then you toured the app, and saw what Bogie decided for you, and what's yours.</p>
+<p>Now it's time to read what you've built. In the next chapter, you'll learn just enough Go to understand it, using the code Bogie just generated as your examples.</p>
+<div class="footnote">
+<hr>
+<ol>
+<li id="fn:1">
+<p><a href="https://go.dev/dl/">https://go.dev/dl/</a>&#160;<a class="footnote-backref" href="#fnref:1" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:2">
+<p><a href="https://docs.docker.com/get-started/get-docker/">https://docs.docker.com/get-started/get-docker/</a>&#160;<a class="footnote-backref" href="#fnref:2" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+</section>
+
+<section class="sample-chapter" aria-labelledby="ch02-just-enough-go">
+<h1 id="ch02-just-enough-go">Chapter 2: Just Enough Go<a class="anchor" href="#ch02-just-enough-go" aria-label="Link to this section"></a></h1>
+<aside class="book-box book-box-note">
+<p class="box-label">Skim this now; come back when you need it.</p>
+<p>This chapter covers only the Go that's on almost every page of the shop. Read it quickly, run the examples, and move on. Later chapters teach the rest in short "Knowing Go" boxes, right where each idea first appears, and point back here when they build on something from this chapter. If you'd like more Go first, Appendix E maps the official Tour of Go to this book, and explains the ideas the boxes introduce in more depth.</p>
+</aside>
+
+<p>In Chapter 1, Bogie wrote a few hundred lines of Go for you, and the shop answered its first request. Before you start changing that code, it helps to be able to read it. So this chapter uses what Bogie just generated as its examples, the <code>Product</code> model and the store that reads products, and gives you a place inside the app to run small programs against them, so you can check what you've learned as you go.</p>
+<p>If you know another language well, most of Go will look familiar. This chapter spends little time on what every language has, and more on what Go does its own way. If you know Ruby, here's the short version:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th style="text-align: left;">In Ruby</th>
+<th style="text-align: left;">In Go</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">a model's attributes</td>
+<td style="text-align: left;">a struct's fields</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>self</code> inside a method</td>
+<td style="text-align: left;">the method's receiver, like <code>p</code> in <code>func (p Product)</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>raise</code>, and <code>rescue_from</code> far away</td>
+<td style="text-align: left;">an <code>error</code> returned as a value, and checked right there</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>public</code> and <code>private</code></td>
+<td style="text-align: left;">a capital or lowercase first letter</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>require</code></td>
+<td style="text-align: left;"><code>import</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>In this chapter, you'll:</p>
+<ol>
+<li>Set up a scratch program that can use the shop's own code.  </li>
+<li>Read packages, structs, and zero values.  </li>
+<li>Write functions with more than one result, and handle errors the Go way.  </li>
+<li>See why the shop keeps money in whole cents.  </li>
+<li>Read <code>GetProduct</code> from the store, line by line.  </li>
+<li>See what pointers are for, by watching code without them fail.  </li>
+<li>Use slices, maps, and loops, and avoid the traps Ruby doesn't have.  </li>
+<li>Put it together in one small program.</li>
+</ol>
+<h2 id="a-scratch-program">A Scratch Program<a class="anchor" href="#a-scratch-program" aria-label="Link to this section"></a></h2>
+<p>You need somewhere to run things. Inside the <code>depot</code> folder, create a folder called <code>scratch</code> with one file:</p>
+<p class="listing-label">ch02-just-enough-go/checkpoints/ch02_01/scratch/main.go</p>
+
+<pre><code class="language-go">package main
+
+import (
+    &quot;fmt&quot;
+
+    &quot;depot/app/models&quot;
+)
+
+func main() {
+    fmt.Printf(&quot;%+v\n&quot;, models.Product{})
+}
+</code></pre>
+<p>Run it from the <code>depot</code> folder:</p>
+<pre><code class="language-sh">go run ./scratch
+</code></pre>
+<pre><code>{ID:0 Name: Description: PriceCents:0 Stock:0 ImageUrl: CreatedAt:0001-01-01 00:00:00 +0000 UTC UpdatedAt:0001-01-01 00:00:00 +0000 UTC}
+</code></pre>
+<p>That's the shop's own <code>Product</code> type, printed from a program of your own. <code>go run</code> compiles and runs a program in one step; <code>./scratch</code> is the folder it's in. <code>fmt.Printf</code> prints formatted text, and <code>%+v</code> means "this value, with its field names". You'll replace <code>main</code> with each new example in this chapter, and delete the <code>scratch</code> folder at the end, so it never becomes part of the shop. If <code>bogie s</code> is still running, it will rebuild the app every time you save a scratch file, because the folder is inside the app; ignore those messages, since the scratch program doesn't change the shop.</p>
+<h2 id="packages-and-capital-letters">Packages and Capital Letters<a class="anchor" href="#packages-and-capital-letters" aria-label="Link to this section"></a></h2>
+<p>Every Go file starts by naming its <em>package</em>, and every file in a folder belongs to the same one: everything in <code>app/models</code> is package <code>models</code>. Your scratch program is package <code>main</code>, and a package called <code>main</code> with a function called <code>main</code> is what makes a program you can run.</p>
+<p><code>import</code> lists the packages a file uses. <code>fmt</code> is from Go's standard library, which is large and good: HTTP, JSON, SQL, testing, and time are all built in. <code>"depot/app/models"</code> is the shop's own package, imported by its path inside the app, and used through its name: <code>models.Product</code>.</p>
+<p>Then there's a rule that surprises everyone once: <strong>a name that starts with a capital letter is visible outside its package; a name that starts with a lowercase letter isn't.</strong> <code>models.Product</code> works from your scratch program because <code>Product</code> starts with a capital <code>P</code>. In the store, a helper called <code>parseID</code> starts with a lowercase <code>p</code>, so only the store's own package can call it. There's no <code>public</code> or <code>private</code> in Go; the first letter is the whole system.</p>
+<h2 id="structs-and-zero-values">Structs and Zero Values<a class="anchor" href="#structs-and-zero-values" aria-label="Link to this section"></a></h2>
+<p>Here's the <code>Product</code> type, from <code>app/models/product.go</code>:</p>
+<p class="listing-label">ch01-hello-bogie-depot/app/models/product.go</p>
+
+<pre><code class="language-go">package models
+
+import (
+    &quot;time&quot;
+)
+
+// Product is a product. Imports nothing third-party: ids are int64s here and
+// become bigint at the store boundary.
+type Product struct {
+    ID          int64
+    Name        string
+    Description string
+    PriceCents  int32
+    Stock       int32
+    ImageUrl    string
+    CreatedAt   time.Time
+    UpdatedAt   time.Time
+}
+</code></pre>
+<p>A <em>struct</em> is a type made of named fields. Go has no classes; a struct is how you group data, and it's the data part of what a Rails model is, without any of the database behavior. Notice the order: a field's name comes first and its type second, and the same goes for variables and parameters everywhere in Go. The basic types are the ones you'd expect: <code>string</code>, integers of a stated size like <code>int64</code> and <code>int32</code>, plus <code>bool</code>, <code>float64</code>, and plain <code>int</code>. <code>time.Time</code> comes from the <code>time</code> package.</p>
+<p>Now look back at what your program printed. You made a <code>Product</code> without setting anything, and every field had a value anyway. That's one of Go's most important ideas: <strong>every variable starts at its type's zero value.</strong> There's no <code>nil</code> for a number or a string, and no uninitialized memory:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;">Zero value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left;">numbers</td>
+<td style="text-align: left;"><code>0</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>string</code></td>
+<td style="text-align: left;"><code>""</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>bool</code></td>
+<td style="text-align: left;"><code>false</code></td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>time.Time</code></td>
+<td style="text-align: left;">the first moment of year 1</td>
+</tr>
+<tr>
+<td style="text-align: left;">pointers, slices, maps, errors</td>
+<td style="text-align: left;"><code>nil</code></td>
+</tr>
+</tbody>
+</table></div>
+<p>Bogie leans on this. The columns you'll set yourself, like <code>name</code> and <code>price_cents</code>, are <code>NOT NULL</code> with defaults that match Go's zero values, so the database and the struct agree on what "nothing set" means. The timestamps are the exception: they default to the moment the row is saved.</p>
+<p>You set fields with a <em>composite literal</em>, naming the ones you want. Replace <code>main</code>:</p>
+<p class="listing-label">ch02-just-enough-go/checkpoints/ch02_02/scratch/main.go</p>
+
+<pre><code class="language-go">package main
+
+// ...
+
+func main() {
+    mug := models.Product{Name: &quot;Bogie Ceramic Mug&quot;, PriceCents: 1400}
+    fmt.Println(mug.Name, mug.PriceCents, mug.Stock)
+    fmt.Println(mug.Validate())
+}
+</code></pre>
+<pre><code>Bogie Ceramic Mug 1400 0
+&lt;nil&gt;
+</code></pre>
+<p><code>:=</code> declares a variable and sets it in one step, with the type worked out from the value. <code>Stock</code> is <code>0</code>, because nothing set it.</p>
+<p>Now try something Ruby would happily run. Add this line after <code>mug := ...</code>:</p>
+<pre><code class="language-go">    mug.PriceCents = &quot;1.50&quot;
+</code></pre>
+<p>Run it, and the program doesn't run at all:</p>
+<pre><code># depot/scratch
+scratch/main.go:11:19: cannot use &quot;1.50&quot; (untyped string constant) as int32 value in assignment
+</code></pre>
+<p><code>PriceCents</code> is an <code>int32</code>, and <code>"1.50"</code> is a string, so Go refuses to build the program. That's the trade Go makes: you write types, or let Go work them out, and in return a whole class of mistakes is caught before the program ever runs, instead of in production at two in the morning. It's the biggest change in mindset coming from Ruby, and after a while it feels like a colleague reading over your shoulder. Delete the line.</p>
+<p>And <code>mug.Validate()</code> calls a method the model already has:</p>
+<pre><code class="language-go">func (p Product) Validate() error {
+    return nil
+}
+</code></pre>
+<p>A <em>method</em> is a function with a <em>receiver</em>, the <code>(p Product)</code> before its name. Inside, <code>p</code> is the product the method was called on, like <code>self</code> in Ruby. <code>Validate</code> returns an <code>error</code>, and <code>nil</code> means "no error". You can only add methods to a type inside its own package, so you can't add one to <code>models.Product</code> from your scratch program. That's on purpose: a type's behavior lives with the type.</p>
+<h2 id="functions-results-and-errors">Functions, Results, and Errors<a class="anchor" href="#functions-results-and-errors" aria-label="Link to this section"></a></h2>
+<p>Go functions can return more than one value, and when something can fail, the last one is an <code>error</code>. Try one:</p>
+<p class="listing-label">ch02-just-enough-go/checkpoints/ch02_03/scratch/main.go</p>
+
+<pre><code class="language-go">package main
+
+import (
+    &quot;fmt&quot;
+    &quot;strconv&quot;
+)
+
+// parsePrice turns text like &quot;1400&quot;, a price in cents, into a number.
+func parsePrice(s string) (int32, error) {
+    n, err := strconv.Atoi(s)
+    if err != nil {
+        return 0, fmt.Errorf(&quot;price %q isn't a number&quot;, s)
+    }
+    return int32(n), nil
+}
+
+func main() {
+    price, err := parsePrice(&quot;1400&quot;)
+    fmt.Println(price, err)
+
+    price, err = parsePrice(&quot;cheap&quot;)
+    fmt.Println(price, err)
+}
+</code></pre>
+<pre><code>1400 &lt;nil&gt;
+0 price &quot;cheap&quot; isn't a number
+</code></pre>
+<p>Go has no exceptions. A function that can fail returns an error as a value, and the caller checks it, right where it called. <code>if err != nil</code> is the most common line in Go; read it as "if something went wrong". And notice the convention in <code>parsePrice</code>: <strong>when a function returns an error, its other results are zero values,</strong> so <code>price</code> is <code>0</code> on the second call. The caller checks <code>err</code> first and ignores the rest.</p>
+<p>Compared with Ruby's <code>raise</code>, and a <code>rescue_from</code> somewhere far away, this is more typing. But every place an error can happen is visible, and so is every decision about what it means.</p>
+<p>A few smaller things in that program:</p>
+<ul>
+<li><strong><code>:=</code> versus <code>=</code>.</strong> The first call uses <code>:=</code> to declare <code>price</code> and <code>err</code>; the second uses <code>=</code>, because they already exist. You'll also see <code>var price int32</code>, the long way to declare a variable without setting it, which leaves it at its zero value.  </li>
+<li><strong><code>int32(n)</code></strong> converts between number types. Go never converts them for you, even between two sizes of integer.  </li>
+<li><strong><code>%q</code></strong> in <code>fmt.Errorf</code> prints a string in quotes. <code>fmt.Errorf</code> builds an error with a message.</li>
+</ul>
+<p>Go also has no constructors. There's no <code>new</code> method that runs when a value is made. When making a value needs some setup, the convention is a plain function whose name starts with <code>New</code>, which returns the value ready to use. You've already met some: in Chapter 1, Bogie added <code>controllers.NewProductsController(store, log)</code> to <code>app/application.go</code>. They're ordinary functions, named by habit.</p>
+<h2 id="money-in-cents">Money in Cents<a class="anchor" href="#money-in-cents" aria-label="Link to this section"></a></h2>
+<p>The shop stores every price as a whole number of cents, in an <code>int32</code>: <code>1400</code> is \$14.00. Here's why, in one small program. Replace your scratch program:</p>
+<p class="listing-label">ch02-just-enough-go/checkpoints/ch02_04/scratch/main.go</p>
+
+<pre><code class="language-go">package main
+
+import (
+    &quot;fmt&quot;
+    &quot;math&quot;
+)
+
+// formatPrice shows cents as dollars and cents.
+func formatPrice(cents int32) string {
+    return fmt.Sprintf(&quot;$%d.%02d&quot;, cents/100, cents%100)
+}
+
+func main() {
+    a, b := 0.1, 0.2
+    fmt.Println(a + b)
+
+    fmt.Println(formatPrice(1400), formatPrice(305))
+    fmt.Println(formatPrice(math.MaxInt32))
+}
+</code></pre>
+<pre><code>0.30000000000000004
+$14.00 $3.05
+$21474836.47
+</code></pre>
+<p>The first line is the problem. <code>0.1</code> and <code>0.2</code> are <code>float64</code>s, Go's decimal numbers, and like floating-point numbers in nearly every language, they can't store most decimal fractions exactly. Adding two prices gives you <code>0.30000000000000004</code>. Harmless in a physics simulation; unacceptable in a checkout, where errors like it add up over thousands of orders until a total is off by a fraction of a cent.</p>
+<p>Whole numbers don't have that problem: 10 cents plus 20 cents is exactly 30 cents, every time. <code>formatPrice</code> turns cents back into dollars only for display. <code>cents/100</code> is integer division, which drops the remainder, so <code>1400/100</code> is <code>14</code>; <code>cents%100</code> is the remainder, <code>0</code>; and <code>%02d</code> prints it with at least two digits, so 5 cents shows as <code>05</code>, not <code>5</code>.</p>
+<p>And an <code>int32</code> is plenty: the largest one, <code>math.MaxInt32</code>, is 2,147,483,647 cents, a little over 21 million dollars, for a single product's price. Totals that could grow larger, like a whole order, can use <code>int64</code>.</p>
+<h2 id="reading-getproduct">Reading <code>GetProduct</code><a class="anchor" href="#reading-getproduct" aria-label="Link to this section"></a></h2>
+<p>Now you can read real store code. Open <code>db/adapter/products.go</code> and find <code>GetProduct</code>:</p>
+<p class="listing-label">ch01-hello-bogie-depot/db/adapter/products.go</p>
+
+<pre><code class="language-go">package adapter
+
+// ...
+
+func (s *Store) GetProduct(ctx context.Context, id string) (models.Product, error) {
+    pk, err := parseID(id)
+    if err != nil {
+        return models.Product{}, models.ErrNotFound
+    }
+    row, err := s.q.GetProduct(ctx, pk)
+    switch {
+    case errors.Is(err, pgx.ErrNoRows):
+        return models.Product{}, models.ErrNotFound
+    case err != nil:
+        return models.Product{}, fmt.Errorf(&quot;store: get product %s: %w&quot;, id, err)
+    }
+    return productFromRow(row), nil
+}
+</code></pre>
+<p>Line by line:</p>
+<ul>
+<li><strong>The signature:</strong> <code>GetProduct</code> is a method on <code>*Store</code> (the star is coming up next), and takes a <code>context.Context</code> and a <code>string</code>. It returns a product and an error. <code>ctx</code> carries a request's deadline and cancellation down to the database. It comes first in every function that talks to the database.  </li>
+<li><strong><code>parseID(id)</code></strong> turns the ID from the URL into a number. If it isn't one, the product can't exist: return a zero <code>Product</code>, written <code>models.Product{}</code>, with <code>models.ErrNotFound</code>.  </li>
+<li><strong><code>row, err := ...</code> declares <code>err</code> a second time.</strong> That's allowed because <code>:=</code> needs at least one <em>new</em> name on its left, and <code>row</code> is new; <code>err</code> is simply reused.  </li>
+<li><strong><code>s.q</code></strong> is a field of the store: the query functions sqlc generated from <code>db/queries/products.sql</code>. <code>s.q.GetProduct</code> runs the actual SQL.  </li>
+<li><strong>The <code>switch</code> with no value after it</strong> is a tidier chain of <code>if</code>s: the first <code>case</code> that's true runs. No row means not found; any other error is returned with a short description added in front. Why <code>errors.Is(err, pgx.ErrNoRows)</code> and not <code>err == pgx.ErrNoRows</code>? Because errors can be wrapped inside other errors, and <code>errors.Is</code> looks inside.  </li>
+<li><strong>If no <code>case</code> matches, nothing went wrong,</strong> and the code falls out of the <code>switch</code> to the last line: <code>productFromRow</code> converts sqlc's database row into a <code>models.Product</code>, and the product is returned with a <code>nil</code> error.</li>
+</ul>
+<p>That's the shape of most Go code you'll read: try a step, check its error, move on.</p>
+<h2 id="pointers-by-watching-code-without-them">Pointers, by Watching Code Without Them<a class="anchor" href="#pointers-by-watching-code-without-them" aria-label="Link to this section"></a></h2>
+<p><code>GetProduct</code>'s receiver is <code>(s *Store)</code>, with a star; <code>Validate</code>'s was <code>(p Product)</code>, without one. The quickest way to see why is to write a method that needs the star, without it. Replace your scratch program:</p>
+<p class="listing-label">ch02-just-enough-go/checkpoints/ch02_05/scratch/main.go</p>
+
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+type Product struct {
+    Name  string
+    Stock int32
+}
+
+// Take removes n items from stock.
+func (p Product) Take(n int32) {
+    p.Stock -= n
+}
+
+func main() {
+    mug := Product{Name: &quot;Bogie Ceramic Mug&quot;, Stock: 150}
+    mug.Take(3)
+    fmt.Println(mug.Stock)
+}
+</code></pre>
+<pre><code>150
+</code></pre>
+<p>The stock didn't change. <strong>Go passes everything by copying it,</strong> receivers included: <code>Take</code> got its own copy of <code>mug</code>, changed the copy, and threw it away. Now add one character, a star on the receiver: <code>func (p *Product) Take(n int32)</code>. Run it again:</p>
+<pre><code>147
+</code></pre>
+<p><code>*Product</code> means "a pointer to a <code>Product</code>": the method gets the address of <code>mug</code>, not a copy, so its change lands on the real thing. Go takes the address for you when you call <code>mug.Take(3)</code>, and follows the pointer for you when you write <code>p.Stock</code>. The store's methods take a pointer for a different reason: it holds the app's connection pool, made once at startup and shared by everything, so it's passed around as a pointer to that one <code>Store</code>.</p>
+<p>You can take an address yourself with <code>&amp;</code>. In <code>main</code>:</p>
+<pre><code class="language-go">p := &amp;mug      // p is a *Product
+p.Stock = 150
+fmt.Println(mug.Stock) // 150: p and mug are the same product
+</code></pre>
+<p>A pointer that points at nothing is <code>nil</code>. Using a <code>nil</code> pointer as if it pointed at something, reading <code>p.Stock</code> when <code>p</code> is <code>nil</code>, stops the program with a <em>panic</em>, Go's crash. Panics are for bugs, things that should never happen; ordinary failures, like a product that doesn't exist, are errors you return. There's no pointer arithmetic in Go.</p>
+<p>So when should you use a pointer? Three rules of thumb cover the shop:</p>
+<ul>
+<li><strong>Use a pointer receiver when a method changes its value,</strong> like <code>Take</code>. Methods that only read, like <code>Validate</code>, take a plain value.  </li>
+<li><strong>Use a pointer for something there must be only one of,</strong> shared by everything that uses it: a store, a database connection pool, a logger. That's why the store's methods take <code>*Store</code>.  </li>
+<li><strong>Use a pointer for a large struct</strong> you'd rather not copy on every call.</li>
+</ul>
+<p>Everything else, pass by value. Copies of small values are cheap, and a value can never be <code>nil</code>.</p>
+<p>Now the trap that bites everyone once. Keep the pointer receiver, and replace the body of <code>main</code> with a loop over a slice of products that takes three of each:</p>
+<pre><code class="language-go">products := []Product{{Name: &quot;Bogie Ceramic Mug&quot;, Stock: 150}, {Name: &quot;Bogie Logo Sticker&quot;, Stock: 500}}
+for _, p := range products {
+    p.Take(3)
+}
+fmt.Println(products[1].Stock)
+</code></pre>
+<pre><code>500
+</code></pre>
+<p>Even with the pointer receiver, nothing changed: <code>p</code> is a <em>copy</em> of each element, so <code>Take</code> changed the copy. To change the products in the slice, loop over the index and use the element itself:</p>
+<pre><code class="language-go">for i := range products {
+    products[i].Take(3)
+}
+</code></pre>
+<pre><code>497
+</code></pre>
+<h2 id="slices-maps-and-loops">Slices, Maps, and Loops<a class="anchor" href="#slices-maps-and-loops" aria-label="Link to this section"></a></h2>
+<p>Find <code>ListProducts</code> in the store, just below <code>GetProduct</code>:</p>
+<p class="listing-label">ch01-hello-bogie-depot/db/adapter/products.go</p>
+
+<pre><code class="language-go">package adapter
+
+// ...
+
+func (s *Store) ListProducts(ctx context.Context, limit int32) ([]models.Product, error) {
+    rows, err := s.q.ListProducts(ctx, limit)
+    if err != nil {
+        return nil, fmt.Errorf(&quot;store: list products: %w&quot;, err)
+    }
+    out := make([]models.Product, 0, len(rows))
+    for _, r := range rows {
+        out = append(out, productFromRow(r))
+    }
+    return out, nil
+}
+</code></pre>
+<p><code>[]models.Product</code> is a <em>slice</em>, a list that can grow, Go's everyday collection. <code>make</code> creates one, here empty with room for <code>len(rows)</code> items; <code>append</code> adds to it and returns the result, which is why it's assigned back to <code>out</code>; <code>len</code> counts it. <code>for _, r := range rows</code> loops over each element, and <code>_</code> throws away the index this loop doesn't need. <code>for</code> is Go's only loop: <code>for i := 0; i &lt; 3; i++</code> counts, and <code>for stock &gt; 0</code> runs while a condition holds.</p>
+<p><code>ListProducts</code> needs the database, so try the same moves in your scratch program instead:</p>
+<p class="listing-label">ch02-just-enough-go/checkpoints/ch02_06/scratch/main.go</p>
+
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+    var none []string
+    names := make([]string, 0, 2)
+    names = append(names, &quot;Bogie Ceramic Mug&quot;, &quot;Bogie Logo Sticker&quot;)
+    for i, name := range names {
+        fmt.Println(i, name)
+    }
+    fmt.Println(&quot;names has&quot;, len(names), &quot;items; names is nil:&quot;, names == nil)
+    fmt.Println(&quot;none has&quot;, len(none), &quot;items; none is nil:&quot;, none == nil)
+}
+</code></pre>
+<pre><code>0 Bogie Ceramic Mug
+1 Bogie Logo Sticker
+names has 2 items; names is nil: false
+none has 0 items; none is nil: true
+</code></pre>
+<p><code>none</code> was declared and never set, so it's a <code>nil</code> slice; <code>names</code> was made with <code>make</code>, so it started as an <em>empty</em> one with room to grow. <code>none</code> has a length of 0, and so did <code>names</code> before the <code>append</code>; <code>append</code> and <code>range</code> work on both kinds. The difference shows when they leave the program: encoded as JSON, a <code>nil</code> slice becomes <code>null</code>, and an empty one becomes <code>[]</code>. That's why the controller Bogie generated builds its list for JSON from an empty slice, in its <code>productsView</code> function, so an empty catalog is <code>{"products":[]}</code>, exactly what you saw in Chapter 1, and never <code>{"products":null}</code>.</p>
+<p>The other collection is a <em>map</em>, Go's hash. Try it in the same <code>main</code>:</p>
+<pre><code class="language-go">stock := map[string]int32{&quot;Bogie Ceramic Mug&quot;: 150}
+stock[&quot;Bogie Logo Sticker&quot;] = 500
+n, ok := stock[&quot;Bogie Keycap&quot;]
+fmt.Println(n, ok)
+</code></pre>
+<pre><code>0 false
+</code></pre>
+<p>Reading a key that isn't there gives the zero value, and the second result, <code>ok</code>, says whether it was really found.</p>
+<aside class="book-box book-box-watchout">
+<p class="box-label">Watch Out: Traps Ruby Doesn't Have</p>
+<p><strong>Writing to a <code>nil</code> map crashes.</strong> <code>var stock map[string]int32</code> is <code>nil</code>, and <code>stock["mug"] = 1</code> stops the program with <code>panic: assignment to entry in nil map</code>. Make maps with a literal, as above, or with <code>make(map[string]int32)</code>.  </p>
+<p><strong>Map order is random.</strong> Loop over the same map twice, and the keys can come out in a different order each time, on purpose. When order matters, sort the keys, or use a slice.  </p>
+<p><strong>Slices have no <code>map</code>, <code>select</code>, or <code>each</code>.</strong> You write the loop. It's a few more lines, and it's always obvious what it costs.  </p>
+<p><strong>Unused imports and variables stop the build.</strong> Import a package and don't use it, or declare a variable and never read it, and Go refuses to compile: <code>"strings" imported and not used</code>, <code>declared and not used: total</code>. Annoying for a day, then a habit; your editor removes unused imports for you.  </p>
+<p><strong>A <code>range</code> variable is a copy,</strong> as the pointer example showed.  </p>
+<p><strong>"Copying" a slice or map doesn't copy its elements.</strong> Passing a slice or a map to a function copies only a small header that points at the same elements, so a function that changes an element changes the caller's too. Structs, like <code>Product</code>, are copied whole.</p>
+</aside>
+
+<h2 id="put-it-together">Put It Together<a class="anchor" href="#put-it-together" aria-label="Link to this section"></a></h2>
+<p>One last scratch program, using the main ideas of this chapter:</p>
+<p class="listing-label">ch02-just-enough-go/checkpoints/ch02_07/scratch/main.go</p>
+
+<pre><code class="language-go">package main
+
+import (
+    &quot;errors&quot;
+    &quot;fmt&quot;
+)
+
+type Product struct {
+    Name       string
+    PriceCents int32
+    Stock      int32
+}
+
+var ErrSoldOut = errors.New(&quot;sold out&quot;)
+
+// Take removes n items from stock, or fails without changing anything.
+func (p *Product) Take(n int32) error {
+    if n &gt; p.Stock {
+        return ErrSoldOut
+    }
+    p.Stock -= n
+    return nil
+}
+
+// Find returns the product with the name, and whether there was one.
+func Find(products []Product, name string) (Product, bool) {
+    for _, p := range products {
+        if p.Name == name {
+            return p, true
+        }
+    }
+    return Product{}, false
+}
+
+func main() {
+    products := []Product{
+        {Name: &quot;Bogie Ceramic Mug&quot;, PriceCents: 1400, Stock: 2},
+        {Name: &quot;Bogie Logo Sticker&quot;, PriceCents: 300, Stock: 500},
+    }
+
+    for i := range products {
+        if err := products[i].Take(3); err != nil {
+            fmt.Println(products[i].Name+&quot;:&quot;, err)
+            continue
+        }
+        fmt.Println(products[i].Name+&quot;: took 3, left&quot;, products[i].Stock)
+    }
+
+    if p, ok := Find(products, &quot;Bogie Logo Sticker&quot;); ok {
+        fmt.Println(&quot;found&quot;, p.Name, &quot;at&quot;, p.PriceCents, &quot;cents&quot;)
+    }
+    if _, ok := Find(products, &quot;Bogie Keycap&quot;); !ok {
+        fmt.Println(&quot;no keycaps&quot;)
+    }
+
+    stockByName := map[string]int32{}
+    for _, p := range products {
+        stockByName[p.Name] = p.Stock
+    }
+    fmt.Println(stockByName[&quot;Bogie Ceramic Mug&quot;], stockByName[&quot;Bogie Logo Sticker&quot;])
+}
+</code></pre>
+<pre><code>Bogie Ceramic Mug: sold out
+Bogie Logo Sticker: took 3, left 497
+found Bogie Logo Sticker at 300 cents
+no keycaps
+2 497
+</code></pre>
+<p><code>var ErrSoldOut = ...</code> sits outside any function, at the top of the file. That's the one place <code>:=</code> can't be used: it only works inside functions, so package-level variables are always declared with <code>var</code>.</p>
+<p>Read it top to bottom, and you'll recognize every piece: a struct, a pointer receiver because <code>Take</code> changes the product, an error made with <code>errors.New</code> and returned as a value, a function with two results where the second says "found or not", a loop over the index so <code>Take</code> changes the product in the slice, a loop over copies where copies are fine, and a map built in a loop. <code>if err := ...; err != nil</code> declares <code>err</code> and checks it in one line, a form the shop uses too. And <code>stockByName := map[string]int32{}</code> is an empty map that's ready to write to, unlike a <code>nil</code> one.</p>
+<p>Go formats code for you: run <code>go fmt ./...</code>, and any spacing that isn't Go's standard is fixed. Every Go file in the world is formatted the same way, which is one less thing for a team to argue about; most editors run it whenever you save.</p>
+<p>When you're done, delete the scratch program, so it never becomes part of the shop:</p>
+<pre><code>rm -r scratch
+</code></pre>
+<h2 id="whats-next-1">What's Next?<a class="anchor" href="#whats-next-1" aria-label="Link to this section"></a></h2>
+<p>In this chapter, you read the Go Bogie generated for the catalog, and ran your own programs against it: packages and capital letters, structs and zero values, a type error the compiler catches before anything runs, methods and <code>New</code> functions, functions with more than one result, errors as values, money in whole cents, pointers and the copies they prevent, slices, maps, loops, and the traps a Ruby developer meets first.</p>
+<p>That's enough Go to read the whole shop. In the next chapter, you'll follow one request for a product through every layer Bogie wrote, and start changing what the shop shows its customers.</p>
+</section>
+
+<section class="sample-cta" id="end-of-this-sample">
+<h2 id="get-the-full-book">Get the full book<a class="anchor" href="#get-the-full-book" aria-label="Link to this section"></a></h2>
+<p>This sample ends at the close of Chapter 2. The full book continues with the catalog, carts, accounts, checkout, an admin area, and a deploy to your own server.</p>
+<div class="book-buy">
+  <a class="btn btn-primary" href="https://leanpub.com/bogie">Get the book on Leanpub</a>
+  <a class="btn btn-outline" href="https://www.amazon.com/dp/B0HRNFCKCW">Get it on Kindle</a>
+</div>
+</section>
+</article>
+</div>
+
+<!-- @footer -->
+
+</body>
+</html>
