@@ -73,7 +73,7 @@ function copyButton(b, text) {
   });
 }
 for (const b of document.querySelectorAll('button.copy')) copyButton(b, () => b.dataset.copy);
-for (const pre of document.querySelectorAll('.doc-main pre')) {
+for (const pre of document.querySelectorAll('.doc-main pre, .book-sample pre')) {
   const wrap = document.createElement('div'), b = document.createElement('button');
   wrap.className = 'codewrap';
   b.type = 'button'; b.className = 'copy copy-pre'; b.textContent = 'Copy';
