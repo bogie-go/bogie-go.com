@@ -371,6 +371,7 @@ a.pill { text-decoration: none; color: inherit; }
 }
 .book-buy .formats { margin: 0; font-size: 15px; }
 .book-buy-alt { font-size: 15px; font-weight: 600; }
+.book-buy .book-help { margin: 6px 0 0; font-size: 15px; }
 @media (max-width: 800px) {
   .book-hero { grid-template-columns: 1fr; gap: 28px; }
   .book-hero .cover { max-width: 220px; }
