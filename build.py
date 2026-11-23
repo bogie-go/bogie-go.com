@@ -23,6 +23,10 @@ touched the page's source file, and so is each page's JSON-LD "dateModified".
 Without git (or history), the dates already written in sitemap.xml and in the
 page are kept.
 
+Fenced code blocks marked class="language-go" (and sh, sql, yaml, json)
+are highlighted here, using the homepage's token classes, so the built
+pages need no highlighter script and fetch nothing from another host.
+
 Standard library only:  python3 build.py   (then serve _site/)
 """
 import html, json, os, re, shutil, subprocess, sys, urllib.request
@@ -274,6 +278,509 @@ def supporters_markup(sponsors):
             '</section>\n')
 
 
+# Syntax highlighting for <pre><code class="language-..."> blocks.
+# Emits the same token classes the homepage already uses (k/t/s/c/f/p).
+# Stdlib only; class n is reserved for the homepage numbered rules.
+def _span(cls, text):
+    esc = html.escape(text)
+    return f'<span class="{cls}">{esc}</span>' if cls else esc
+
+
+GO_KW = {
+    "break", "case", "chan", "const", "continue", "default", "defer", "else",
+    "fallthrough", "for", "func", "go", "goto", "if", "import", "interface",
+    "map", "package", "range", "return", "select", "struct", "switch", "type",
+    "var",
+}
+GO_CONST = {"nil", "true", "false", "iota"}
+GO_TYPES = {
+    "any", "bool", "byte", "comparable", "complex64", "complex128", "error",
+    "float32", "float64", "int", "int8", "int16", "int32", "int64", "rune",
+    "string", "uint", "uint8", "uint16", "uint32", "uint64", "uintptr",
+}
+
+# :=  ...  <-  and the usual two-char ops, checked longest-first
+GO_OPS = [
+    "<<=", ">>=", "...", "&^=", "&&", "||", "<-", "<<", ">>", "&=", "|=", "^=",
+    "+=", "-=", "*=", "/=", "%=", "==", "!=", "<=", ">=", ":=", "++", "--",
+]
+
+
+def highlight_go(src: str) -> str:
+    out = []
+    i, n = 0, len(src)
+    after_func = False
+    in_receiver = False
+    recv_depth = 0
+    prev_dot = False
+    prev_was_ident = False
+    expect_type = False
+
+    def take_ws_punct_or_continue():
+        nonlocal i, after_func, in_receiver, recv_depth
+        return False
+
+    while i < n:
+        ch = src[i]
+        if ch in " \t\r\n":
+            j = i
+            while i < n and src[i] in " \t\r\n":
+                i += 1
+            out.append(html.escape(src[j:i]))
+            continue
+        if src.startswith("//", i):
+            j = i
+            while i < n and src[i] != "\n":
+                i += 1
+            out.append(_span("c", src[j:i]))
+            continue
+        if src.startswith("/*", i):
+            j = i
+            k = src.find("*/", i + 2)
+            i = n if k < 0 else k + 2
+            out.append(_span("c", src[j:i]))
+            continue
+        if ch == "`":
+            j = i
+            k = src.find("`", i + 1)
+            i = n if k < 0 else k + 1
+            out.append(_span("s", src[j:i]))
+            continue
+        if ch == '"':
+            j = i
+            i += 1
+            while i < n and src[i] != '"':
+                if src[i] == "\\" and i + 1 < n:
+                    i += 2
+                else:
+                    i += 1
+            if i < n:
+                i += 1
+            out.append(_span("s", src[j:i]))
+            continue
+        if ch == "'":
+            j = i
+            i += 1
+            while i < n and src[i] != "'":
+                if src[i] == "\\" and i + 1 < n:
+                    i += 2
+                else:
+                    i += 1
+            if i < n:
+                i += 1
+            out.append(_span("s", src[j:i]))
+            continue
+        if ch.isalpha() or ch == "_":
+            j = i
+            i += 1
+            while i < n and (src[i].isalnum() or src[i] == "_"):
+                i += 1
+            word = src[j:i]
+            k = i
+            while k < n and src[k] in " \t":
+                k += 1
+            if after_func and not in_receiver:
+                out.append(_span("f", word))
+                after_func = False
+                prev_was_ident = False
+                expect_type = False
+            elif word == "func":
+                out.append(_span("k", word))
+                after_func = True
+                prev_was_ident = False
+                expect_type = False
+            elif word in GO_KW:
+                out.append(_span("k", word))
+                prev_was_ident = False
+                expect_type = False
+            elif word in GO_CONST:
+                out.append(_span("k", word))
+                prev_was_ident = False
+                expect_type = False
+            elif word in GO_TYPES or (word[:1].isupper() and not prev_dot and not (k < n and src[k] == "(")):
+                out.append(_span("t", word))
+                prev_was_ident = False
+                expect_type = False
+            elif k < n and src[k] == "(":
+                out.append(_span("f", word))
+                prev_was_ident = False
+                expect_type = False
+            elif expect_type or prev_was_ident:
+                # "name Type" in a signature, or a package.Type chain
+                if word[:1].isupper() or word in GO_TYPES:
+                    out.append(_span("t", word))
+                    expect_type = False
+                else:
+                    out.append(html.escape(word))  # package name
+                    expect_type = True
+                prev_was_ident = False
+            elif prev_dot:
+                # gofmt writes Type{ for a composite literal and "field {" in if/for.
+                if i < n and src[i] == "{":
+                    out.append(_span("t", word))
+                else:
+                    out.append(html.escape(word))
+                prev_was_ident = False
+                expect_type = False
+            else:
+                out.append(html.escape(word))
+                prev_was_ident = word[:1].islower()
+                expect_type = False
+            prev_dot = False
+            continue
+        if ch.isdigit() or (ch == "." and i + 1 < n and src[i + 1].isdigit()):
+            j = i
+            i += 1
+            while i < n and (src[i].isalnum() or src[i] in "._"):
+                i += 1
+            out.append(html.escape(src[j:i]))
+            prev_dot = False
+            continue
+        # punctuation / operators
+        matched = None
+        for op in GO_OPS:
+            if src.startswith(op, i):
+                matched = op
+                break
+        if matched is None:
+            matched = src[i]
+        # receiver tracking
+        if matched == "(" and after_func and not in_receiver:
+            # Could be the receiver, or func's params if the name was already
+            # taken (handled above). If we still have after_func, this is a receiver
+            # only when we haven't consumed the name — which means the next
+            # ident hasn't been seen, so this '(' starts the receiver.
+            in_receiver = True
+            recv_depth = 1
+        elif in_receiver:
+            if matched == "(":
+                recv_depth += 1
+            elif matched == ")":
+                recv_depth -= 1
+                if recv_depth == 0:
+                    in_receiver = False
+        out.append(_span("p", matched))
+        i += len(matched)
+        prev_dot = matched == "."
+        if matched == ".":
+            # keep expect_type so package.Type stays a type
+            prev_was_ident = False
+        elif matched in ("*", "[", "]"):
+            expect_type = True
+            prev_was_ident = False
+        else:
+            # comma / open-paren often precede a name or a type; don't force it
+            prev_was_ident = False
+            if matched not in ( ",", "(", ")" ):
+                expect_type = False
+            # after ',', the next ident may be a param name (prev_was_ident path)
+    return "".join(out)
+
+
+SQL_KW = {
+    "select", "from", "where", "insert", "into", "values", "update", "set",
+    "delete", "create", "table", "index", "alter", "drop", "and", "or", "not",
+    "as", "on", "join", "inner", "left", "right", "outer", "full", "cross",
+    "returning", "with", "distinct", "order", "by", "group", "having", "limit",
+    "offset", "union", "all", "null", "is", "in", "like", "between", "exists",
+    "primary", "key", "default", "unique", "constraint", "references", "foreign",
+    "if", "else", "then", "end", "case", "when", "over", "partition", "asc",
+    "desc", "into", "values",
+}
+
+
+def highlight_sql(src: str) -> str:
+    out = []
+    i, n = 0, len(src)
+    while i < n:
+        if src.startswith("--", i):
+            j = i
+            while i < n and src[i] != "\n":
+                i += 1
+            out.append(_span("c", src[j:i]))
+            continue
+        if src.startswith("/*", i):
+            j = i
+            k = src.find("*/", i + 2)
+            i = n if k < 0 else k + 2
+            out.append(_span("c", src[j:i]))
+            continue
+        ch = src[i]
+        if ch in " \t\r\n":
+            j = i
+            while i < n and src[i] in " \t\r\n":
+                i += 1
+            out.append(html.escape(src[j:i]))
+            continue
+        if ch in "'\"":
+            q = ch
+            j = i
+            i += 1
+            while i < n and src[i] != q:
+                if src[i] == q and i + 1 < n and src[i + 1] == q:
+                    i += 2
+                elif src[i] == "\\" and i + 1 < n:
+                    i += 2
+                else:
+                    i += 1
+            if i < n:
+                i += 1
+            out.append(_span("s", src[j:i]))
+            continue
+        if ch.isalpha() or ch == "_":
+            j = i
+            i += 1
+            while i < n and (src[i].isalnum() or src[i] == "_"):
+                i += 1
+            word = src[j:i]
+            if word.lower() in SQL_KW:
+                out.append(_span("k", word))
+            else:
+                out.append(html.escape(word))
+            continue
+        if ch.isdigit() or ch == "$":  # $1 placeholders
+            j = i
+            i += 1
+            while i < n and (src[i].isalnum() or src[i] == "_"):
+                i += 1
+            out.append(html.escape(src[j:i]))
+            continue
+        out.append(_span("p", ch))
+        i += 1
+    return "".join(out)
+
+
+def highlight_sh(src: str) -> str:
+    out = []
+    i, n = 0, len(src)
+    at_cmd = True  # start of line / after | or && or ;
+    while i < n:
+        ch = src[i]
+        if ch in " \t":
+            j = i
+            while i < n and src[i] in " \t":
+                i += 1
+            out.append(html.escape(src[j:i]))
+            continue
+        if ch == "\n":
+            out.append("\n")
+            i += 1
+            at_cmd = True
+            continue
+        if ch == "#" and at_cmd or (ch == "#" and (i == 0 or src[i - 1] in " \t;")):
+            # comment if # starts a token
+            if at_cmd or src[i - 1] in " \t":
+                j = i
+                while i < n and src[i] != "\n":
+                    i += 1
+                out.append(_span("c", src[j:i]))
+                continue
+        if ch in "'\"":
+            q = ch
+            j = i
+            i += 1
+            while i < n and src[i] != q:
+                if q == '"' and src[i] == "\\" and i + 1 < n:
+                    i += 2
+                else:
+                    i += 1
+            if i < n:
+                i += 1
+            out.append(_span("s", src[j:i]))
+            at_cmd = False
+            continue
+        if ch == "$":
+            # $ or $( or ${ or $var
+            j = i
+            i += 1
+            if i < n and src[i] == "{":
+                depth = 1
+                i += 1
+                while i < n and depth:
+                    if src[i] == "{":
+                        depth += 1
+                    elif src[i] == "}":
+                        depth -= 1
+                    i += 1
+            elif i < n and src[i] == "(":
+                # leave $(...) as punct $ and (, let inner be scanned? For simplicity
+                # take just $ here and let the rest scan.
+                out.append(_span("p", "$"))
+                continue
+            elif i < n and (src[i].isalnum() or src[i] == "_"):
+                i += 1
+                while i < n and (src[i].isalnum() or src[i] == "_"):
+                    i += 1
+            out.append(_span("p", src[j:i]))
+            at_cmd = False
+            continue
+        if ch.isalpha() or ch in "_./":
+            j = i
+            i += 1
+            while i < n and (src[i].isalnum() or src[i] in "_./-"):
+                i += 1
+            word = src[j:i]
+            if at_cmd:
+                out.append(_span("f", word))
+                at_cmd = False
+            else:
+                out.append(html.escape(word))
+            continue
+        # operators that reset command position
+        if src.startswith("&&", i) or src.startswith("||", i) or src.startswith(">>", i) or src.startswith("<<", i):
+            out.append(_span("p", src[i:i+2]))
+            i += 2
+            if src[i-2:i] in ("&&", "||"):
+                at_cmd = True
+            continue
+        if ch in "|;":
+            out.append(_span("p", ch))
+            i += 1
+            at_cmd = True
+            continue
+        out.append(_span("p", ch) if not ch.isdigit() else html.escape(ch))
+        i += 1
+        if ch not in " \t":
+            # digits and other punct aren't commands
+            if ch not in "|;":
+                at_cmd = False
+    return "".join(out)
+
+
+def highlight_yaml(src: str) -> str:
+    out = []
+    for line in src.splitlines(keepends=True):
+        if re.match(r"\s*#", line):
+            out.append(_span("c", line) if not line.endswith("\n") else _span("c", line[:-1]) + "\n")
+            # fix keepends
+            continue
+        # crude: comments at end, strings, keys
+        m = re.match(r"^(\s*)([^:#\n][^\n]*?)(:)(\s*)(.*?)(\n?)$", line)
+        if not m:
+            # comment-only already handled; maybe blank or list
+            if "#" in line:
+                pre, _, rest = line.partition("#")
+                # if # is in a string this is imperfect
+                nl = "\n" if rest.endswith("\n") else ""
+                rest = rest[:-1] if nl else rest
+                out.append(html.escape(pre) + _span("c", "#" + rest) + nl)
+            else:
+                out.append(html.escape(line))
+            continue
+        indent, key, colon, sp, val, nl = m.groups()
+        # value may have a comment
+        comment = ""
+        vm = re.match(r"(.*?)(\s+#.*)$", val)
+        if vm and not (val.startswith("'") or val.startswith('"')):
+            val, comment = vm.group(1), vm.group(2)
+        val_html = val
+        if val.startswith(("'", '"')):
+            val_html = _span("s", val)
+        elif val in ("true", "false", "null", "~"):
+            val_html = _span("k", val)
+        else:
+            val_html = html.escape(val)
+        out.append(
+            html.escape(indent)
+            + html.escape(key)
+            + _span("p", colon)
+            + html.escape(sp)
+            + val_html
+            + (_span("c", comment) if comment else "")
+            + nl
+        )
+    return "".join(out)
+
+
+def highlight_json(src: str) -> str:
+    out = []
+    i, n = 0, len(src)
+    expect_key = False  # after { or ,
+    # actually in JSON, after { or , at object level a string is a key
+    # we'll style all strings as s; keys could be t — skip, keep simple: strings s, true/false/null k, punct p
+    while i < n:
+        ch = src[i]
+        if ch in " \t\r\n":
+            j = i
+            while i < n and src[i] in " \t\r\n":
+                i += 1
+            out.append(html.escape(src[j:i]))
+            continue
+        if ch == '"':
+            j = i
+            i += 1
+            while i < n and src[i] != '"':
+                if src[i] == "\\" and i + 1 < n:
+                    i += 2
+                else:
+                    i += 1
+            if i < n:
+                i += 1
+            out.append(_span("s", src[j:i]))
+            continue
+        if ch.isalpha():
+            j = i
+            while i < n and src[i].isalpha():
+                i += 1
+            word = src[j:i]
+            out.append(_span("k", word) if word in {"true", "false", "null"} else html.escape(word))
+            continue
+        if ch.isdigit() or ch == "-":
+            j = i
+            i += 1
+            while i < n and (src[i].isdigit() or src[i] in ".eE+-"):
+                i += 1
+            out.append(html.escape(src[j:i]))
+            continue
+        out.append(_span("p", ch))
+        i += 1
+    return "".join(out)
+
+
+HIGHLIGHTERS = {
+    "go": highlight_go,
+    "sh": highlight_sh,
+    "shell": highlight_sh,
+    "bash": highlight_sh,
+    "sql": highlight_sql,
+    "yaml": highlight_yaml,
+    "yml": highlight_yaml,
+    "json": highlight_json,
+}
+
+# Strip tags and unescape to recover source text from highlighted HTML
+_TAG = re.compile(r"<[^>]+>")
+
+def highlighted_plain(h: str) -> str:
+    return html.unescape(_TAG.sub("", h))
+
+
+def highlight_html(text: str) -> str:
+    if 'class="language-' not in text:
+        return text
+
+    def repl(m):
+        open_tag, lang, body, close = m.group(1), m.group(2), m.group(3), m.group(4)
+        if "<span class=\"" in body:
+            return m.group(0)
+        fn = HIGHLIGHTERS.get(lang)
+        if not fn:
+            return m.group(0)
+        raw = html.unescape(body)
+        hi = fn(raw)
+        if highlighted_plain(hi) != raw:
+            # refuse to emit a mismatch; leave the block alone
+            return m.group(0)
+        return f"{open_tag}{hi}{close}"
+
+    return re.sub(
+        r'(<pre><code class="language-([a-z0-9+#-]+)">)(.*?)(</code></pre>)',
+        repl,
+        text,
+        flags=re.S,
+    )
+
+
 def render(path, text, inc, version, supporters=""):
     d = git_date(path.relative_to(ROOT))
     if d:  # same source as the sitemap's <lastmod>; the typed date is the fallback
@@ -294,6 +801,7 @@ def render(path, text, inc, version, supporters=""):
                       text, count=1)
         text = text.replace("<!-- @docs-end -->", f"{prevnext(slug)}\n</div>\n</div>", 1)
         text = text.replace("{{SECTION}}", section)
+    text = highlight_html(text)
     return text.replace("{{VERSION_NUM}}", version.lstrip("v")).replace("{{VERSION}}", version)
 
 
