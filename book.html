@@ -62,22 +62,22 @@
 <h2 id="troubleshooting">Troubleshooting<a class="anchor" href="#troubleshooting" aria-label="Link to this section"></a></h2>
 <p>If you're typing along with the printed book or ebook (which pins Bogie v1.0.0), these are the places a reader can get stuck. Each one is also in the companion repository's chapter README, under "If you're following along."</p>
 
-<h3 id="ch10-the-controller">Chapter 10: The Controller (p.211)<a class="anchor" href="#ch10-the-controller" aria-label="Link to this section"></a></h3>
-<p>When you reach "The Controller" (p.211), keep the generated <code>Show</code> stub until "Your Receipt, and Nobody Else's" (p.226). Replacing <code>Show</code> earlier leaves <code>SetupRoutes</code> referring to a method that isn't there yet, and the app won't compile.</p>
+<h3 id="ch10-the-controller">Chapter 10: The Controller (p.197)<a class="anchor" href="#ch10-the-controller" aria-label="Link to this section"></a></h3>
+<p>When you reach "The Controller" (p.197), keep the generated <code>Show</code> stub until "Your Receipt, and Nobody Else's" (p.212). Replacing <code>Show</code> earlier leaves <code>SetupRoutes</code> referring to a method that isn't there yet, and the app won't compile.</p>
 
-<h3 id="ch13-products-in-many-categories">Chapter 13: Products in Many Categories (p.265–266)<a class="anchor" href="#ch13-products-in-many-categories" aria-label="Link to this section"></a></h3>
-<p>In "Products in Many Categories" (p.265–266), stop <code>bogie s</code> before you run <code>bogie g model product_category</code> and edit the migration. The server applies new migrations as it reloads, so the unedited file can run first. If it already has, roll the migration back, add the missing pieces, and migrate again:</p>
+<h3 id="ch13-products-in-many-categories">Chapter 13: Products in Many Categories (p.251–252)<a class="anchor" href="#ch13-products-in-many-categories" aria-label="Link to this section"></a></h3>
+<p>In "Products in Many Categories" (p.251–252), stop <code>bogie s</code> before you run <code>bogie g model product_category</code> and edit the migration. The server applies new migrations as it reloads, so the unedited file can run first. If it already has, roll the migration back, add the missing pieces, and migrate again:</p>
 <pre><code class="language-sh">bogie db:rollback
 # add ON DELETE CASCADE
 # and the unique pair index
 bogie db:migrate
 </code></pre>
 
-<h3 id="ch13-count-with-a-left-join">Chapter 13: Count with a LEFT JOIN (p.277)<a class="anchor" href="#ch13-count-with-a-left-join" aria-label="Link to this section"></a></h3>
-<p>In "Count with a LEFT JOIN" (p.277), the printed <code>Describe("GET /categories")</code> puts its <code>BeforeEach</code> at Describe level. If you keep the generated empty-list example in the same Describe, that setup will make it fail. Put the new examples in a <code>Context</code>, or replace the whole generated Describe.</p>
+<h3 id="ch13-count-with-a-left-join">Chapter 13: Count with a LEFT JOIN (p.263)<a class="anchor" href="#ch13-count-with-a-left-join" aria-label="Link to this section"></a></h3>
+<p>In "Count with a LEFT JOIN" (p.263), the printed <code>Describe("GET /categories")</code> (p.265) puts its <code>BeforeEach</code> at Describe level. If you keep the generated empty-list example in the same Describe, that setup will make it fail. Put the new examples in a <code>Context</code>, or replace the whole generated Describe.</p>
 
-<h3 id="ch14-generate-a-job">Chapter 14: Generate a Job (p.288)<a class="anchor" href="#ch14-generate-a-job" aria-label="Link to this section"></a></h3>
-<p>If <code>bogie worker</code> prints <code>unknown command "worker"; serving instead</code> after the first <code>bogie g job</code> in "Generate a Job" (p.288), the generator stopped before its last steps. This can happen when you start from a companion chapter folder and the generator reports a file conflict. A reader who starts Chapter 1 with <code>bogie new</code> does not hit this.</p>
+<h3 id="ch14-generate-a-job">Chapter 14: Generate a Job (p.274)<a class="anchor" href="#ch14-generate-a-job" aria-label="Link to this section"></a></h3>
+<p>If <code>bogie worker</code> prints <code>unknown command "worker"; serving instead</code> after the first <code>bogie g job</code> in "Generate a Job" (p.274), the generator stopped before its last steps. This can happen when you start from a companion chapter folder and the generator reports a file conflict. A reader who starts Chapter 1 with <code>bogie new</code> does not hit this.</p>
 <p>Add <code>"worker": runWorker,</code> above <code>// bogie:commands</code> in <code>main.go</code>, add the <code>&lt;module&gt;/app/jobs</code> import (for Bogie Depot, <code>depot/app/jobs</code>), set <code>jobs = true</code> in <code>bogie.toml</code>, and run <code>go mod tidy</code>.</p>
 
 <p>The same notes live in the <a href="https://github.com/bogie-go/book-bogie-how-to-go-from-zero-to-production">companion repository</a>, in each chapter's "If you're following along" section: <a href="https://github.com/bogie-go/book-bogie-how-to-go-from-zero-to-production/blob/main/ch10-take-orders/README.md">Chapter 10</a>, <a href="https://github.com/bogie-go/book-bogie-how-to-go-from-zero-to-production/blob/main/ch13-organize-the-catalog/README.md">Chapter 13</a>, and <a href="https://github.com/bogie-go/book-bogie-how-to-go-from-zero-to-production/blob/main/ch14-send-email-in-the-background/README.md">Chapter 14</a>. If something else in the book doesn't match what you see, or doesn't work, compare your code with that chapter's folder, or <a href="https://github.com/bogie-go/book-bogie-how-to-go-from-zero-to-production/issues">open an issue</a> and say which chapter and listing you're on.</p>
