@@ -41,6 +41,17 @@
 <p>What each tagged release added or changed, newest first, in plain words. Each version links to its tag on GitHub, where the commit list lives. Changes marked <span class="badge-breaking">Breaking</span> can stop an existing app or setup working until you act; each one says what to do.</p>
 <pre><code>go install github.com/bogie-go/bogie@latest   # {{VERSION}} as of this build
 bogie version</code></pre>
+<section class="release" id="v1.0.0">
+<h2><a href="https://github.com/bogie-go/bogie/releases/tag/v1.0.0">v1.0.0</a> <span class="release-date">Nov 2026</span></h2>
+<ul>
+  <li>The first stable release. For every 1.x release, these stay as they are: <code>MintFor(subject, role, ttl)</code> and <code>Claims.Role</code> in the token service, <code>middlewares.Role(c)</code>, the three-value <code>jobs.Workers</code> (workers, periodic jobs, whether any worker is registered), <code>policies.Actor</code>, <code>policies.ErrDenied</code>, and <code>g job --every</code>. A change that breaks any of them waits for 2.0.</li>
+  <li>The token's <code>role</code> claim is optional. <code>MintFor</code> sets it and <code>Mint</code> makes tokens without one. Apps that need revocation should check the database. A role is only a string that a policy reads.</li>
+  <li>With <code>--every</code>, a restart can skip a scheduled run. This is documented behaviour, not a bug: River's leader keeps the schedule in memory, and <code>RunOnStart</code> is off. See <a href="jobs.html#periodic">Background jobs</a>.</li>
+  <li><code>bogie db:status -h</code> (also <code>--help</code> and <code>help</code>) prints usage and exits 0, inside an app or outside one, the same way <code>doctor -h</code> does. It used to say <code>takes no arguments</code>.</li>
+  <li>The generated <code>AGENTS.md</code> now says <code>bogie model:sync [TABLE]</code> in <strong>Files the generators own</strong>. It used to say <code>&lt;model&gt;</code>. Existing apps get the fix via <code>app:update</code>.</li>
+  <li>Existing apps: <code>app:update</code> does not move token authentication generated before v0.7.0 onto <code>MintFor</code>, <code>Claims.Role</code> and <code>middlewares.Role</code>. See <a href="upgrading.html#v1-0">Moving an app from v0.7.0 to v1.0.0</a>.</li>
+</ul>
+</section>
 <section class="release" id="v0.7.0">
 <h2><a href="https://github.com/bogie-go/bogie/releases/tag/v0.7.0">v0.7.0</a> <span class="release-date">13 Nov 2026</span></h2>
 <ul>

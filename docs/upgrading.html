@@ -171,6 +171,20 @@ Delete the markers, then run <code>bogie doctor</code> and <code>go build ./...<
 <li><strong>Nothing for the rest.</strong> <code>bogie db:status</code>, <code>bogie g policy</code> and <code>g job --every</code> are new behaviour of the installed tool, with nothing else in an existing app to move. A scaffold made earlier keeps calling the store directly until you generate a policy for it.</li>
 </ol>
 
+<h2 id="v1-0">Moving an app from v0.7.0 to v1.0.0</h2>
+<p>v1.0.0 keeps the v0.7.0 layout. Commit, run <code>bogie app:update --pretend</code>, then <code>bogie app:update</code>. It corrects one line in <code>AGENTS.md</code> (<code>bogie model:sync [TABLE]</code>, not <code>&lt;model&gt;</code>) and sets <code>bogie.toml</code> to <code>v1.0.0</code>. An app on v0.6.8 or older gets the <a href="#v0-7">v0.7.0 changes</a> in the same run.</p>
+<p>What it leaves for you:</p>
+<ol>
+<li><strong>Token authentication generated before v0.7.0.</strong> <code>app:update</code> does not add <code>MintFor</code>, <code>Claims.Role</code> or <code>middlewares.Role</code> to an existing <code>app/services/token/token.go</code> and <code>app/middlewares/require_user.go</code>. <code>Mint</code> keeps working. A scaffold made with <code>--policy</code> calls <code>middlewares.Role(c)</code>, so it will not compile until you add it. To check an app, run <code>grep -n 'func (m Maker) MintFor' app/services/token/token.go</code> and <code>grep -n 'func Role' app/middlewares/require_user.go</code>. If either prints nothing, make these changes by hand:
+<ul>
+  <li>In <code>token.go</code>, add <code>Role string</code> to <code>Claims</code>. Add a <code>signedClaims</code> payload type, which is <code>jwt.RegisteredClaims</code> plus <code>Role string `json:"role,omitempty"`</code>. Move <code>Mint</code>'s body into <code>MintFor(subject, role, ttl)</code> so it signs <code>signedClaims</code>, and make <code>Mint</code> call <code>MintFor(subject, "", ttl)</code>. Have <code>Verify</code> parse into <code>signedClaims</code> and return <code>Role</code>.</li>
+  <li>In <code>require_user.go</code>, add <code>roleKey = "role"</code>, call <code>c.Set(roleKey, claims.Role)</code> after the subject, and add <code>func Role(c *gin.Context) string { return c.GetString(roleKey) }</code>.</li>
+  <li>Where the app signs users in, call <code>MintFor</code> when a role is known. Then run <code>bin/ci</code>.</li>
+</ul>
+Tokens minted before the change have no role and still verify; <code>middlewares.Role(c)</code> is <code>""</code> for them. You can also run <code>bogie g authentication token</code> again after porting your hand edits: changed files are reported <code>conflict</code> until you pass <code>--force</code>. See <a href="authorization.html">Authorization</a>.</li>
+<li><strong>Nothing for policies.</strong> They are new in v0.7.0, so no older app has one for <code>app:update</code> to move.</li>
+</ol>
+
 </article>
 <!-- @docs-end -->
 
