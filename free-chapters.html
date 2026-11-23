@@ -181,7 +181,7 @@ bogie s
 </code></pre>
 <p><code>db:prepare</code> creates the development database if it doesn't exist and brings it up to date. You'll most likely see <code>database already exists</code>, because Docker created it when Postgres first started; that's fine. <code>bogie s</code> builds the app, starts it on port 8080, and keeps watching your files: whenever you save a change, it rebuilds and restarts.</p>
 <p>Open http://localhost:8080.</p>
-<figure class="book-figure"><img alt="The welcome page of a new Bogie app, showing the app's name, environment, address and Go version" src="images/ch01-welcome.png" width="1280" height="800"><figcaption>The welcome page of a new Bogie app, showing the app&#x27;s name, environment, address and Go version</figcaption></figure>
+<figure class="book-figure"><img alt="The welcome page of a new Bogie app, showing the app's name, environment, address and Go version" src="images/ch01-welcome.jpg" width="1600" height="1000"><figcaption>The welcome page of a new Bogie app, showing the app&#x27;s name, environment, address and Go version</figcaption></figure>
 <p>That's the page Bogie shows in development before the app has a home page of its own: the app's name, its environment, its address, and the Go version it was built with. In a second terminal, ask the app whether it's healthy:</p>
 <pre><code class="language-sh">curl localhost:8080/healthz
 </code></pre>
