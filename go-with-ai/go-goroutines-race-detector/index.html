@@ -1,0 +1,527 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Go Goroutines, Mutexes and the Race Detector | Chapter 7, Go with AI</title>
+<meta name="description" content="What is a data race in Go, and how do you find one? Send many requests at once, read a race detector report, fix it with a mutex, and build a concurrent import with goroutines.">
+<meta name="author" content="Roonglit Chareonsupkul">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="stylesheet" href="/fonts.css">
+<link rel="stylesheet" href="/style.css">
+<link rel="canonical" href="https://bogie-go.com/go-with-ai/go-goroutines-race-detector/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Bogie">
+<meta property="og:title" content="Go Goroutines, Mutexes and the Race Detector | Chapter 7, Go with AI">
+<meta property="og:description" content="What is a data race in Go, and how do you find one? Send many requests at once, read a race detector report, fix it with a mutex, and build a concurrent import with goroutines.">
+<meta property="og:url" content="https://bogie-go.com/go-with-ai/go-goroutines-race-detector/">
+<meta property="og:image" content="https://bogie-go.com/go-with-ai/cover.jpg">
+<meta property="og:image:width" content="560">
+<meta property="og:image:height" content="687">
+<meta property="og:image:alt" content="Cover of Go with AI by Roonglit Chareonsupkul">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Go Goroutines, Mutexes and the Race Detector | Chapter 7, Go with AI">
+<meta name="twitter:description" content="What is a data race in Go, and how do you find one? Send many requests at once, read a race detector report, fix it with a mutex, and build a concurrent import with goroutines.">
+<meta name="twitter:image" content="https://bogie-go.com/go-with-ai/cover.jpg">
+<script type="application/ld+json">{"@context": "https://schema.org","@graph": [{"@type": "Article","headline": "Chapter 7: A Taste of Goroutines","name": "Go Goroutines, Mutexes and the Race Detector | Chapter 7, Go with AI","description": "What is a data race in Go, and how do you find one? Send many requests at once, read a race detector report, fix it with a mutex, and build a concurrent import with goroutines.","url": "https://bogie-go.com/go-with-ai/go-goroutines-race-detector/","inLanguage": "en","author": {"@type": "Person","name": "Roonglit Chareonsupkul"},"datePublished": "2026-11-25","dateModified": "2026-11-25","image": "https://bogie-go.com/go-with-ai/cover.jpg","keywords": "golang goroutines, go concurrency, go race detector","isPartOf": {"@id": "https://bogie-go.com/go-with-ai/#book"},"mainEntityOfPage": "https://bogie-go.com/go-with-ai/go-goroutines-race-detector/"},{"@type": "BreadcrumbList","itemListElement": [{"@type": "ListItem","position": 1,"name": "Bogie","item": "https://bogie-go.com/"},{"@type": "ListItem","position": 2,"name": "Go with AI","item": "https://bogie-go.com/go-with-ai/"},{"@type": "ListItem","position": 3,"name": "Chapter 7: A Taste of Goroutines","item": "https://bogie-go.com/go-with-ai/go-goroutines-race-detector/"}]}]}</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-MPVQ83E1Z9');
+</script>
+</head>
+<body>
+<!-- @header -->
+
+<div class="measure">
+<article class="book-sample gwa-chapter">
+<p class="guide-eyebrow"><a href="/go-with-ai/">Go with AI</a> · <span>Free online book</span></p>
+<h1>Chapter 7: A Taste of Goroutines</h1>
+<p class="gwa-summary"><span class="gwa-summary-h">In short:</span> Chapter 7 is a first taste of Go concurrency. Tests that send many requests at once reveal a data race, the race detector shows exactly where, and a mutex fixes it. Then you build a command that reads several files at the same time with goroutines.</p>
+<nav class="chapter-nav gwa-onpage" aria-label="On this page"><p class="onpage-h">On this page</p><ol><li><a href="#mission">Mission</a></li><li><a href="#must-know">Must know</a></li><li><a href="#before-you-start-the-race-detector-needs-a-c-compiler">Before you start: the race detector needs a C compiler</a></li><li><a href="#specify-see-the-race">Specify: see the race</a></li><li><a href="#use-the-ai-implementer">Use the AI: implementer</a></li><li><a href="#review-the-ais-work">Review the AI’s work</a></li><li><a href="#review">Review</a></li><li><a href="#one-more-sure-loop-import">One more SURE loop: import</a></li><li><a href="#practice-optional">Practice (optional)</a></li><li><a href="#what-youve-done-and-whats-next">What you’ve done, and what’s next</a></li></ol></nav>
+<p>Chapter 6 ended with a warning: your API answers many requests at once, and Tracker isn’t ready for that. Here’s how unready it is. While this book was being tested, two experiments were run against the Chapter 6 code. First, 50 requests to add an expense were sent to the API at the same moment, under Go’s race detector: it reported <code>WARNING: DATA RACE</code> in <code>Tracker.Add</code>. Then 200 <code>curl</code> requests were sent at once to the running server, and when they finished, <code>expenses.json</code> wasn’t even valid JSON anymore.</p>
+<p>Every test from Chapter 6 still passed. Each test sent one request at a time, so none of them could see the problem.</p>
+<p>In this last chapter, you’ll see the problem for yourself, then fix it. You’ll meet <strong>goroutines</strong>, Go’s way of doing several things at once, the <strong>race detector</strong>, which catches goroutines stepping on each other, a <strong>mutex</strong>, which makes them take turns, and <strong>channels</strong>, which let them pass results to each other. The AI stays the <strong>implementer</strong>. At the end, you’ll run one more full SURE loop on a new feature, with less help from the book, because by now you know the loop.</p>
+<h2 id="mission">Mission<a class="anchor" href="#mission" aria-label="Link to this section"></a></h2>
+<p>By the end of this chapter, you’ll have:</p>
+<ul>
+<li>Tests that send many requests at once, and a race detector report that shows why they fail</li>
+<li>A Tracker that’s safe to use from many goroutines, fixed by the AI and reviewed by you</li>
+<li>A new <code>import</code> command that reads several files at the same time, built with a full SURE loop</li>
+<li>An idea of what to learn next</li>
+</ul>
+<h2 id="must-know">Must know<a class="anchor" href="#must-know" aria-label="Link to this section"></a></h2>
+<ol type="1">
+<li><strong>A goroutine is a function running at the same time as the rest of your program.</strong> You start one with <code>go</code>: <code>go doSomething()</code>. Go’s HTTP server starts one for every request, which is why your API already handles requests at the same time.</li>
+<li><strong><code>sync.WaitGroup</code> waits for goroutines to finish.</strong> <code>wg.Go(func() { ... })</code> starts a goroutine and keeps count; <code>wg.Wait()</code> waits until all of them are done. (<code>wg.Go</code> arrived in Go 1.25.)</li>
+<li><strong>A data race is two goroutines touching the same data at once, when at least one of them changes it.</strong> The result is unpredictable: lost updates, wrong totals, broken files. <code>go test -race</code> finds races, but only the ones that actually happen while your tests run.</li>
+<li><strong>A <code>sync.Mutex</code> makes goroutines take turns.</strong> <code>mu.Lock()</code> waits until no one else holds the lock; <code>mu.Unlock()</code> lets the next one in. <code>defer mu.Unlock()</code> runs the unlock when the function returns, however it returns. A mutex’s zero value is ready to use, and you must never copy one.</li>
+<li><strong>A channel passes values between goroutines.</strong> <code>ch := make(chan int)</code> makes one; <code>ch &lt;- 5</code> sends; <code>n := &lt;-ch</code> receives. A send waits until someone receives, so channels also make goroutines wait for each other.</li>
+</ol>
+<h2 id="before-you-start-the-race-detector-needs-a-c-compiler">Before you start: the race detector needs a C compiler<a class="anchor" href="#before-you-start-the-race-detector-needs-a-c-compiler" aria-label="Link to this section"></a></h2>
+<p><code>go test -race</code> uses a part of Go that’s built with C, so on some systems it needs a C compiler:</p>
+<ul>
+<li><strong>macOS:</strong> nothing extra. The race detector works without Xcode.</li>
+<li><strong>Linux:</strong> install GCC if you don’t have it, for example <code>sudo apt install gcc</code> on Ubuntu or Debian.</li>
+<li><strong>Windows on a 64-bit Intel or AMD processor:</strong> you need a MinGW-w64 GCC. Appendix A shows how to install one.</li>
+</ul>
+<p>If something’s missing, <code>go test -race</code> tells you:</p>
+<pre><code class="language-text">go: -race requires cgo; enable cgo by setting CGO_ENABLED=1</code></pre>
+<p>That message appears whenever Go can’t find a C compiler, on Linux too. Don’t just set <code>CGO_ENABLED=1</code> as it suggests: without a compiler, you’ll only get a new error, <code>cgo: C compiler "gcc" not found</code>. Install the compiler, open a new terminal and try again. On Windows on an Arm processor, <code>-race</code> isn’t available at all; read this chapter’s race reports, and run the rest without <code>-race</code>.</p>
+<h2 id="specify-see-the-race">Specify: see the race<a class="anchor" href="#specify-see-the-race" aria-label="Link to this section"></a></h2>
+<h3 id="a-test-that-sends-many-requests-at-once">A test that sends many requests at once<a class="anchor" href="#a-test-that-sends-many-requests-at-once" aria-label="Link to this section"></a></h3>
+<p>If you did the Chapter 6 practice, make its tests pass first (have the AI implement it), or remove them. Your line numbers will then differ from the book’s.</p>
+<p>Add this test at the end of <code>api/api_test.go</code>, and add <code>"sync"</code> to its imports, between <code>"strings"</code> and <code>"testing"</code>:</p>
+<pre><code class="language-go">func TestConcurrentAdds(t *testing.T) {
+    h := newTestHandler(t, &amp;ledger.MemoryStorage{})
+
+    var wg sync.WaitGroup
+    for range 50 {
+        wg.Go(func() {
+            rec := send(h, &quot;POST&quot;, &quot;/expenses&quot;, `{&quot;category&quot;:&quot;Food&quot;,&quot;cents&quot;:100}`)
+            if rec.Code != http.StatusCreated {
+                t.Errorf(&quot;status = %d, want %d&quot;, rec.Code, http.StatusCreated)
+            }
+        })
+    }
+    wg.Wait()
+
+    rec := send(h, &quot;GET&quot;, &quot;/totals&quot;, &quot;&quot;)
+    want := `{&quot;Food&quot;:5000}` + &quot;\n&quot;
+    if got := rec.Body.String(); got != want {
+        t.Errorf(&quot;body = %q, want %q&quot;, got, want)
+    }
+}</code></pre>
+<p><code>for range 50</code> repeats 50 times. Each time, <code>wg.Go</code> starts a goroutine that adds one expense of 1.00. <code>wg.Wait()</code> waits for all 50, and then the Food total must be 50 × 100 = 5000 cents.</p>
+<p>Inside the goroutines, the test uses <code>t.Errorf</code>, never <code>t.Fatalf</code>. <code>t.Fatalf</code> stops the test, and it may only be called from the test’s own goroutine.</p>
+<p>Run it a few times, without the race detector:</p>
+<pre><code class="language-bash">go test -count=1 ./api</code></pre>
+<p><code>-count=1</code> tells Go to really run the tests instead of reusing a cached result. Sometimes it passes:</p>
+<pre><code class="language-text">ok      tracker/api 0.005s</code></pre>
+<p>And sometimes it doesn’t:</p>
+<pre><code class="language-text">--- FAIL: TestConcurrentAdds (0.00s)
+    api_test.go:128: body = &quot;{\&quot;Food\&quot;:4900}\n&quot;, want &quot;{\&quot;Food\&quot;:5000}\n&quot;
+FAIL
+FAIL    tracker/api 0.004s
+FAIL</code></pre>
+<p>Your total, and how often it fails, will differ. On a computer with one CPU core, it may pass every time, which is exactly why you need the race detector. One expense, or several, just vanished. Two goroutines read the same slice at the same moment, each appended its own expense, and the second write threw away the first. That’s a <strong>lost update</strong>, and it’s what makes races so nasty: the bug comes and goes.</p>
+<h3 id="let-the-race-detector-look">Let the race detector look<a class="anchor" href="#let-the-race-detector-look" aria-label="Link to this section"></a></h3>
+<p>Now run the same test with <code>-race</code>:</p>
+<pre><code class="language-bash">go test -race -count=1 ./api</code></pre>
+<p>The output is long. Here’s the start of it. Everything in <code>&lt;angle brackets&gt;</code> will be different for you: memory addresses, goroutine numbers, <code>+0x…</code> offsets, and the folders where your project and Go are installed. A goroutine may also be marked <code>(finished)</code> instead of <code>(running)</code>. Your first report may also point at a different line, such as the <code>Save</code> call, or list the read and write the other way round. Read whichever comes first the same way.</p>
+<pre><code class="language-text">==================
+WARNING: DATA RACE
+Read at 0x&lt;address&gt; by goroutine &lt;A&gt;:
+  tracker/ledger.(*Tracker).Add()
+      &lt;your tracker folder&gt;/ledger/ledger.go:38 +0x&lt;offset&gt;
+  tracker/api.NewHandler.func1()
+      &lt;your tracker folder&gt;/api/api.go:21 +0x&lt;offset&gt;
+  ...
+  tracker/api.TestConcurrentAdds.func1()
+      &lt;your tracker folder&gt;/api/api_test.go:117 +0x&lt;offset&gt;
+
+Previous write at 0x&lt;address&gt; by goroutine &lt;B&gt;:
+  tracker/ledger.(*Tracker).Add()
+      &lt;your tracker folder&gt;/ledger/ledger.go:38 +0x&lt;offset&gt;
+  tracker/api.NewHandler.func1()
+      &lt;your tracker folder&gt;/api/api.go:21 +0x&lt;offset&gt;
+  ...
+  tracker/api.TestConcurrentAdds.func1()
+      &lt;your tracker folder&gt;/api/api_test.go:117 +0x&lt;offset&gt;
+
+Goroutine &lt;A&gt; (running) created at:
+  sync.(*WaitGroup).Go()
+      &lt;Go folder&gt;/src/sync/waitgroup.go:&lt;line&gt; +0x&lt;offset&gt;
+  testing.tRunner()
+      &lt;Go folder&gt;/src/testing/testing.go:&lt;line&gt; +0x&lt;offset&gt;
+  testing.(*T).Run.gowrap1()
+      &lt;Go folder&gt;/src/testing/testing.go:&lt;line&gt; +0x&lt;offset&gt;
+  ...
+==================</code></pre>
+<p>The <code>...</code> lines stand for more lines from Go’s own <code>net/http</code> code, your <code>send</code> helper and the rest of the report. After this come more <code>WARNING: DATA RACE</code> blocks, including one in <code>MemoryStorage.Save</code>, and the report ends like this:</p>
+<pre><code class="language-text">--- FAIL: TestConcurrentAdds (0.00s)
+    testing.go:&lt;line&gt;: race detected during execution of test
+FAIL
+FAIL    tracker/api 0.0&lt;xx&gt;s
+FAIL</code></pre>
+<p>You may also see the <code>body = ...</code> line from before; whether the total comes out wrong changes from run to run.</p>
+<p>How to read a race report:</p>
+<ol type="1">
+<li><strong><code>WARNING: DATA RACE</code></strong> starts each report.</li>
+<li><strong><code>Read at ... by goroutine &lt;A&gt;</code></strong> and <strong><code>Previous write at ... by goroutine &lt;B&gt;</code></strong> are the two goroutines that collided. Under each is the chain of function calls that got it there, newest first.</li>
+<li><strong>The first line from <em>your</em> code</strong> is the one to read. Here it’s <code>ledger.go:38</code>, the <code>append</code> in <code>Tracker.Add</code>, in both goroutines.</li>
+<li><strong><code>created at</code></strong> shows how each goroutine started: <code>sync.(*WaitGroup).Go</code> is your test’s <code>wg.Go</code>. Your own line is at the bottom of each stack above it: <code>api_test.go:117</code>, the <code>send</code> inside the goroutine. (Some Go versions also list your test, at line 116, under <code>created at</code>.)</li>
+</ol>
+<p>The race detector doesn’t guess. It saw two goroutines really touch the same memory without taking turns.</p>
+<h3 id="say-where-the-fix-belongs">Say where the fix belongs<a class="anchor" href="#say-where-the-fix-belongs" aria-label="Link to this section"></a></h3>
+<p>The race is inside <code>Tracker</code>, so the fix belongs there too, not in the API. That way, every user of <code>Tracker</code> is safe, not just the API. Add a test to <code>ledger/ledger_test.go</code> that uses a Tracker from many goroutines directly, and add <code>"sync"</code> to that file’s imports:</p>
+<pre><code class="language-go">func TestTrackerConcurrentUse(t *testing.T) {
+    tr, err := Open(&amp;MemoryStorage{})
+    if err != nil {
+        t.Fatalf(&quot;Open() error = %v&quot;, err)
+    }
+
+    var wg sync.WaitGroup
+    for range 50 {
+        wg.Go(func() {
+            if err := tr.Add(&quot;Food&quot;, 100); err != nil {
+                t.Errorf(&quot;Add() error = %v&quot;, err)
+            }
+            tr.Totals()
+            if err := tr.Save(); err != nil {
+                t.Errorf(&quot;Save() error = %v&quot;, err)
+            }
+        })
+    }
+    wg.Wait()
+
+    if got := tr.Totals()[&quot;Food&quot;]; got != 5000 {
+        t.Errorf(&quot;Food total = %d, want 5000&quot;, got)
+    }
+}</code></pre>
+<p>Each goroutine adds, reads totals and saves, so all three of Tracker’s methods run at the same time as each other. Add a sentence to <code>SPEC.md</code>. The book numbers from 17 because the Chapter 6 practice used 15 and 16; use your next number.</p>
+<pre><code class="language-markdown">17. Tracker is safe to use from many goroutines at once:
+    go test -race ./... reports no races.</code></pre>
+<p>Then commit your failing tests before asking the AI:</p>
+<pre><code class="language-bash">git add .
+git commit -m &quot;Add concurrency tests&quot; -m &quot;Learned: a test that passes can still hide a data race; go test -race finds it.&quot;</code></pre>
+<h2 id="use-the-ai-implementer">Use the AI: implementer<a class="anchor" href="#use-the-ai-implementer" aria-label="Link to this section"></a></h2>
+<pre><code class="language-text">Make ledger.Tracker safe to use from many goroutines at once, so
+that go test -race ./... passes. Put a sync.Mutex in Tracker.
+Use only the standard library. Don&#39;t change any test files.</code></pre>
+<p>The prompt says where the lock goes. Without that, the AI might put it in the API instead. That would fix the API’s test but leave <code>TestTrackerConcurrentUse</code> failing, and any other code that shares a Tracker unprotected.</p>
+<h2 id="review-the-ais-work">Review the AI’s work<a class="anchor" href="#review-the-ais-work" aria-label="Link to this section"></a></h2>
+<p>Same four steps as Chapter 6.</p>
+<p><strong>1. Scope.</strong> <code>git status --short</code> should show only <code>M ledger/ledger.go</code>.</p>
+<p><strong>2. Checks.</strong> Run <code>go run ./check</code>, then the race detector on everything:</p>
+<pre><code class="language-bash">go test -race ./...</code></pre>
+<pre><code class="language-text">ok      tracker 1.014s
+ok      tracker/api 1.016s
+?       tracker/check   [no test files]
+ok      tracker/ledger  1.017s
+ok      tracker/money   1.012s</code></pre>
+<p>No <code>WARNING</code>. Each package takes about a second longer with <code>-race</code>: the race detector waits a moment before a test program exits, and on bigger programs it also makes the code itself 2 to 20 times slower, because it watches every memory access. That’s why <code>go run ./check</code> doesn’t use it: it would slow every check, and <code>-race</code> doesn’t work on every system. Run it yourself whenever you touch code that goroutines share.</p>
+<p><strong>3. The diff.</strong> <code>git diff</code> shows what changed. Here’s the book’s version:</p>
+<pre><code class="language-text">diff --git a/ledger/ledger.go b/ledger/ledger.go
+index 51eb176..e296e0a 100644
+--- a/ledger/ledger.go
++++ b/ledger/ledger.go
+@@ -4,6 +4,7 @@ package ledger
+ import (
+    &quot;errors&quot;
+    &quot;fmt&quot;
++   &quot;sync&quot;
+ )
+ 
+ // Expense is one thing you spent money on.
+@@ -16,7 +17,9 @@ type Expense struct {
+ var ErrInvalidAmount = errors.New(&quot;amount must be more than zero&quot;)
+ 
+ // Tracker holds all your expenses and the storage they live in.
++// It is safe to use from many goroutines at once.
+ type Tracker struct {
++   mu       sync.Mutex // guards expenses and calls to store
+    store    Storage
+    expenses []Expense
+ }
+@@ -35,12 +38,16 @@ func (tr *Tracker) Add(category string, cents int) error {
+    if cents &lt;= 0 {
+        return fmt.Errorf(&quot;add %q: %w&quot;, category, ErrInvalidAmount)
+    }
++   tr.mu.Lock()
++   defer tr.mu.Unlock()
+    tr.expenses = append(tr.expenses, Expense{Category: category, Cents: cents})
+    return nil
+ }
+ 
+ // Totals returns the total in cents for each category.
+ func (tr *Tracker) Totals() map[string]int {
++   tr.mu.Lock()
++   defer tr.mu.Unlock()
+    totals := make(map[string]int)
+    for _, e := range tr.expenses {
+        totals[e.Category] += e.Cents
+@@ -50,5 +57,7 @@ func (tr *Tracker) Totals() map[string]int {
+ 
+ // Save writes all expenses to the Tracker&#39;s storage.
+ func (tr *Tracker) Save() error {
++   tr.mu.Lock()
++   defer tr.mu.Unlock()
+    return tr.store.Save(tr.expenses)
+ }</code></pre>
+<p><strong>4. Questions for this kind of change:</strong></p>
+<ul>
+<li><strong>Is every access locked?</strong> <code>Add</code> writes <code>expenses</code>, while <code>Totals</code> and <code>Save</code> read it. All three must lock, not only the one that writes. Break 1 below shows why.</li>
+<li><strong>Does <code>Save</code> hold the lock while writing the file?</strong> Yes, and that’s on purpose: it also stops two saves from writing <code>expenses.json</code> at the same time. That’s what turned the file into broken JSON in the opening experiment.</li>
+<li><strong>Why is the amount check before the lock?</strong> It doesn’t touch shared data, so there’s no need to make other goroutines wait for it. Keep locked sections short.</li>
+<li><strong>Is <code>Open</code> still right?</strong> It builds a new <code>Tracker</code> with <code>mu</code> left at its zero value, which is an unlocked mutex, ready to use. Must know #4 in action.</li>
+</ul>
+<p>When you can answer all four, commit:</p>
+<pre><code class="language-bash">git add .
+git commit -m &quot;Make Tracker safe for concurrent use&quot; -m &quot;Learned: every read and write of shared data needs the lock, not just the writes.&quot;</code></pre>
+<h2 id="review">Review<a class="anchor" href="#review" aria-label="Link to this section"></a></h2>
+<h3 id="break-it-on-purpose">Break it on purpose<a class="anchor" href="#break-it-on-purpose" aria-label="Link to this section"></a></h3>
+<p><strong>Break 1: lock only the writes.</strong> In <code>Totals</code>, delete the two lines <code>tr.mu.Lock()</code> and <code>defer tr.mu.Unlock()</code>. It’s tempting, since <code>Totals</code> only reads. Run <code>go test -race -count=1 ./ledger</code>:</p>
+<pre><code class="language-text">==================
+WARNING: DATA RACE
+Write at 0x&lt;address&gt; by goroutine &lt;A&gt;:
+  tracker/ledger.(*Tracker).Add()
+      &lt;your tracker folder&gt;/ledger/ledger.go:43 +0x&lt;offset&gt;
+  tracker/ledger.TestTrackerConcurrentUse.func1()
+      &lt;your tracker folder&gt;/ledger/ledger_test.go:81 +0x&lt;offset&gt;
+  ...
+
+Previous read at 0x&lt;address&gt; by goroutine &lt;B&gt;:
+  tracker/ledger.(*Tracker).Totals()
+  ...
+==================</code></pre>
+<p>As before, the two goroutines may be listed the other way round. It ends with <code>race detected during execution of test</code> and <code>FAIL</code>. A read during a write is still a race: <code>Totals</code> could see the slice halfway through changing. Put the two lines back.</p>
+<p><strong>Break 2: copy the mutex.</strong> Change <code>func (tr *Tracker) Totals()</code> to <code>func (tr Tracker) Totals()</code>, removing the <code>*</code>. It still compiles, but run <code>go vet ./...</code>:</p>
+<pre><code class="language-text">ledger/ledger.go:48:10: Totals passes lock by value: tracker/ledger.Tracker contains sync.Mutex</code></pre>
+<p>A value receiver copies the whole Tracker, mutex included, so <code>Totals</code> would lock its own private copy and protect nothing. It can be worse: if it copies the Tracker while another goroutine holds the lock, the copy stays locked forever, and <code>go test</code> hangs. If that happens, press <strong>Ctrl+C</strong>. <code>go vet</code> knows this rule, and <code>go run ./check</code> runs <code>go vet</code>. Put the <code>*</code> back.</p>
+<aside class="book-box">
+<p class="box-label">Where AI gets Go wrong: goroutines</p>
+<ul>
+<li><strong>Locking only the writes.</strong> As Break 1 showed, reads need the lock too.</li>
+<li><strong>Forgetting to unlock.</strong> A <code>Lock()</code> without a matching <code>Unlock()</code> on every path makes the next goroutine wait forever, and your program hangs. <code>defer mu.Unlock()</code> right after <code>Lock()</code> prevents it.</li>
+<li><strong><code>t.Fatal</code> inside a goroutine.</strong> It may only be called from the test’s own goroutine. Use <code>t.Errorf</code> in goroutines.</li>
+<li><strong>The old WaitGroup pattern.</strong> AI often writes <code>wg.Add(1)</code> and <code>go func() { defer wg.Done(); ... }()</code>. It works, but <code>wg.Go</code> does the same with less to get wrong.</li>
+<li><strong>Goroutines that never finish.</strong> A goroutine blocked forever on a channel nobody reads is a <strong>goroutine leak</strong>. You’ll see why that matters in the next loop.</li>
+</ul>
+</aside>
+<h2 id="one-more-sure-loop-import">One more SURE loop: import<a class="anchor" href="#one-more-sure-loop-import" aria-label="Link to this section"></a></h2>
+<p>Time for a full SURE loop on a new feature, with the book stepping back. Say you’ve kept expenses on two devices, and each saved its own JSON file. You want to bring them all into Tracker.</p>
+<h3 id="specify">Specify<a class="anchor" href="#specify" aria-label="Link to this section"></a></h3>
+<p>Add to <code>SPEC.md</code>:</p>
+<pre><code class="language-markdown">18. `go run . import FILE...` reads expenses from one or more
+    JSON files (same format as expenses.json), adds them all,
+    saves, and prints: Imported N expenses
+19. The files are read at the same time, each in its own goroutine.
+20. If any file can&#39;t be read, nothing is imported, and the error
+    names the file.</code></pre>
+<p>Then the tests, in <code>ledger/storage_test.go</code>. Add <code>"maps"</code> and <code>"strings"</code> to its imports, then add:</p>
+<pre><code class="language-go">func TestReadAll(t *testing.T) {
+    dir := t.TempDir()
+    phone := FileStorage{Path: filepath.Join(dir, &quot;phone.json&quot;)}
+    laptop := FileStorage{Path: filepath.Join(dir, &quot;laptop.json&quot;)}
+    if err := phone.Save([]Expense{{Category: &quot;Food&quot;, Cents: 350}}); err != nil {
+        t.Fatal(err)
+    }
+    if err := laptop.Save([]Expense{
+        {Category: &quot;Fun&quot;, Cents: 1500},
+        {Category: &quot;Food&quot;, Cents: 99},
+    }); err != nil {
+        t.Fatal(err)
+    }
+
+    got, err := ReadAll([]string{phone.Path, laptop.Path})
+    if err != nil {
+        t.Fatalf(&quot;ReadAll() error = %v&quot;, err)
+    }
+    totals := make(map[string]int)
+    for _, e := range got {
+        totals[e.Category] += e.Cents
+    }
+    want := map[string]int{&quot;Food&quot;: 449, &quot;Fun&quot;: 1500}
+    if len(got) != 3 || !maps.Equal(totals, want) {
+        t.Errorf(&quot;ReadAll() = %v, want 3 expenses with totals %v&quot;, got, want)
+    }
+}
+
+func TestReadAllMissingFile(t *testing.T) {
+    dir := t.TempDir()
+    phone := FileStorage{Path: filepath.Join(dir, &quot;phone.json&quot;)}
+    if err := phone.Save([]Expense{{Category: &quot;Food&quot;, Cents: 350}}); err != nil {
+        t.Fatal(err)
+    }
+    missing := filepath.Join(dir, &quot;missing.json&quot;)
+
+    _, err := ReadAll([]string{phone.Path, missing})
+    if err == nil {
+        t.Fatal(&quot;ReadAll() error = nil, want an error for a missing file&quot;)
+    }
+    if !strings.Contains(err.Error(), &quot;missing.json&quot;) {
+        t.Errorf(&quot;error %q should name the missing file&quot;, err)
+    }
+}</code></pre>
+<p>Two choices in these tests are worth noticing. <code>TestReadAll</code> checks the totals, not the order of the expenses, because files read at the same time can finish in any order. And <code>TestReadAllMissingFile</code> insists that a missing file is an error, unlike <code>FileStorage.Load</code>, where a missing file just means “no expenses yet.” For an import, a missing file means you typed the name wrong.</p>
+<p>Run <code>go test ./...</code> and you’ll see <code>undefined: ReadAll</code> twice. Commit:</p>
+<pre><code class="language-bash">git add .
+git commit -m &quot;Add import tests&quot; -m &quot;Learned: when work runs at the same time, test the result, not the order.&quot;</code></pre>
+<h3 id="use-the-ai">Use the AI<a class="anchor" href="#use-the-ai" aria-label="Link to this section"></a></h3>
+<p>Write this prompt yourself. It should name the function (<code>ReadAll(paths []string) ([]Expense, error)</code> in package <code>ledger</code>), say that each file is read in its own goroutine with results collected over a channel, ask for an <code>import</code> command in <code>main.go</code> that matches sentence 18, and repeat your rules: standard library only, don’t change test files.</p>
+<h3 id="review-1">Review<a class="anchor" href="#review-1" aria-label="Link to this section"></a></h3>
+<p>Do the four steps without the book’s help: scope with <code>git status</code>, checks with <code>go run ./check</code> and <code>go test -race ./...</code>, every line of the diff, and the questions below. Then compare with one version that passes:</p>
+<pre><code class="language-go">// ReadAll reads expenses from several JSON files at the same time.
+// Every file must exist. If any file can&#39;t be read, ReadAll
+// returns an error and no expenses.
+func ReadAll(paths []string) ([]Expense, error) {
+    type result struct {
+        expenses []Expense
+        err      error
+    }
+    results := make(chan result)
+    for _, path := range paths {
+        go func() {
+            expenses, err := readFile(path)
+            results &lt;- result{expenses: expenses, err: err}
+        }()
+    }
+
+    var all []Expense
+    var firstErr error
+    for range paths {
+        r := &lt;-results
+        if r.err != nil &amp;&amp; firstErr == nil {
+            firstErr = r.err
+        }
+        all = append(all, r.expenses...)
+    }
+    if firstErr != nil {
+        return nil, firstErr
+    }
+    return all, nil
+}
+
+// readFile reads one JSON file of expenses. Unlike FileStorage.Load,
+// a missing file is an error.
+func readFile(path string) ([]Expense, error) {
+    data, err := os.ReadFile(path)
+    if err != nil {
+        return nil, fmt.Errorf(&quot;import: %w&quot;, err)
+    }
+    var expenses []Expense
+    if err := json.Unmarshal(data, &amp;expenses); err != nil {
+        return nil, fmt.Errorf(&quot;import %s: %w&quot;, path, err)
+    }
+    return expenses, nil
+}</code></pre>
+<p>And the new part of <code>run</code> in <code>main.go</code>, placed before the <code>add</code> command:</p>
+<pre><code class="language-go">    if len(args) &gt;= 2 &amp;&amp; args[0] == &quot;import&quot; {
+        expenses, err := ledger.ReadAll(args[1:])
+        if err != nil {
+            return err
+        }
+        for _, e := range expenses {
+            if err := tracker.Add(e.Category, e.Cents); err != nil {
+                return err
+            }
+        }
+        if err := tracker.Save(); err != nil {
+            return err
+        }
+        fmt.Printf(&quot;Imported %d expenses\n&quot;, len(expenses))
+        return nil
+    }</code></pre>
+<p>The book’s version also updates the usage error at the end of <code>run</code> to <code>usage: go run . [add CATEGORY CENTS | serve | import FILE...]</code>, so <code>go run . import</code> with no files says how to use it.</p>
+<p>Questions to ask about any version, the AI’s or the book’s:</p>
+<ul>
+<li><strong>How many goroutines start, and does every one of them finish?</strong> Here, one per file, and each sends exactly one result. The receiving loop runs once per file, <em>even after an error</em>. If it returned at the first error, the remaining goroutines would wait forever to send. That’s the goroutine leak from the box.</li>
+<li><strong>Does it reuse <code>FileStorage.Load</code>?</strong> An AI might, because it looks like the obvious choice. But <code>Load</code> treats a missing file as “no expenses,” and your <code>TestReadAllMissingFile</code> would catch that.</li>
+<li><strong>What happens to a bad expense?</strong> <code>run</code> passes each one through <code>tracker.Add</code>, which rejects zero and negative amounts. If one fails, <code>run</code> returns before <code>Save</code>, so nothing is saved, the same all-or-nothing rule as sentence 20.</li>
+</ul>
+<h3 id="try-it">Try it<a class="anchor" href="#try-it" aria-label="Link to this section"></a></h3>
+<p>Make a file in your <code>practice</code> folder, <code>phone.json</code>, with two made-up expenses:</p>
+<pre><code class="language-json">[
+  {&quot;category&quot;: &quot;Food&quot;, &quot;cents&quot;: 250},
+  {&quot;category&quot;: &quot;Transport&quot;, &quot;cents&quot;: 300}
+]</code></pre>
+<p>From the <code>tracker</code> folder:</p>
+<pre><code class="language-bash">go run . import ../practice/phone.json</code></pre>
+<pre><code class="language-text">Imported 2 expenses</code></pre>
+<p>Then run <code>go run .</code>. If your data is where Chapter 6 left it, including the 2.50 you added with <code>curl</code>, you’ll see:</p>
+<pre><code class="language-text">Welcome to Tracker. Let&#39;s see where your money goes.
+Food: 9.49
+Fun: 15.00
+Transport: 15.00</code></pre>
+<p>And a file that doesn’t exist:</p>
+<pre><code class="language-bash">go run . import ../practice/phone.json ../practice/laptop.json</code></pre>
+<pre><code class="language-text">Error: import: open ../practice/laptop.json: no such file or directory
+exit status 1</code></pre>
+<p>The wording after <code>open ...:</code> differs on Windows. Nothing was imported, not even <code>phone.json</code>’s expenses: run <code>go run .</code> and the totals haven’t changed.</p>
+<h3 id="explain">Explain<a class="anchor" href="#explain" aria-label="Link to this section"></a></h3>
+<p>Say it in your own words: how does <code>ReadAll</code> know when every file is done? Let the AI quiz you on channels. Then commit, with your own <code>Learned:</code> line.</p>
+<h2 id="practice-optional">Practice (optional)<a class="anchor" href="#practice-optional" aria-label="Link to this section"></a></h2>
+<p>Here’s code an AI wrote to add up spending from many goroutines. It has a mutex, and its test passes every time. It also has a data race. In your <code>practice</code> folder, make a small module of its own:</p>
+<pre><code class="language-bash">mkdir racy
+cd racy
+go mod init racy</code></pre>
+<p>Create <code>spending.go</code>:</p>
+<pre><code class="language-go">// Package racy adds up spending from many goroutines.
+package racy
+
+import &quot;sync&quot;
+
+// Spending adds up amounts in cents.
+type Spending struct {
+    mu    sync.Mutex
+    total int
+}
+
+// Add adds cents to the total.
+func (s *Spending) Add(cents int) {
+    s.mu.Lock()
+    s.total += cents
+    s.mu.Unlock()
+}
+
+// Total returns the total so far.
+func (s *Spending) Total() int {
+    return s.total
+}</code></pre>
+<p>And <code>spending_test.go</code>:</p>
+<pre><code class="language-go">package racy
+
+import (
+    &quot;sync&quot;
+    &quot;testing&quot;
+)
+
+func TestSpending(t *testing.T) {
+    var s Spending
+    var wg sync.WaitGroup
+    for range 100 {
+        wg.Go(func() {
+            s.Add(100)
+            if s.Total() &lt; 100 {
+                t.Errorf(&quot;Total() = %d, want at least 100&quot;, s.Total())
+            }
+        })
+    }
+    wg.Wait()
+
+    if got := s.Total(); got != 10000 {
+        t.Errorf(&quot;Total() = %d, want 10000&quot;, got)
+    }
+}</code></pre>
+<p>Run <code>go test -count=1 ./...</code> a few times: <code>ok</code> every time. Now run <code>go test -race ./...</code>. Read the report: which two functions collide, and which line in each? Fix it, run <code>go test -race ./...</code> until you see <code>ok</code>, and then ask the AI to review your fix.</p>
+<p class="gwa-answer-link">Tried it? Compare with the <a href="/go-with-ai/answers/#chapter-7">worked answer for Chapter 7</a>.</p>
+<h2 id="what-youve-done-and-whats-next">What you’ve done, and what’s next<a class="anchor" href="#what-youve-done-and-whats-next" aria-label="Link to this section"></a></h2>
+<p>In this chapter, you saw a bug that only appears when things happen at the same time, found it with the race detector, and had the AI fix it with a mutex. Then you ran a whole SURE loop with the book stepping back, and used goroutines and a channel to read files at the same time.</p>
+<p>Look back at the whole book. You started with a program that printed one line, and you finished with a tested, concurrent web API, organized into packages, saving to a file, with one command that checks it all. Along the way, the AI went from tutor to pair to implementer. One thing never changed: <strong>you</strong> decided what “done” meant, and you were sure you could explain every line you kept. That’s the SURE loop, and it works the same in any language and with any AI.</p>
+<h3 id="what-to-learn-next">What to learn next<a class="anchor" href="#what-to-learn-next" aria-label="Link to this section"></a></h3>
+<p>You’ve had a taste of Go. Here are good next steps, in roughly this order:</p>
+<ul>
+<li><strong><code>context</code></strong>, the standard way to cancel work and set deadlines, for example to stop handling a request when the client hangs up.</li>
+<li><strong>Databases</strong>, with <code>database/sql</code>. A JSON file is fine for one person; a database is what lets many people share data safely.</li>
+<li><strong>Getting to production</strong>: configuration, logging with <code>log/slog</code>, building and deploying a server, and keeping it running.</li>
+<li><strong>Bigger project structure</strong>: how a team keeps a Go codebase consistent as it grows.</li>
+</ul>
+<p>The companion book to this one, <strong><em>Bogie: How to Go from Zero to Production: Conventions for AI-Assisted Go</em></strong>, picks up many of these. It gives you “conventions a whole team can share, and a generator that follows them”: <strong>Bogie</strong>, a Rails-style code generator for Go web apps. Bogie isn’t a framework; the code it generates is ordinary Go, and it belongs to you. Through the book, you build Bogie Depot, a complete online shop: a JSON API with small HTML pages in front of it, with real transactions, tests from the outside in, and a deployment to your own server. The habits from this book carry straight over: specify with tests, let the AI implement, and review every diff. See <a href="https://bogie-go.com/book.html">bogie-go.com/book.html</a>.</p>
+<p>Whatever you build next, the AI will keep saying “Sure!” Now you know what to ask back.</p>
+
+<footer class="guide-nav">
+  <div class="prev"><span class="label">Previous</span><a href="/go-with-ai/go-web-api-net-http/" rel="prev">Chapter 6: From Command Line to Web</a></div>
+  <div class="next"><span class="label">Next</span><a href="/go-with-ai/setup-ai-coding-assistant/" rel="next">Appendix A: Setting up your AI assistant</a></div>
+</footer>
+<nav class="gwa-allpages" aria-label="Go with AI contents"><p class="onpage-h">Go with AI: all chapters</p><ol class="gwa-contents"><li><a href="/go-with-ai/introduction/">Introduction</a></li><li><a href="/go-with-ai/learn-to-code-with-ai/">Chapter 1: Learning to Code When AI Can Code</a></li><li><a href="/go-with-ai/first-go-program-and-test/">Chapter 2: Your First Program and Your First Test</a></li><li><a href="/go-with-ai/go-slices-maps-loops/">Chapter 3: Lists, Lookups and Loops</a></li><li><a href="/go-with-ai/go-structs-methods-errors/">Chapter 4: Modeling Data and Handling Errors</a></li><li><a href="/go-with-ai/go-packages-interfaces/">Chapter 5: Organizing Code: Packages and Interfaces</a></li><li><a href="/go-with-ai/go-web-api-net-http/">Chapter 6: From Command Line to Web</a></li><li><a href="/go-with-ai/go-goroutines-race-detector/" aria-current="page">Chapter 7: A Taste of Goroutines</a></li><li><a href="/go-with-ai/setup-ai-coding-assistant/">Appendix A: Setting up your AI assistant</a></li><li><a href="/go-with-ai/git-basics/">Appendix B: Just enough Git</a></li><li><a href="/go-with-ai/sure-loop/">Appendix C: The SURE loop at a glance</a></li><li><a href="/go-with-ai/review-checklists/">Appendix D: Review checklists</a></li><li><a href="/go-with-ai/answers/">Practice answers</a></li></ol></nav>
+</article>
+</div>
+
+<!-- @footer -->
+
+</body>
+</html>

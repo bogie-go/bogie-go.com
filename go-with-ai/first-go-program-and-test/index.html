@@ -1,0 +1,396 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Go Testing for Beginners: Your First Go Test and Functions | Chapter 2, Go with AI</title>
+<meta name="description" content="How do you write a test in Go? Turn a plain-English spec into a go test, write your first functions, use a table-driven test, and learn why money is stored in whole cents.">
+<meta name="author" content="Roonglit Chareonsupkul">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="stylesheet" href="/fonts.css">
+<link rel="stylesheet" href="/style.css">
+<link rel="canonical" href="https://bogie-go.com/go-with-ai/first-go-program-and-test/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Bogie">
+<meta property="og:title" content="Go Testing for Beginners: Your First Go Test and Functions | Chapter 2, Go with AI">
+<meta property="og:description" content="How do you write a test in Go? Turn a plain-English spec into a go test, write your first functions, use a table-driven test, and learn why money is stored in whole cents.">
+<meta property="og:url" content="https://bogie-go.com/go-with-ai/first-go-program-and-test/">
+<meta property="og:image" content="https://bogie-go.com/go-with-ai/cover.jpg">
+<meta property="og:image:width" content="560">
+<meta property="og:image:height" content="687">
+<meta property="og:image:alt" content="Cover of Go with AI by Roonglit Chareonsupkul">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Go Testing for Beginners: Your First Go Test and Functions | Chapter 2, Go with AI">
+<meta name="twitter:description" content="How do you write a test in Go? Turn a plain-English spec into a go test, write your first functions, use a table-driven test, and learn why money is stored in whole cents.">
+<meta name="twitter:image" content="https://bogie-go.com/go-with-ai/cover.jpg">
+<script type="application/ld+json">{"@context": "https://schema.org","@graph": [{"@type": "Article","headline": "Chapter 2: Your First Program and Your First Test","name": "Go Testing for Beginners: Your First Go Test and Functions | Chapter 2, Go with AI","description": "How do you write a test in Go? Turn a plain-English spec into a go test, write your first functions, use a table-driven test, and learn why money is stored in whole cents.","url": "https://bogie-go.com/go-with-ai/first-go-program-and-test/","inLanguage": "en","author": {"@type": "Person","name": "Roonglit Chareonsupkul"},"datePublished": "2026-11-25","dateModified": "2026-11-25","image": "https://bogie-go.com/go-with-ai/cover.jpg","keywords": "go testing tutorial, golang for beginners, table-driven tests","isPartOf": {"@id": "https://bogie-go.com/go-with-ai/#book"},"mainEntityOfPage": "https://bogie-go.com/go-with-ai/first-go-program-and-test/"},{"@type": "BreadcrumbList","itemListElement": [{"@type": "ListItem","position": 1,"name": "Bogie","item": "https://bogie-go.com/"},{"@type": "ListItem","position": 2,"name": "Go with AI","item": "https://bogie-go.com/go-with-ai/"},{"@type": "ListItem","position": 3,"name": "Chapter 2: Your First Program and Your First Test","item": "https://bogie-go.com/go-with-ai/first-go-program-and-test/"}]}]}</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-MPVQ83E1Z9');
+</script>
+</head>
+<body>
+<!-- @header -->
+
+<div class="measure">
+<article class="book-sample gwa-chapter">
+<p class="guide-eyebrow"><a href="/go-with-ai/">Go with AI</a> · <span>Free online book</span></p>
+<h1>Chapter 2: Your First Program and Your First Test</h1>
+<p class="gwa-summary"><span class="gwa-summary-h">In short:</span> Chapter 2 turns your spec into a Go test, so Go checks your work instead of your eyes. You write your first functions, total a list of amounts with a table-driven test, and learn why Tracker stores money in whole cents instead of float64.</p>
+<nav class="chapter-nav gwa-onpage" aria-label="On this page"><p class="onpage-h">On this page</p><ol><li><a href="#mission">Mission</a></li><li><a href="#must-know">Must know</a></li><li><a href="#specify">Specify</a></li><li><a href="#use-the-ai">Use the AI</a></li><li><a href="#review">Review</a></li><li><a href="#explain">Explain</a></li><li><a href="#practice-optional">Practice (optional)</a></li><li><a href="#what-youve-done">What you’ve done</a></li></ol></nav>
+<p>In Chapter 1, you checked “done” with your own eyes: you ran the program and compared its output with the sentence in <code>SPEC.md</code>. That works for one line. It doesn’t work for a hundred.</p>
+<p>In this chapter, Go starts checking for you. You’ll turn your <code>SPEC.md</code> sentence into a <strong>test</strong>, a small piece of code that runs your program’s code and says “pass” or “fail.” Then Tracker learns its first real job: printing an expense and adding up a list of amounts.</p>
+<p>Tests matter even more when AI is involved. The AI can say “Sure!” and hand you code that looks right. A test doesn’t care how confident anyone sounds. It either passes or it doesn’t.</p>
+<p>It’s the same SURE loop as Chapter 1, but this time Specify ends with tests. The AI is still your <strong>tutor</strong>: it explains; you type.</p>
+<h2 id="mission">Mission<a class="anchor" href="#mission" aria-label="Link to this section"></a></h2>
+<p>By the end of this chapter, you’ll have:</p>
+<ul>
+<li>A test that checks the welcome message, turned straight from your <code>SPEC.md</code> sentence</li>
+<li>Tracker printing one expense: <code>Coffee: 3.50</code></li>
+<li>A function that totals a list of amounts, checked by a <strong>table-driven test</strong></li>
+<li>A commit with a <code>Learned:</code> line</li>
+</ul>
+<p>You’ll also see why Tracker stores money in a way that might surprise you.</p>
+<h2 id="must-know">Must know<a class="anchor" href="#must-know" aria-label="Link to this section"></a></h2>
+<p>These facts come from the book. If the AI says something different, the AI is wrong.</p>
+<ol type="1">
+<li><strong>Every value has a type.</strong> <code>350</code> is an <code>int</code> (a whole number), <code>"Coffee"</code> is a <code>string</code> (text), <code>3.5</code> is a <code>float64</code> (a number with a decimal point) and <code>true</code> is a <code>bool</code>. Go checks types before your program runs, and it won’t mix them: adding a <code>string</code> to an <code>int</code> doesn’t compile.</li>
+<li><strong><code>:=</code> creates a variable inside a function.</strong> <code>cents := 350</code> creates <code>cents</code> and gives it the type of its value, <code>int</code>. Like imports, a variable you create and never use stops your program from compiling.</li>
+<li><strong>Tracker stores money as whole cents in an <code>int</code>.</strong> Coffee for 3.50 is stored as <code>350</code>. A <code>float64</code> can’t hold most decimal amounts exactly, and in money, small errors add up.</li>
+<li><strong>A function says what it takes and what it gives back.</strong> <code>func total(amounts []int) int</code> takes a list of <code>int</code>s and returns one <code>int</code>. A Go function can return more than one value.</li>
+<li><strong>Tests live in files ending in <code>_test.go</code>.</strong> Each test is a function whose name starts with <code>Test</code>. You run them all with <code>go test ./...</code>.</li>
+</ol>
+<h2 id="specify">Specify<a class="anchor" href="#specify" aria-label="Link to this section"></a></h2>
+<p>You’ll specify three things this time. Open <code>SPEC.md</code> and make it say:</p>
+<pre><code class="language-markdown">1. `go run .` prints exactly:
+   Welcome to Tracker. Let&#39;s see where your money goes.
+2. Then it prints one expense, Coffee for 3.50, as:
+   Coffee: 3.50
+3. Then it prints the total of 3.50, 12.00 and 0.99 as:
+   Total: 16.49</code></pre>
+<p>Now comes the new part. Instead of checking these sentences by eye, you’ll write them as tests, <strong>before</strong> writing the code that makes them pass. That might sound backwards, but it’s the most reliable way to know what “done” means: Go tells you.</p>
+<p>Create a file named <code>main_test.go</code> next to <code>main.go</code>, and type this:</p>
+<pre><code class="language-go">package main
+
+import &quot;testing&quot;
+
+func TestWelcome(t *testing.T) {
+    want := &quot;Welcome to Tracker. Let&#39;s see where your money goes.&quot;
+    got := welcome()
+    if got != want {
+        t.Errorf(&quot;welcome() = %q, want %q&quot;, got, want)
+    }
+}
+
+func TestFormatExpense(t *testing.T) {
+    want := &quot;Coffee: 3.50&quot;
+    got := formatExpense(&quot;Coffee&quot;, 350)
+    if got != want {
+        t.Errorf(&quot;formatExpense() = %q, want %q&quot;, got, want)
+    }
+}
+
+func TestFormatAmount(t *testing.T) {
+    tests := []struct {
+        cents int
+        want  string
+    }{
+        {350, &quot;3.50&quot;},
+        {1200, &quot;12.00&quot;},
+        {99, &quot;0.99&quot;},
+        {5, &quot;0.05&quot;},
+        {0, &quot;0.00&quot;},
+    }
+    for _, tt := range tests {
+        got := formatAmount(tt.cents)
+        if got != tt.want {
+            t.Errorf(&quot;formatAmount(%d) = %q, want %q&quot;, tt.cents, got, tt.want)
+        }
+    }
+}
+
+func TestTotal(t *testing.T) {
+    tests := []struct {
+        name    string
+        amounts []int
+        want    int
+    }{
+        {&quot;no expenses&quot;, []int{}, 0},
+        {&quot;one expense&quot;, []int{350}, 350},
+        {&quot;three expenses&quot;, []int{350, 1200, 99}, 1649},
+    }
+    for _, tt := range tests {
+        got := total(tt.amounts)
+        if got != tt.want {
+            t.Errorf(&quot;%s: total(%v) = %d, want %d&quot;, tt.name, tt.amounts, got, tt.want)
+        }
+    }
+}</code></pre>
+<p>Look at <code>TestWelcome</code> first. Its <code>want</code> is your <code>SPEC.md</code> sentence from Chapter 1, word for word. That’s the promise from the last chapter: your spec is now code that Go can check.</p>
+<p>Every test in this book has the same three-part shape:</p>
+<ul>
+<li><strong><code>want</code></strong> is what the spec says should happen.</li>
+<li><strong><code>got</code></strong> is what the code actually does.</li>
+<li><strong><code>if got != want</code></strong>, the test reports a failure with <code>t.Errorf</code>, saying what it got and what it wanted.</li>
+</ul>
+<p><code>%q</code> prints text with quotes around it, so a stray space at the end of a sentence becomes visible. <code>want</code> and <code>got</code> aren’t special words in Go; they’re just names that Go programmers use so that every test reads the same way.</p>
+<p>The last two tests are <strong>table-driven tests</strong>. Instead of writing one test per case, you write a table of cases (inputs and the output you want) and loop over it. Adding a case is one new line. Every row is there for a reason: <code>5</code> checks that five cents prints as <code>0.05</code>, not <code>0.5</code>, and the empty list checks that “no expenses” totals zero.</p>
+<p>Don’t worry about understanding every symbol yet. That’s what the next step is for.</p>
+<p>Run the tests now, before any of the code exists:</p>
+<pre><code class="language-bash">go test ./...</code></pre>
+<pre><code class="language-text"># tracker [tracker.test]
+./main_test.go:7:9: undefined: welcome
+./main_test.go:15:9: undefined: formatExpense
+./main_test.go:33:10: undefined: formatAmount
+./main_test.go:51:10: undefined: total
+FAIL    tracker [build failed]
+FAIL</code></pre>
+<p>That’s exactly right. Each line names a function your tests expect and your program doesn’t have yet. This list is now your to-do list.</p>
+<p>Seeing your tests fail first isn’t wasted time. It proves two things: the tests really run, and they really check something. A test that has never failed might be passing for the wrong reason. This rhythm of failing test, then code, then passing test is how you’ll work for the rest of the book.</p>
+<h2 id="use-the-ai">Use the AI<a class="anchor" href="#use-the-ai" aria-label="Link to this section"></a></h2>
+<p>Start your assistant in the <code>tracker</code> folder. Your AI is still a tutor, so first, ask it to explain the tests you typed:</p>
+<pre><code class="language-text">Explain main_test.go line by line, as if I&#39;ve never seen a Go test.
+Don&#39;t write any code for main.go; I&#39;ll write it myself.</code></pre>
+<p>Read the answer slowly, with the file open next to it. Ask about anything that’s still unclear, such as <code>%q</code>, <code>t.Errorf</code> or the <code>[]struct{...}</code> table. You’ll learn more about that table shape in Chapter 4; for now, think of each <code>{...}</code> line as one row.</p>
+<p>Next, learn what you need to write the code:</p>
+<pre><code class="language-text">How do I write a Go function that takes parameters and returns a
+value? How can a function return two values? Use an example that
+isn&#39;t about money, so I can write my own.</code></pre>
+<h3 id="see-for-yourself-why-cents">See for yourself: why cents?<a class="anchor" href="#see-for-yourself-why-cents" aria-label="Link to this section"></a></h3>
+<p>Must know #3 says to store money as cents. Don’t take the book’s word for it; try it. You’ll make a <code>practice</code> folder <strong>next to</strong> your <code>tracker</code> folder, not inside it. Open a second terminal (or quit your assistant first), and from the <code>tracker</code> folder run:</p>
+<pre><code class="language-bash">cd ..
+mkdir practice
+cd practice</code></pre>
+<p>In the <code>practice</code> folder, create <code>floats.go</code>:</p>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+    var coffee float64 = 0.1
+    tea := 0.2
+    fmt.Println(coffee + tea)
+}</code></pre>
+<p>This file also shows the two ways to create a variable: <code>var</code> with a type, and <code>:=</code>. Run it from inside the <code>practice</code> folder:</p>
+<pre><code class="language-bash">go run floats.go</code></pre>
+<pre><code class="language-text">0.30000000000000004</code></pre>
+<p>That’s not a Go bug. Computers store <code>float64</code> numbers in binary, and 0.1 has no exact binary form, just as 1/3 has no exact decimal form. For physics, the tiny error doesn’t matter. For money, it does. Whole cents in an <code>int</code> are always exact.</p>
+<p>If you want to go deeper, ask your tutor: “Why can’t a float64 store 0.1 exactly? Explain with an everyday comparison.”</p>
+<h3 id="type-the-code">Type the code<a class="anchor" href="#type-the-code" aria-label="Link to this section"></a></h3>
+<p>Now go back to the <code>tracker</code> folder:</p>
+<pre><code class="language-bash">cd ../tracker</code></pre>
+<p>Replace <code>main.go</code> with this. Type it; don’t paste:</p>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+    fmt.Println(welcome())
+    fmt.Println(formatExpense(&quot;Coffee&quot;, 350))
+
+    amounts := []int{350, 1200, 99}
+    fmt.Println(&quot;Total:&quot;, formatAmount(total(amounts)))
+}
+
+func welcome() string {
+    return &quot;Welcome to Tracker. Let&#39;s see where your money goes.&quot;
+}
+
+func formatExpense(name string, cents int) string {
+    return name + &quot;: &quot; + formatAmount(cents)
+}
+
+func formatAmount(cents int) string {
+    whole, rest := splitCents(cents)
+    return fmt.Sprintf(&quot;%d.%02d&quot;, whole, rest)
+}
+
+func splitCents(cents int) (int, int) {
+    return cents / 100, cents % 100
+}
+
+func total(amounts []int) int {
+    sum := 0
+    for _, amount := range amounts {
+        sum += amount
+    }
+    return sum
+}</code></pre>
+<p>A few things to notice as you type:</p>
+<ul>
+<li><code>main</code> now calls <code>welcome()</code> instead of holding the sentence itself. You moved the sentence into a function so the test can check it. That kind of change, which keeps behavior the same but improves the code’s shape, is called <strong>refactoring</strong>.</li>
+<li><code>splitCents</code> returns <strong>two values</strong>: the whole units and the cents left over. <code>formatAmount</code> catches both with <code>whole, rest :=</code>.</li>
+<li><code>/</code> and <code>%</code> on whole numbers mean “divide, dropping the remainder” and “the remainder.” So <code>1649 / 100</code> is <code>16</code>, and <code>1649 % 100</code> is <code>49</code>.</li>
+<li><code>%02d</code> means “a whole number, at least two digits, padded with zeros.” That’s how 5 cents becomes <code>05</code>.</li>
+<li><code>[]int</code> is a list of <code>int</code>s, and <code>for ... range</code> visits each item. The <code>_</code> means “I don’t need this value.” Chapter 3 covers lists and loops properly.</li>
+</ul>
+<p>If any line puzzles you, ask your tutor about that exact line.</p>
+<p>Now run the tests again:</p>
+<pre><code class="language-bash">go test ./...</code></pre>
+<pre><code class="language-text">ok      tracker 0.002s</code></pre>
+<p><code>ok</code> means every test passed. (Your time will differ.) Then run the program:</p>
+<pre><code class="language-bash">go run .</code></pre>
+<pre><code class="language-text">Welcome to Tracker. Let&#39;s see where your money goes.
+Coffee: 3.50
+Total: 16.49</code></pre>
+<p>All three <code>SPEC.md</code> sentences, and Go checked them for you.</p>
+<h2 id="review">Review<a class="anchor" href="#review" aria-label="Link to this section"></a></h2>
+<h3 id="let-go-check-first">Let Go check first<a class="anchor" href="#let-go-check-first" aria-label="Link to this section"></a></h3>
+<p>Your Review commands now have a third member:</p>
+<pre><code class="language-bash">gofmt -l .
+go vet ./...
+go test ./...</code></pre>
+<p>Silence from the first two and <code>ok</code> from the third mean Go is happy. If <code>go test</code> shows <code>(cached)</code> instead of a time, Go noticed nothing changed since the last passing run and reused the result.</p>
+<p>To see each test by name, add <code>-v</code> (for “verbose”):</p>
+<pre><code class="language-bash">go test -v ./...</code></pre>
+<pre><code class="language-text">=== RUN   TestWelcome
+--- PASS: TestWelcome (0.00s)
+=== RUN   TestFormatExpense
+--- PASS: TestFormatExpense (0.00s)
+=== RUN   TestFormatAmount
+--- PASS: TestFormatAmount (0.00s)
+=== RUN   TestTotal
+--- PASS: TestTotal (0.00s)
+PASS
+ok      tracker 0.002s</code></pre>
+<h3 id="break-it-on-purpose">Break it on purpose<a class="anchor" href="#break-it-on-purpose" aria-label="Link to this section"></a></h3>
+<p>A test you’ve never seen fail is a test you can’t fully trust. In <code>main_test.go</code>, change the last row of <code>TestTotal</code> to expect <code>1650</code> instead of <code>1649</code>, and run <code>go test ./...</code>:</p>
+<pre><code class="language-text">--- FAIL: TestTotal (0.00s)
+    main_test.go:53: three expenses: total([350 1200 99]) = 1649, want 1650
+FAIL
+FAIL    tracker 0.002s
+FAIL</code></pre>
+<p>Read it like a compiler error: which test (<code>TestTotal</code>), which line (<code>53</code>), which case (<code>three expenses</code>), what it got and what it wanted. That message came from your own <code>t.Errorf</code> line. A good failure message tells you what went wrong without opening the code.</p>
+<p>Change it back to <code>1649</code> and run the tests again.</p>
+<p>Now break the <em>code</em> instead of the test. In <code>main.go</code>, change <code>sum := 0</code> to <code>sum := 1</code>, and run <code>go test ./...</code> again:</p>
+<pre><code class="language-text">--- FAIL: TestTotal (0.00s)
+    main_test.go:53: no expenses: total([]) = 1, want 0
+    main_test.go:53: one expense: total([350]) = 351, want 350
+    main_test.go:53: three expenses: total([350 1200 99]) = 1650, want 1649
+FAIL
+FAIL    tracker 0.002s
+FAIL</code></pre>
+<p>Every row of <code>TestTotal</code> fails, because every total is now one cent too high. Notice that the test kept going after the first failure: <code>t.Errorf</code> reports a problem and moves on, so you see every broken row at once. That’s what tests are for: you made a one-character mistake, and Go caught it in under a second. The AI will make mistakes like this too, and your tests will catch those the same way. Change it back and make sure everything passes.</p>
+<h3 id="check-it-yourself">Check it yourself<a class="anchor" href="#check-it-yourself" aria-label="Link to this section"></a></h3>
+<ul class="task-list">
+<li><label><input type="checkbox" /><code>go run .</code> prints the three lines in <code>SPEC.md</code>, exactly.</label></li>
+<li><label><input type="checkbox" /><code>gofmt -l .</code> and <code>go vet ./...</code> print nothing, and <code>go test ./...</code> prints <code>ok</code>.</label></li>
+<li><label><input type="checkbox" />You’ve seen a test fail and can read its message.</label></li>
+<li><label><input type="checkbox" />For each row in the two tables, you can say why it’s there.</label></li>
+<li><label><input type="checkbox" />You can explain each line of <code>main.go</code>, including <code>whole, rest :=</code> and <code>%02d</code>.</label></li>
+</ul>
+<p>Be SURE you can explain it. If a line or a table row is still fuzzy, ask your tutor about that exact line before you move on.</p>
+<aside class="book-box">
+<p class="box-label">Where AI gets Go wrong: numbers, text and tests</p>
+<ul>
+<li><p><strong>Money in <code>float64</code>.</strong> AI often stores prices as <code>float64</code> because it looks natural. You’ve seen what <code>0.1 + 0.2</code> does. In this book, money is whole cents in an <code>int</code>.</p></li>
+<li><p><strong><code>string(n)</code> to turn a number into text.</strong> AI-written code sometimes does this, and it looks reasonable. Add these two lines as the last lines of <code>main</code> and run it:</p>
+<pre><code class="language-go">    cents := 65
+    fmt.Println(&quot;Cents: &quot; + string(cents))</code></pre>
+<p>It prints <code>Cents: A</code>, not <code>Cents: 65</code>. <code>string(n)</code> turns a number into the character with that code, and 65 is the code for the letter A. The compiler accepts it, but <code>go vet ./...</code> catches it:</p>
+<pre><code class="language-text">main.go:12:26: conversion from int to string yields a string of one rune, not a string of digits</code></pre>
+<p><code>go test ./...</code> refuses to build too, because it runs this vet check automatically. That’s why the Review checks overlap: a mistake one misses, another catches. From Go 1.28 (expected February 2027), the compiler is set to reject this too. To turn a number into text, use <code>fmt.Sprint(n)</code> or <code>strconv.Itoa(n)</code>. Delete the two lines when you’re done.</p></li>
+<li><p><strong>Tests written from the code instead of the spec.</strong> If you ask the AI to “write tests for this function,” it reads the function and writes tests that agree with it, bugs included. Your tests came from <code>SPEC.md</code>, so they check what you <em>wanted</em>. Keep it that way.</p></li>
+</ul>
+</aside>
+<h2 id="explain">Explain<a class="anchor" href="#explain" aria-label="Link to this section"></a></h2>
+<h3 id="say-it-in-your-own-words">Say it in your own words<a class="anchor" href="#say-it-in-your-own-words" aria-label="Link to this section"></a></h3>
+<p>Write three or four sentences about how Tracker works now. For example:</p>
+<aside class="book-box">
+<p>Tracker stores amounts as whole cents. <code>splitCents</code> returns two values, the whole units and the cents, and <code>formatAmount</code> turns them into text like <code>3.50</code>. <code>total</code> adds up a list of amounts. My tests check each of these, and the welcome test is my spec sentence from Chapter 1.</p>
+</aside>
+<p>If a sentence falls apart halfway, that’s your next question for the AI.</p>
+<h3 id="let-the-ai-quiz-you">Let the AI quiz you<a class="anchor" href="#let-the-ai-quiz-you" aria-label="Link to this section"></a></h3>
+<pre><code class="language-text">Ask me two questions about main.go and main_test.go to check that I
+understand them. Wait for my answers before you tell me if I&#39;m right.</code></pre>
+<p>Running code to find out is still allowed. If the AI asks what <code>formatAmount(7)</code> returns, add a row to the table and let the test tell you.</p>
+<h3 id="write-a-learned-line-in-your-commit">Write a <code>Learned:</code> line in your commit<a class="anchor" href="#write-a-learned-line-in-your-commit" aria-label="Link to this section"></a></h3>
+<pre><code class="language-bash">git add .
+git commit -m &quot;Add tests, format an expense and total amounts&quot; -m &quot;Learned: store money as whole cents in an int, because a float64 can&#39;t hold 0.1 exactly.&quot;</code></pre>
+<p>Your <code>Learned:</code> line should be yours. Pick the thing that surprised you most.</p>
+<h3 id="update-agents.md-if-something-surprised-you">Update AGENTS.md if something surprised you<a class="anchor" href="#update-agents.md-if-something-surprised-you" aria-label="Link to this section"></a></h3>
+<p>Did the AI write <code>main.go</code> for you when you only asked for an explanation? Did it suggest <code>float64</code> for money? Add a rule:</p>
+<pre><code class="language-markdown">Store money as whole cents in an int, never float64.</code></pre>
+<p>Rules like this keep the AI consistent with your project as it grows. Commit the change.</p>
+<h2 id="practice-optional">Practice (optional)<a class="anchor" href="#practice-optional" aria-label="Link to this section"></a></h2>
+<p>Here are five broken programs. Each one fails to compile. Your job: run it, read the error, and fix it. Try to fix each one from the error message alone. If you’re stuck, ask your tutor to explain the <em>message</em>, not to fix the code.</p>
+<p>Put them in your <code>practice</code> folder as <code>fix1.go</code> to <code>fix5.go</code>, and run each one with <code>go run fix1.go</code> and so on. Each listing shows what it should print once fixed.</p>
+<p>Your editor may underline these files with <code>main redeclared in this block</code>, because several files in one folder each have their own <code>func main</code>. That’s expected: <code>go run</code> with a file name builds only that one file.</p>
+<p><strong>fix1.go</strong> (should print <code>Coffee: 350</code>)</p>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+    name := &quot;Coffee&quot;
+    cents := 350
+    fmt.Println(name + &quot;: &quot; + cents)
+}</code></pre>
+<p><strong>fix2.go</strong> (should print <code>Amount: 350</code>)</p>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+    amount := 350
+    count := 3
+    fmt.Println(&quot;Amount:&quot;, amount)
+}</code></pre>
+<p><strong>fix3.go</strong> (should print <code>Whole units: 16</code>)</p>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func splitCents(cents int) (int, int) {
+    return cents / 100, cents % 100
+}
+
+func main() {
+    whole := splitCents(1649)
+    fmt.Println(&quot;Whole units:&quot;, whole)
+}</code></pre>
+<p><strong>fix4.go</strong> (should print <code>700</code>; this one shows two errors, and one fix solves both)</p>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func double(cents int) int {
+    result := cents * 2
+}
+
+func main() {
+    fmt.Println(double(350))
+}</code></pre>
+<p><strong>fix5.go</strong> (should print <code>Total: 1550</code>)</p>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+    total := 350
+    total := total + 1200
+    fmt.Println(&quot;Total:&quot;, total)
+}</code></pre>
+<p>If your fix for <code>fix1.go</code> uses <code>string(cents)</code>, run <code>go vet fix1.go</code> and reread the box above.</p>
+<p class="gwa-answer-link">Tried it? Compare with the <a href="/go-with-ai/answers/#chapter-2">worked answer for Chapter 2</a>.</p>
+<h2 id="what-youve-done">What you’ve done<a class="anchor" href="#what-youve-done" aria-label="Link to this section"></a></h2>
+<p>You turned your spec into tests, watched them fail, wrote the code that made them pass, and broke a test on purpose to learn what failure looks like. Tracker can now format money correctly and add up amounts, and Go checks all of it every time you run <code>go test ./...</code>.</p>
+<p>In Chapter 3, Tracker gets real lists of expenses and totals them by category. You’ll learn slices, maps and loops properly, and the AI’s role starts to change: by the end of the chapter, you’ll write the code and the AI will review it.</p>
+<p>Until then, the habit is set: write down what “done” means, and let Go check it.</p>
+
+<footer class="guide-nav">
+  <div class="prev"><span class="label">Previous</span><a href="/go-with-ai/learn-to-code-with-ai/" rel="prev">Chapter 1: Learning to Code When AI Can Code</a></div>
+  <div class="next"><span class="label">Next</span><a href="/go-with-ai/go-slices-maps-loops/" rel="next">Chapter 3: Lists, Lookups and Loops</a></div>
+</footer>
+<nav class="gwa-allpages" aria-label="Go with AI contents"><p class="onpage-h">Go with AI: all chapters</p><ol class="gwa-contents"><li><a href="/go-with-ai/introduction/">Introduction</a></li><li><a href="/go-with-ai/learn-to-code-with-ai/">Chapter 1: Learning to Code When AI Can Code</a></li><li><a href="/go-with-ai/first-go-program-and-test/" aria-current="page">Chapter 2: Your First Program and Your First Test</a></li><li><a href="/go-with-ai/go-slices-maps-loops/">Chapter 3: Lists, Lookups and Loops</a></li><li><a href="/go-with-ai/go-structs-methods-errors/">Chapter 4: Modeling Data and Handling Errors</a></li><li><a href="/go-with-ai/go-packages-interfaces/">Chapter 5: Organizing Code: Packages and Interfaces</a></li><li><a href="/go-with-ai/go-web-api-net-http/">Chapter 6: From Command Line to Web</a></li><li><a href="/go-with-ai/go-goroutines-race-detector/">Chapter 7: A Taste of Goroutines</a></li><li><a href="/go-with-ai/setup-ai-coding-assistant/">Appendix A: Setting up your AI assistant</a></li><li><a href="/go-with-ai/git-basics/">Appendix B: Just enough Git</a></li><li><a href="/go-with-ai/sure-loop/">Appendix C: The SURE loop at a glance</a></li><li><a href="/go-with-ai/review-checklists/">Appendix D: Review checklists</a></li><li><a href="/go-with-ai/answers/">Practice answers</a></li></ol></nav>
+</article>
+</div>
+
+<!-- @footer -->
+
+</body>
+</html>

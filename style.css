@@ -469,3 +469,31 @@ a.pill { text-decoration: none; color: inherit; }
 .sale-banner code { font-family: var(--mono); font-size: 0.92em; background: var(--code-line); color: var(--code-fg); padding: 1px 6px; border-radius: 3px; }
 .sale-banner .sale-leanpub-soon, .sale-banner .sale-leanpub { color: var(--on-ink-muted); margin-left: 6px; }
 @media (max-width: 600px) { .sale-banner { font-size: 14px; padding: 9px 14px; } .sale-banner .sale-leanpub-soon, .sale-banner .sale-leanpub { display: block; margin: 2px 0 0; } }
+
+/* Go with AI (/go-with-ai/): the free book, one page per chapter. */
+.gwa-summary { font-size: 18px; line-height: 1.55; }
+.gwa-chapter .gwa-summary { background: var(--paper-2); border: 1.5px solid var(--line); border-radius: 4px; padding: 14px 18px; margin: 0 0 8px; }
+.gwa-summary-h { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--rust); margin-right: 6px; }
+.gwa-onpage ol { columns: 2; column-gap: 28px; }
+.gwa-onpage li { break-inside: avoid; font-size: 15px; }
+.gwa-chapter > h1 { font-size: clamp(32px, 5vw, 48px); line-height: 1.05; margin: 0 0 20px; }
+.gwa-allpages { margin-top: 40px; }
+.gwa-contents { padding-left: 22px; }
+.gwa-contents li { margin: 4px 0; }
+.gwa-contents a[aria-current="page"] { font-weight: 700; text-decoration: none; color: var(--ink); }
+.gwa-toc-rich { padding-left: 22px; }
+.gwa-toc-rich li { margin: 0 0 12px; }
+.gwa-toc-rich li > a { font-weight: 600; }
+.gwa-row-desc { display: block; color: var(--muted); font-size: 15.5px; line-height: 1.5; }
+.gwa-formats { list-style: none; padding: 0; }
+.gwa-formats li { margin: 0 0 10px; }
+.gwa-soon { display: inline-block; font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); border: 1.5px solid var(--line); border-radius: 999px; padding: 1px 10px; margin-left: 4px; }
+.gwa-faq h3 { margin: 22px 0 6px; font-size: 19px; }
+.gwa-landing .book-buy { display: flex; flex-wrap: wrap; gap: 10px; }
+.keep-tips { margin: 20px 0; }
+.gwa-signoff { text-align: right; font-style: italic; }
+.book-sample .footnotes { margin-top: 32px; font-size: 15px; }
+.book-sample .footnotes hr { border: 0; border-top: 1px solid var(--line); margin: 0 0 16px; }
+.book-sample .footnote-ref, .book-sample .footnote-back { text-decoration: none; }
+@media (max-width: 600px) { .gwa-onpage ol { columns: 1; } .gwa-landing .book-buy .btn { width: 100%; justify-content: center; } }
+.gwa-answer-link { font-weight: 600; border-left: 3px solid var(--rust); padding-left: 12px; }

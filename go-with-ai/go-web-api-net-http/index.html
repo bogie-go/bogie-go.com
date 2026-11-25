@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build a Go Web API with net/http: REST and JSON Tutorial | Chapter 6, Go with AI</title>
+<meta name="description" content="How do you build a web API in Go with only the standard library? Write request tests with httptest, let the AI implement a JSON API on net/http, and review its diff line by line.">
+<meta name="author" content="Roonglit Chareonsupkul">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="stylesheet" href="/fonts.css">
+<link rel="stylesheet" href="/style.css">
+<link rel="canonical" href="https://bogie-go.com/go-with-ai/go-web-api-net-http/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Bogie">
+<meta property="og:title" content="Build a Go Web API with net/http: REST and JSON Tutorial | Chapter 6, Go with AI">
+<meta property="og:description" content="How do you build a web API in Go with only the standard library? Write request tests with httptest, let the AI implement a JSON API on net/http, and review its diff line by line.">
+<meta property="og:url" content="https://bogie-go.com/go-with-ai/go-web-api-net-http/">
+<meta property="og:image" content="https://bogie-go.com/go-with-ai/cover.jpg">
+<meta property="og:image:width" content="560">
+<meta property="og:image:height" content="687">
+<meta property="og:image:alt" content="Cover of Go with AI by Roonglit Chareonsupkul">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Build a Go Web API with net/http: REST and JSON Tutorial | Chapter 6, Go with AI">
+<meta name="twitter:description" content="How do you build a web API in Go with only the standard library? Write request tests with httptest, let the AI implement a JSON API on net/http, and review its diff line by line.">
+<meta name="twitter:image" content="https://bogie-go.com/go-with-ai/cover.jpg">
+<script type="application/ld+json">{"@context": "https://schema.org","@graph": [{"@type": "Article","headline": "Chapter 6: From Command Line to Web","name": "Build a Go Web API with net/http: REST and JSON Tutorial | Chapter 6, Go with AI","description": "How do you build a web API in Go with only the standard library? Write request tests with httptest, let the AI implement a JSON API on net/http, and review its diff line by line.","url": "https://bogie-go.com/go-with-ai/go-web-api-net-http/","inLanguage": "en","author": {"@type": "Person","name": "Roonglit Chareonsupkul"},"datePublished": "2026-11-25","dateModified": "2026-11-25","image": "https://bogie-go.com/go-with-ai/cover.jpg","keywords": "golang rest api, go net/http tutorial, go web api","isPartOf": {"@id": "https://bogie-go.com/go-with-ai/#book"},"mainEntityOfPage": "https://bogie-go.com/go-with-ai/go-web-api-net-http/"},{"@type": "BreadcrumbList","itemListElement": [{"@type": "ListItem","position": 1,"name": "Bogie","item": "https://bogie-go.com/"},{"@type": "ListItem","position": 2,"name": "Go with AI","item": "https://bogie-go.com/go-with-ai/"},{"@type": "ListItem","position": 3,"name": "Chapter 6: From Command Line to Web","item": "https://bogie-go.com/go-with-ai/go-web-api-net-http/"}]}]}</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-MPVQ83E1Z9');
+</script>
+</head>
+<body>
+<!-- @header -->
+
+<div class="measure">
+<article class="book-sample gwa-chapter">
+<p class="guide-eyebrow"><a href="/go-with-ai/">Go with AI</a> · <span>Free online book</span></p>
+<h1>Chapter 6: From Command Line to Web</h1>
+<p class="gwa-summary"><span class="gwa-summary-h">In short:</span> Chapter 6 turns Tracker into a JSON web API built on Go&#x27;s standard net/http package. You write the request tests yourself, the AI implements the handlers to make them pass, and you review its diff line by line. You also get one check command for gofmt, go vet, tests and govulncheck.</p>
+<nav class="chapter-nav gwa-onpage" aria-label="On this page"><p class="onpage-h">On this page</p><ol><li><a href="#mission">Mission</a></li><li><a href="#must-know">Must know</a></li><li><a href="#set-up-one-check-command">Set up one check command</a></li><li><a href="#specify">Specify</a></li><li><a href="#use-the-ai-implementer">Use the AI: implementer</a></li><li><a href="#review-the-ais-work">Review the AI’s work</a></li><li><a href="#review">Review</a></li><li><a href="#explain">Explain</a></li><li><a href="#practice-optional">Practice (optional)</a></li><li><a href="#what-youve-done">What you’ve done</a></li></ol></nav>
+<p>Tracker works, but only for whoever sits at your terminal. To use it from a phone app, a web page or another program, it needs to speak the language of the web: <strong>HTTP</strong>. In this chapter, Tracker becomes a small <strong>web API</strong>: other programs send it requests and get JSON back.</p>
+<p>The AI stays the <strong>implementer</strong>, and it gets a bigger job than in Chapter 5. You’ll write the request tests that say exactly how the API must behave. The AI will build the API from them. Then you’ll review its work the way professionals do: by reading its <strong>diff</strong>, the exact lines it added and removed.</p>
+<p>Before any of that, you’ll make Review faster. You’ve been typing the same checks since Chapter 1. Now you’ll build one command that runs them all, including a new one: a check for known security problems.</p>
+<p>It’s the same SURE loop. You Specify with tests, the AI does the typing in Use the AI, and Review and Explain are still yours.</p>
+<h2 id="mission">Mission<a class="anchor" href="#mission" aria-label="Link to this section"></a></h2>
+<p>By the end of this chapter, you’ll have:</p>
+<ul>
+<li>One command, <code>go run ./check</code>, that runs <code>gofmt</code>, <code>go vet</code>, <code>go test</code> and <code>govulncheck</code></li>
+<li>Request tests for a Tracker API, written by you</li>
+<li>An HTTP API, built by the AI: add an expense with <code>POST /expenses</code>, get totals with <code>GET /totals</code></li>
+<li>A <code>serve</code> command that starts the API on your computer</li>
+<li>Practice reading a diff, line by line</li>
+</ul>
+<h2 id="must-know">Must know<a class="anchor" href="#must-know" aria-label="Link to this section"></a></h2>
+<ol type="1">
+<li><strong>A handler answers requests.</strong> In Go, anything with a <code>ServeHTTP(w http.ResponseWriter, r *http.Request)</code> method is an <code>http.Handler</code>. It reads the request <code>r</code> and writes the response to <code>w</code>.</li>
+<li><strong><code>http.ServeMux</code> routes requests by method and path.</strong> A pattern like <code>"GET /totals"</code> matches only GET requests to <code>/totals</code>. Requests with the wrong method get <code>405 Method Not Allowed</code> automatically.</li>
+<li><strong>Status codes say how it went.</strong> <code>200 OK</code> means success, <code>201 Created</code> means something new was added, <code>400 Bad Request</code> means the client sent something wrong, and <code>500 Internal Server Error</code> means the server failed.</li>
+<li><strong><code>net/http/httptest</code> tests handlers without a network.</strong> <code>httptest.NewRequest</code> builds a request, <code>httptest.NewRecorder</code> records the response, and you call the handler directly. No server, no ports, and the tests run in milliseconds.</li>
+<li><strong><code>encoding/json</code> works on requests too.</strong> The same struct tags that wrote <code>expenses.json</code> decode <code>{"category":"Food","cents":350}</code> from a request body into an <code>Expense</code>.</li>
+</ol>
+<h2 id="set-up-one-check-command">Set up one check command<a class="anchor" href="#set-up-one-check-command" aria-label="Link to this section"></a></h2>
+<h3 id="install-govulncheck">Install govulncheck<a class="anchor" href="#install-govulncheck" aria-label="Link to this section"></a></h3>
+<p><code>govulncheck</code> is the Go team’s tool for finding known security problems in your code and in the Go version you use. It’s the one tool in this book that doesn’t come with Go. Install it with:</p>
+<pre><code class="language-bash">go install golang.org/x/vuln/cmd/govulncheck@latest</code></pre>
+<p>It may print a few <code>go: downloading …</code> lines, or nothing at all. No error means it worked.</p>
+<p>Check that it runs:</p>
+<pre><code class="language-bash">govulncheck -version</code></pre>
+<pre><code class="language-text">Go: go1.27.4
+Scanner: govulncheck@v1.10.0
+DB: https://vuln.go.dev
+DB updated: 2026-11-23 20:05:14 +0000 UTC</code></pre>
+<p>Your versions and date will differ.</p>
+<p>If you get <code>command not found</code> (or <code>not recognized</code> on Windows), Go installed <code>govulncheck</code> into a folder that isn’t on your PATH yet. On macOS or Linux, run <code>export PATH="$PATH:$(go env GOPATH)/bin"</code> and try again. That fixes it for this terminal; Appendix A shows how to make it permanent and what to do on Windows.</p>
+<p><code>go install</code> downloads code from the internet, so this is also a good moment to remember the “What not to give the AI” rule’s twin: only install tools you trust. This one comes from the Go team.</p>
+<h3 id="write-the-check-command">Write the check command<a class="anchor" href="#write-the-check-command" aria-label="Link to this section"></a></h3>
+<p>Make a <code>check</code> folder in <code>tracker</code>:</p>
+<pre><code class="language-bash">mkdir check</code></pre>
+<p>Create <code>check/main.go</code> and type it:</p>
+<pre><code class="language-go">// Command check runs every Review check on the project.
+package main
+
+import (
+    &quot;fmt&quot;
+    &quot;os&quot;
+    &quot;os/exec&quot;
+    &quot;strings&quot;
+)
+
+func main() {
+    if err := check(); err != nil {
+        fmt.Fprintln(os.Stderr, &quot;Check failed:&quot;, err)
+        os.Exit(1)
+    }
+    fmt.Println(&quot;All checks passed.&quot;)
+}
+
+func check() error {
+    out, err := run(&quot;gofmt&quot;, &quot;-l&quot;, &quot;.&quot;)
+    if err != nil {
+        return err
+    }
+    if out != &quot;&quot; {
+        return fmt.Errorf(&quot;gofmt: these files need formatting&quot;)
+    }
+    for _, args := range [][]string{
+        {&quot;go&quot;, &quot;vet&quot;, &quot;./...&quot;},
+        {&quot;go&quot;, &quot;test&quot;, &quot;./...&quot;},
+        {&quot;govulncheck&quot;, &quot;./...&quot;},
+    } {
+        if _, err := run(args[0], args[1:]...); err != nil {
+            return err
+        }
+    }
+    return nil
+}
+
+// run prints a command, runs it and shows its output.
+func run(name string, args ...string) (string, error) {
+    fmt.Println(&quot;==&gt;&quot;, name, strings.Join(args, &quot; &quot;))
+    out, err := exec.Command(name, args...).CombinedOutput()
+    fmt.Print(string(out))
+    if err != nil {
+        return &quot;&quot;, fmt.Errorf(&quot;%s: %w&quot;, name, err)
+    }
+    return string(out), nil
+}</code></pre>
+<p>It’s a second <code>package main</code> in your module, in its own folder, so it’s a separate program. <code>os/exec</code> runs other programs, the way you’d type them in a terminal, and <code>CombinedOutput</code> collects what they print. <code>gofmt -l</code> needs special handling: it succeeds even when it lists files, so <code>check</code> treats any output as a failure. The other three fail on their own when something’s wrong.</p>
+<p>Why a Go program and not a shell script? Because it runs the same on Windows, macOS and Linux, and it uses nothing but the standard library.</p>
+<p>Run it:</p>
+<pre><code class="language-bash">go run ./check</code></pre>
+<pre><code class="language-text">==&gt; gofmt -l .
+==&gt; go vet ./...
+==&gt; go test ./...
+ok      tracker 0.002s
+?       tracker/check   [no test files]
+ok      tracker/ledger  0.004s
+ok      tracker/money   0.001s
+==&gt; govulncheck ./...
+No vulnerabilities found.
+All checks passed.</code></pre>
+<p><code>?      tracker/check   [no test files]</code> is fine: <code>check</code> is a tool, not part of Tracker. As before, some lines may say <code>(cached)</code> instead of a time. <code>govulncheck</code> needs an internet connection to fetch the latest vulnerability data, so offline, <code>check</code> fails at its last step.</p>
+<p>If <code>govulncheck</code> reports a vulnerability, read which package it names. When it’s in Go’s own standard library, the fix is usually to install the latest patch release of Go, such as 1.27.5 instead of 1.27.4, and run <code>go run ./check</code> again.</p>
+<p>From now on, Review starts with <code>go run ./check</code>.</p>
+<h2 id="specify">Specify<a class="anchor" href="#specify" aria-label="Link to this section"></a></h2>
+<p>Add these sentences to <code>SPEC.md</code>:</p>
+<pre><code class="language-markdown">10. `go run . serve` starts a web API on http://localhost:8080,
+    using expenses.json.
+11. POST /expenses with {&quot;category&quot;:&quot;Food&quot;,&quot;cents&quot;:350} adds and
+    saves the expense, answers 201 Created, and returns the expense
+    as JSON.
+12. A body that isn&#39;t valid JSON, or an amount of zero or less,
+    answers 400 Bad Request, and nothing is added.
+13. GET /totals answers 200 OK with each category&#39;s total in cents,
+    as JSON, like {&quot;Food&quot;:449,&quot;Transport&quot;:1200}.
+14. Other methods on these paths answer 405 Method Not Allowed.</code></pre>
+<p>The API goes in a new package, <code>api</code>. Make the folder:</p>
+<pre><code class="language-bash">mkdir api</code></pre>
+<p>Create <code>api/api_test.go</code>:</p>
+<pre><code class="language-go">package api
+
+import (
+    &quot;net/http&quot;
+    &quot;net/http/httptest&quot;
+    &quot;strings&quot;
+    &quot;testing&quot;
+
+    &quot;tracker/ledger&quot;
+)
+
+// newTestHandler returns the API for a Tracker that uses store.
+func newTestHandler(t *testing.T, store ledger.Storage) http.Handler {
+    t.Helper()
+    tr, err := ledger.Open(store)
+    if err != nil {
+        t.Fatalf(&quot;Open() error = %v&quot;, err)
+    }
+    return NewHandler(tr)
+}
+
+// send makes one request to h and returns the recorded response.
+func send(h http.Handler, method, target, body string) *httptest.ResponseRecorder {
+    req := httptest.NewRequest(method, target, strings.NewReader(body))
+    rec := httptest.NewRecorder()
+    h.ServeHTTP(rec, req)
+    return rec
+}
+
+// add posts one expense and stops the test if it isn&#39;t created.
+func add(t *testing.T, h http.Handler, body string) {
+    t.Helper()
+    rec := send(h, &quot;POST&quot;, &quot;/expenses&quot;, body)
+    if rec.Code != http.StatusCreated {
+        t.Fatalf(&quot;POST /expenses %s: status = %d, want %d&quot;, body, rec.Code, http.StatusCreated)
+    }
+}
+
+func TestAddExpense(t *testing.T) {
+    tests := []struct {
+        name     string
+        body     string
+        wantCode int
+    }{
+        {&quot;valid&quot;, `{&quot;category&quot;:&quot;Food&quot;,&quot;cents&quot;:350}`, http.StatusCreated},
+        {&quot;zero cents&quot;, `{&quot;category&quot;:&quot;Food&quot;,&quot;cents&quot;:0}`, http.StatusBadRequest},
+        {&quot;negative cents&quot;, `{&quot;category&quot;:&quot;Food&quot;,&quot;cents&quot;:-100}`, http.StatusBadRequest},
+        {&quot;not JSON&quot;, `coffee`, http.StatusBadRequest},
+        {&quot;cents as text&quot;, `{&quot;category&quot;:&quot;Food&quot;,&quot;cents&quot;:&quot;350&quot;}`, http.StatusBadRequest},
+    }
+    for _, tt := range tests {
+        h := newTestHandler(t, &amp;ledger.MemoryStorage{})
+        rec := send(h, &quot;POST&quot;, &quot;/expenses&quot;, tt.body)
+        if rec.Code != tt.wantCode {
+            t.Errorf(&quot;%s: status = %d, want %d&quot;, tt.name, rec.Code, tt.wantCode)
+        }
+    }
+}
+
+func TestAddExpenseResponse(t *testing.T) {
+    h := newTestHandler(t, &amp;ledger.MemoryStorage{})
+    rec := send(h, &quot;POST&quot;, &quot;/expenses&quot;, `{&quot;category&quot;:&quot;Food&quot;,&quot;cents&quot;:350}`)
+    if got := rec.Header().Get(&quot;Content-Type&quot;); got != &quot;application/json&quot; {
+        t.Errorf(&quot;Content-Type = %q, want %q&quot;, got, &quot;application/json&quot;)
+    }
+    want := `{&quot;category&quot;:&quot;Food&quot;,&quot;cents&quot;:350}` + &quot;\n&quot;
+    if got := rec.Body.String(); got != want {
+        t.Errorf(&quot;body = %q, want %q&quot;, got, want)
+    }
+}
+
+func TestAddExpenseSaves(t *testing.T) {
+    store := &amp;ledger.MemoryStorage{}
+    h := newTestHandler(t, store)
+    add(t, h, `{&quot;category&quot;:&quot;Food&quot;,&quot;cents&quot;:350}`)
+
+    tr, err := ledger.Open(store)
+    if err != nil {
+        t.Fatalf(&quot;Open() error = %v&quot;, err)
+    }
+    if got := tr.Totals()[&quot;Food&quot;]; got != 350 {
+        t.Errorf(&quot;saved Food total = %d, want 350&quot;, got)
+    }
+}
+
+func TestTotals(t *testing.T) {
+    h := newTestHandler(t, &amp;ledger.MemoryStorage{})
+    add(t, h, `{&quot;category&quot;:&quot;Food&quot;,&quot;cents&quot;:350}`)
+    add(t, h, `{&quot;category&quot;:&quot;Transport&quot;,&quot;cents&quot;:1200}`)
+    add(t, h, `{&quot;category&quot;:&quot;Food&quot;,&quot;cents&quot;:99}`)
+
+    rec := send(h, &quot;GET&quot;, &quot;/totals&quot;, &quot;&quot;)
+    if rec.Code != http.StatusOK {
+        t.Fatalf(&quot;status = %d, want %d&quot;, rec.Code, http.StatusOK)
+    }
+    want := `{&quot;Food&quot;:449,&quot;Transport&quot;:1200}` + &quot;\n&quot;
+    if got := rec.Body.String(); got != want {
+        t.Errorf(&quot;body = %q, want %q&quot;, got, want)
+    }
+}
+
+func TestWrongMethod(t *testing.T) {
+    h := newTestHandler(t, &amp;ledger.MemoryStorage{})
+    rec := send(h, &quot;DELETE&quot;, &quot;/totals&quot;, &quot;&quot;)
+    if rec.Code != http.StatusMethodNotAllowed {
+        t.Errorf(&quot;status = %d, want %d&quot;, rec.Code, http.StatusMethodNotAllowed)
+    }
+}</code></pre>
+<p>Each test maps to a sentence in your spec. A few details:</p>
+<ul>
+<li>The tests use <code>MemoryStorage</code> from Chapter 5, so they never touch <code>expenses.json</code>. That’s the interface paying off again.</li>
+<li>Three small helpers keep the tests short. <code>send</code> makes one request, <code>add</code> posts an expense and stops the test if it fails, and <code>newTestHandler</code> builds the API. All three call <code>NewHandler</code>, the one function the AI must write.</li>
+<li>The body strings use backticks, <code>`...`</code>. Inside backticks, Go takes the text exactly as written, so the JSON’s double quotes need no escaping.</li>
+<li>The expected bodies end in <code>"\n"</code>, because Go’s JSON encoder ends its output with a newline.</li>
+<li><code>TestAddExpenseSaves</code> opens a second Tracker on the same store. If the API forgets to save, this test catches it.</li>
+<li>In <code>TestTotals</code>, the JSON keys come out sorted, <code>Food</code> before <code>Transport</code>. <code>encoding/json</code> always sorts map keys, so the expected body is exact.</li>
+</ul>
+<p>Run the tests:</p>
+<pre><code class="language-bash">go test ./...</code></pre>
+<pre><code class="language-text">ok      tracker (cached)
+# tracker/api [tracker/api.test]
+api/api_test.go:19:9: undefined: NewHandler
+FAIL    tracker/api [build failed]
+?       tracker/check   [no test files]
+ok      tracker/ledger  (cached)
+ok      tracker/money   (cached)
+FAIL</code></pre>
+<p>One missing function. That’s the AI’s job.</p>
+<p>Commit your tests and the check command first, so the AI’s changes stand on their own:</p>
+<pre><code class="language-bash">git add .
+git commit -m &quot;Add API tests and a check command&quot; -m &quot;Learned: httptest lets me test HTTP handlers without starting a server.&quot;</code></pre>
+<h2 id="use-the-ai-implementer">Use the AI: implementer<a class="anchor" href="#use-the-ai-implementer" aria-label="Link to this section"></a></h2>
+<p>Ask:</p>
+<pre><code class="language-text">Create package api in api/api.go with
+func NewHandler(tr *ledger.Tracker) http.Handler, so that
+go test ./... passes. Use http.ServeMux with method patterns like
+&quot;GET /totals&quot;. Also add a &quot;serve&quot; command to run in main.go that
+starts the API on localhost:8080 with the same file storage.
+Use only the standard library. Don&#39;t change any test files.</code></pre>
+<p>The prompt names the tools (<code>http.ServeMux</code> with method patterns) because the AI might otherwise reach for a third-party router. It also repeats the rule about tests. If you added “Never edit files ending in _test.go” to <code>AGENTS.md</code> in Chapter 5’s Practice, the AI has heard it twice.</p>
+<h2 id="review-the-ais-work">Review the AI’s work<a class="anchor" href="#review-the-ais-work" aria-label="Link to this section"></a></h2>
+<h3 id="check-the-scope">1. Check the scope<a class="anchor" href="#check-the-scope" aria-label="Link to this section"></a></h3>
+<pre><code class="language-bash">git status --short</code></pre>
+<pre><code class="language-text"> M main.go
+?? api/api.go</code></pre>
+<p><code>M</code> means modified; <code>??</code> means a new file Git hasn’t seen before. Two files: the new <code>api.go</code> and a change to <code>main.go</code>. No test files. If you see <code>api/api_test.go</code> here, the AI changed your tests: <code>git restore api/api_test.go</code> and ask again.</p>
+<h3 id="let-go-check">2. Let Go check<a class="anchor" href="#let-go-check" aria-label="Link to this section"></a></h3>
+<pre><code class="language-bash">go run ./check</code></pre>
+<p>Every step should pass, ending with <code>All checks passed.</code> If <code>go test</code> fails, don’t fix the AI’s code yourself yet. Show it the failure and ask it to fix its own code without touching the tests.</p>
+<h3 id="read-the-diff">3. Read the diff<a class="anchor" href="#read-the-diff" aria-label="Link to this section"></a></h3>
+<p>A <strong>diff</strong> shows exactly what changed. New files don’t show up in <code>git diff</code> until Git knows about them, so first add everything, then look at what’s added:</p>
+<pre><code class="language-bash">git add .
+git diff --staged --stat</code></pre>
+<pre><code class="language-text"> api/api.go | 45 +++++++++++++++++++++++++++++++++++++++++++++
+ main.go    |  9 ++++++++-
+ 2 files changed, 53 insertions(+), 1 deletion(-)</code></pre>
+<p><code>--stat</code> is the summary: which files changed, and how many lines were added (<code>+</code>) and removed (<code>-</code>). Your numbers will match only if the AI wrote exactly the book’s version; they’re a quick sense of size. Now the full change to <code>main.go</code>:</p>
+<pre><code class="language-bash">git diff --staged main.go</code></pre>
+<p>Here’s the diff for the book’s version:</p>
+<pre><code class="language-text">diff --git a/main.go b/main.go
+index fbf9662..5c1c268 100644
+--- a/main.go
++++ b/main.go
+@@ -3,10 +3,12 @@ package main
+ import (
+    &quot;errors&quot;
+    &quot;fmt&quot;
++   &quot;net/http&quot;
+    &quot;os&quot;
+    &quot;slices&quot;
+    &quot;strconv&quot;
+ 
++   &quot;tracker/api&quot;
+    &quot;tracker/ledger&quot;
+    &quot;tracker/money&quot;
+ )
+@@ -38,6 +40,11 @@ func run(args []string) error {
+        return nil
+    }
+ 
++   if len(args) == 1 &amp;&amp; args[0] == &quot;serve&quot; {
++       fmt.Println(&quot;Listening on http://localhost:8080&quot;)
++       return http.ListenAndServe(&quot;localhost:8080&quot;, api.NewHandler(tracker))
++   }
++
+    if len(args) == 3 &amp;&amp; args[0] == &quot;add&quot; {
+        category := args[1]
+        cents, err := strconv.Atoi(args[2])
+@@ -54,7 +61,7 @@ func run(args []string) error {
+        return nil
+    }
+ 
+-   return errors.New(&quot;usage: go run . [add CATEGORY CENTS]&quot;)
++   return errors.New(&quot;usage: go run . [add CATEGORY CENTS | serve]&quot;)
+ }
+ 
+ func welcome() string {</code></pre>
+<p>How to read it:</p>
+<ul>
+<li>The <code>---</code> and <code>+++</code> lines name the file before and after. You can skip the <code>index</code> line; it’s Git’s bookkeeping, and its numbers may differ for you.</li>
+<li>Each <code>@@ -3,10 +3,12 @@</code> starts a <strong>hunk</strong>, one block of changes. It means “starting at line 3, ten lines before became twelve after.” The text after the second <code>@@</code> is the function or line the hunk belongs to.</li>
+<li>Lines starting with <code>+</code> were added, lines with <code>-</code> were removed, and lines starting with a space are unchanged context, shown so you know where you are.</li>
+</ul>
+<p>The last hunk is the kind of change that’s easy to miss: the AI also updated the usage message. That’s good, but it’s also something you didn’t ask for. Reading diffs is how you notice every change, the ones you asked for and the ones you didn’t.</p>
+<p>Now read <code>api.go</code>. For a new file, every line is <code>+</code>, so it’s easier to open it in your editor. Here’s the book’s version; the AI’s may differ:</p>
+<pre><code class="language-go">// Package api serves a Tracker over HTTP, as JSON.
+package api
+
+import (
+    &quot;encoding/json&quot;
+    &quot;log&quot;
+    &quot;net/http&quot;
+
+    &quot;tracker/ledger&quot;
+)
+
+// NewHandler returns an http.Handler for the Tracker&#39;s API.
+func NewHandler(tr *ledger.Tracker) http.Handler {
+    mux := http.NewServeMux()
+    mux.HandleFunc(&quot;POST /expenses&quot;, func(w http.ResponseWriter, r *http.Request) {
+        var e ledger.Expense
+        if err := json.NewDecoder(r.Body).Decode(&amp;e); err != nil {
+            http.Error(w, &quot;invalid JSON: &quot;+err.Error(), http.StatusBadRequest)
+            return
+        }
+        if err := tr.Add(e.Category, e.Cents); err != nil {
+            http.Error(w, err.Error(), http.StatusBadRequest)
+            return
+        }
+        if err := tr.Save(); err != nil {
+            log.Printf(&quot;save: %v&quot;, err)
+            http.Error(w, &quot;could not save the expense&quot;, http.StatusInternalServerError)
+            return
+        }
+        writeJSON(w, http.StatusCreated, e)
+    })
+    mux.HandleFunc(&quot;GET /totals&quot;, func(w http.ResponseWriter, r *http.Request) {
+        writeJSON(w, http.StatusOK, tr.Totals())
+    })
+    return mux
+}
+
+// writeJSON sends v as JSON with the given status code.
+func writeJSON(w http.ResponseWriter, status int, v any) {
+    w.Header().Set(&quot;Content-Type&quot;, &quot;application/json&quot;)
+    w.WriteHeader(status)
+    if err := json.NewEncoder(w).Encode(v); err != nil {
+        log.Printf(&quot;write JSON: %v&quot;, err)
+    }
+}</code></pre>
+<p>Ask the questions from earlier chapters, plus two for handlers:</p>
+<ol type="1">
+<li><strong>Do I understand it?</strong> Each <code>HandleFunc</code> takes a pattern and a function. That function is written right there, without a name, which is called a <strong>function literal</strong>. If that’s new, ask the AI to explain it.</li>
+<li><strong>Does it fit this project?</strong> Standard library only, money in cents, every error checked.</li>
+<li><strong>Does every error path <code>return</code>?</strong> After <code>http.Error</code>, the handler must stop. Otherwise it carries on and tries to write a second response.</li>
+<li><strong>Does it use the right status codes?</strong> Compare each one with <code>SPEC.md</code>.</li>
+</ol>
+<p>Notice what <code>writeJSON</code> does with an error it can’t send back. Once the status code is written, it’s too late to change it, so it logs the error instead of ignoring it.</p>
+<p>Here are example suggestions you might make, or the AI might make if you ask it to review its own work (not real AI output):</p>
+<div class="table-wrap"><table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Suggestion</th>
+<th>Keep?</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Use a third-party router like chi or gorilla/mux</td>
+<td>Reject</td>
+<td>Since Go 1.22, <code>http.ServeMux</code> handles methods and path patterns. Standard library only.</td>
+</tr>
+<tr>
+<td>Limit the request body size with <code>http.MaxBytesReader</code></td>
+<td>Your call</td>
+<td>A real protection against huge requests. Keep it if you can explain it, and add a test.</td>
+</tr>
+<tr>
+<td>Return errors as JSON, like <code>{"error":"..."}</code></td>
+<td>Your call</td>
+<td>Nicer for programs that use the API. It changes the spec, so update <code>SPEC.md</code> and the tests first.</td>
+</tr>
+<tr>
+<td>Accept amounts like <code>3.50</code> as a float</td>
+<td>Reject</td>
+<td>Money is whole cents.</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="try-it-for-real">4. Try it for real<a class="anchor" href="#try-it-for-real" aria-label="Link to this section"></a></h3>
+<p>Start the server:</p>
+<pre><code class="language-bash">go run . serve</code></pre>
+<pre><code class="language-text">Listening on http://localhost:8080</code></pre>
+<p>It keeps running and waits for requests. Leave it there, and open a second terminal. You’ll use <code>curl</code>, a command-line tool for making HTTP requests that comes with macOS, Linux and Windows 10 and later. On Windows PowerShell, type <code>curl.exe</code> instead of <code>curl</code>, and use the JSON quoting tips in Appendix A.</p>
+<p>Your <code>expenses.json</code> from earlier chapters is still there, so:</p>
+<pre><code class="language-bash">curl -s localhost:8080/totals</code></pre>
+<pre><code class="language-text">{&quot;Food&quot;:449,&quot;Fun&quot;:1500,&quot;Transport&quot;:1200}</code></pre>
+<p>Add an expense:</p>
+<pre><code class="language-bash">curl -s -X POST localhost:8080/expenses -d &#39;{&quot;category&quot;:&quot;Food&quot;,&quot;cents&quot;:250}&#39;</code></pre>
+<pre><code class="language-text">{&quot;category&quot;:&quot;Food&quot;,&quot;cents&quot;:250}</code></pre>
+<p>And try a bad one:</p>
+<pre><code class="language-bash">curl -s -X POST localhost:8080/expenses -d &#39;{&quot;category&quot;:&quot;Food&quot;,&quot;cents&quot;:0}&#39;</code></pre>
+<pre><code class="language-text">add &quot;Food&quot;: amount must be more than zero</code></pre>
+<p><code>-s</code> hides <code>curl</code>’s progress meter, <code>-X POST</code> sets the method, and <code>-d</code> sends the body. Go back to the first terminal and press <strong>Ctrl+C</strong> to stop the server. You’ll see <code>signal: interrupt</code>; that’s just <code>go run</code> reporting that you stopped it. Then run <code>go run .</code>: the Food total now includes the 2.50 you added through the API.</p>
+<h2 id="review">Review<a class="anchor" href="#review" aria-label="Link to this section"></a></h2>
+<h3 id="break-it-on-purpose">Break it on purpose<a class="anchor" href="#break-it-on-purpose" aria-label="Link to this section"></a></h3>
+<p><strong>Break 1: forget to save.</strong> In <code>api.go</code>, delete the whole <code>if err := tr.Save(); ... }</code> block, and run <code>go test ./api</code>:</p>
+<pre><code class="language-text">--- FAIL: TestAddExpenseSaves (0.00s)
+    api_test.go:82: saved Food total = 0, want 350
+FAIL
+FAIL    tracker/api 0.003s
+FAIL</code></pre>
+<p>Without that block, the API would answer <code>201 Created</code> and lose the expense when the server stops. The response looks perfect; only your test knew to look in storage. Put the block back.</p>
+<p><strong>Break 2: messy formatting.</strong> In <code>api.go</code>, change <code>mux := http.NewServeMux()</code> to <code>mux   :=   http.NewServeMux()</code> and run <code>go run ./check</code>:</p>
+<pre><code class="language-text">==&gt; gofmt -l .
+api/api.go
+Check failed: gofmt: these files need formatting
+exit status 1</code></pre>
+<p><code>check</code> stops at the first failing step and names the file. Run <code>gofmt -w api/api.go</code> to fix it.</p>
+<h3 id="check-it-yourself">Check it yourself<a class="anchor" href="#check-it-yourself" aria-label="Link to this section"></a></h3>
+<ul class="task-list">
+<li><label><input type="checkbox" /><code>go run ./check</code> ends with <code>All checks passed.</code></label></li>
+<li><label><input type="checkbox" /><code>git status</code> showed only <code>main.go</code> and <code>api/api.go</code> changed by the AI.</label></li>
+<li><label><input type="checkbox" />You read the whole diff and can name every change, including any you didn’t ask for.</label></li>
+<li><label><input type="checkbox" />You can explain each handler: what it reads, what it checks and which status it returns.</label></li>
+<li><label><input type="checkbox" />You tried the API with <code>curl</code> and stopped the server with Ctrl+C.</label></li>
+</ul>
+<p>Be SURE you can explain it. The AI typed it, but it’s your project.</p>
+<aside class="book-box">
+<p class="box-label">Where AI gets Go wrong: HTTP</p>
+<ul>
+<li><strong>Third-party routers.</strong> Older code often uses gorilla/mux, chi or gin for routing by method and path. Since Go 1.22, <code>http.ServeMux</code> does that with patterns like <code>"POST /expenses"</code>.</li>
+<li><strong>Checking the method by hand.</strong> Code like <code>if r.Method != http.MethodPost { ... }</code> inside a handler is the old way. It works, but patterns make it automatic, including the <code>405</code> response.</li>
+<li><strong>No <code>return</code> after <code>http.Error</code>.</strong> The handler keeps running and tries to write a second response. Go logs <code>http: superfluous response.WriteHeader call</code> and the client gets a confusing reply.</li>
+<li><strong>Ignoring encode and decode errors.</strong> <code>json.NewEncoder(w).Encode(v)</code> returns an error too. At minimum, log it.</li>
+<li><strong>Data races.</strong> Every request runs at the same time as the others, so two requests can change the Tracker at once. Your tests send one request at a time, so they don’t notice. Chapter 7 is about exactly this.</li>
+</ul>
+</aside>
+<h2 id="explain">Explain<a class="anchor" href="#explain" aria-label="Link to this section"></a></h2>
+<h3 id="say-it-in-your-own-words">Say it in your own words<a class="anchor" href="#say-it-in-your-own-words" aria-label="Link to this section"></a></h3>
+<aside class="book-box">
+<p>My tests describe the API with httptest: no server, just a request and a recorder. The AI wrote NewHandler with two routes, “POST /expenses” and “GET /totals”, and a serve command. I checked that it only changed main.go and api.go, read the diff, and ran go run ./check, which runs every Review check in one go.</p>
+</aside>
+<h3 id="let-the-ai-quiz-you">Let the AI quiz you<a class="anchor" href="#let-the-ai-quiz-you" aria-label="Link to this section"></a></h3>
+<pre><code class="language-text">Ask me two questions about the handlers in api/api.go or my tests in
+api/api_test.go. Wait for my answers before you tell me if I&#39;m right.</code></pre>
+<h3 id="write-a-learned-line-in-your-commit">Write a <code>Learned:</code> line in your commit<a class="anchor" href="#write-a-learned-line-in-your-commit" aria-label="Link to this section"></a></h3>
+<p>The Break steps changed files after you staged them, so stage again before committing:</p>
+<pre><code class="language-bash">git add .
+git commit -m &quot;Add an HTTP API and a serve command&quot; -m &quot;Learned: a diff shows every change the AI made, including the ones I didn&#39;t ask for.&quot;</code></pre>
+<h3 id="update-agents.md-if-something-surprised-you">Update AGENTS.md if something surprised you<a class="anchor" href="#update-agents.md-if-something-surprised-you" aria-label="Link to this section"></a></h3>
+<p>Did the AI use a third-party router, skip a <code>return</code>, or change more than you asked? Add a rule, for example:</p>
+<pre><code class="language-markdown">Use net/http&#39;s ServeMux with method patterns; no third-party routers.</code></pre>
+<h2 id="practice-optional">Practice (optional)<a class="anchor" href="#practice-optional" aria-label="Link to this section"></a></h2>
+<p>Write the request tests for a new endpoint, <code>GET /totals/{category}</code>:</p>
+<pre><code class="language-markdown">15. GET /totals/Food answers 200 OK with the Food total as JSON:
+    {&quot;category&quot;:&quot;Food&quot;,&quot;cents&quot;:449}
+16. GET /totals/Travel, a category with no expenses, answers
+    404 Not Found.</code></pre>
+<p>Add the sentences to <code>SPEC.md</code>, then write the tests in <code>api/api_test.go</code>: use <code>add</code> to set up some expenses, <code>send</code> to make the request, and check the status code and, for the 200 case, the exact body. Run them and watch them fail, then commit.</p>
+<p>That’s the whole exercise: tests that say exactly what “done” means. If you want to go further, ask the AI to implement it, then review its diff. Hint for your review: in a pattern like <code>"GET /totals/{category}"</code>, the handler reads the category with <code>r.PathValue("category")</code>.</p>
+<p class="gwa-answer-link">Tried it? Compare with the <a href="/go-with-ai/answers/#chapter-6">worked answer for Chapter 6</a>.</p>
+<h2 id="what-youve-done">What you’ve done<a class="anchor" href="#what-youve-done" aria-label="Link to this section"></a></h2>
+<p>Tracker is now a web API. You specified it with request tests, the AI built it, and you reviewed its work in four steps: scope, checks, diff and a real request. You also turned Review into one command, <code>go run ./check</code>, which checks formatting, mistakes, tests and known security problems every time.</p>
+<p>The Where AI gets Go wrong box ended with a warning: your API answers many requests at once, and Tracker isn’t ready for that. In Chapter 7, you’ll see the problem with Go’s race detector, then make Tracker safe for many requests at the same time.</p>
+
+<footer class="guide-nav">
+  <div class="prev"><span class="label">Previous</span><a href="/go-with-ai/go-packages-interfaces/" rel="prev">Chapter 5: Organizing Code: Packages and Interfaces</a></div>
+  <div class="next"><span class="label">Next</span><a href="/go-with-ai/go-goroutines-race-detector/" rel="next">Chapter 7: A Taste of Goroutines</a></div>
+</footer>
+<nav class="gwa-allpages" aria-label="Go with AI contents"><p class="onpage-h">Go with AI: all chapters</p><ol class="gwa-contents"><li><a href="/go-with-ai/introduction/">Introduction</a></li><li><a href="/go-with-ai/learn-to-code-with-ai/">Chapter 1: Learning to Code When AI Can Code</a></li><li><a href="/go-with-ai/first-go-program-and-test/">Chapter 2: Your First Program and Your First Test</a></li><li><a href="/go-with-ai/go-slices-maps-loops/">Chapter 3: Lists, Lookups and Loops</a></li><li><a href="/go-with-ai/go-structs-methods-errors/">Chapter 4: Modeling Data and Handling Errors</a></li><li><a href="/go-with-ai/go-packages-interfaces/">Chapter 5: Organizing Code: Packages and Interfaces</a></li><li><a href="/go-with-ai/go-web-api-net-http/" aria-current="page">Chapter 6: From Command Line to Web</a></li><li><a href="/go-with-ai/go-goroutines-race-detector/">Chapter 7: A Taste of Goroutines</a></li><li><a href="/go-with-ai/setup-ai-coding-assistant/">Appendix A: Setting up your AI assistant</a></li><li><a href="/go-with-ai/git-basics/">Appendix B: Just enough Git</a></li><li><a href="/go-with-ai/sure-loop/">Appendix C: The SURE loop at a glance</a></li><li><a href="/go-with-ai/review-checklists/">Appendix D: Review checklists</a></li><li><a href="/go-with-ai/answers/">Practice answers</a></li></ol></nav>
+</article>
+</div>
+
+<!-- @footer -->
+
+</body>
+</html>

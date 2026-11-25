@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Go Slices, Maps and for Loops for Beginners | Chapter 3, Go with AI</title>
+<meta name="description" content="How do slices, maps and loops work in Go? Learn them by building category totals, see why map order is random, and use the AI as a pair programmer that reviews your code.">
+<meta name="author" content="Roonglit Chareonsupkul">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="stylesheet" href="/fonts.css">
+<link rel="stylesheet" href="/style.css">
+<link rel="canonical" href="https://bogie-go.com/go-with-ai/go-slices-maps-loops/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Bogie">
+<meta property="og:title" content="Go Slices, Maps and for Loops for Beginners | Chapter 3, Go with AI">
+<meta property="og:description" content="How do slices, maps and loops work in Go? Learn them by building category totals, see why map order is random, and use the AI as a pair programmer that reviews your code.">
+<meta property="og:url" content="https://bogie-go.com/go-with-ai/go-slices-maps-loops/">
+<meta property="og:image" content="https://bogie-go.com/go-with-ai/cover.jpg">
+<meta property="og:image:width" content="560">
+<meta property="og:image:height" content="687">
+<meta property="og:image:alt" content="Cover of Go with AI by Roonglit Chareonsupkul">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Go Slices, Maps and for Loops for Beginners | Chapter 3, Go with AI">
+<meta name="twitter:description" content="How do slices, maps and loops work in Go? Learn them by building category totals, see why map order is random, and use the AI as a pair programmer that reviews your code.">
+<meta name="twitter:image" content="https://bogie-go.com/go-with-ai/cover.jpg">
+<script type="application/ld+json">{"@context": "https://schema.org","@graph": [{"@type": "Article","headline": "Chapter 3: Lists, Lookups and Loops","name": "Go Slices, Maps and for Loops for Beginners | Chapter 3, Go with AI","description": "How do slices, maps and loops work in Go? Learn them by building category totals, see why map order is random, and use the AI as a pair programmer that reviews your code.","url": "https://bogie-go.com/go-with-ai/go-slices-maps-loops/","inLanguage": "en","author": {"@type": "Person","name": "Roonglit Chareonsupkul"},"datePublished": "2026-11-25","dateModified": "2026-11-25","image": "https://bogie-go.com/go-with-ai/cover.jpg","keywords": "golang slices, go maps, go for loop","isPartOf": {"@id": "https://bogie-go.com/go-with-ai/#book"},"mainEntityOfPage": "https://bogie-go.com/go-with-ai/go-slices-maps-loops/"},{"@type": "BreadcrumbList","itemListElement": [{"@type": "ListItem","position": 1,"name": "Bogie","item": "https://bogie-go.com/"},{"@type": "ListItem","position": 2,"name": "Go with AI","item": "https://bogie-go.com/go-with-ai/"},{"@type": "ListItem","position": 3,"name": "Chapter 3: Lists, Lookups and Loops","item": "https://bogie-go.com/go-with-ai/go-slices-maps-loops/"}]}]}</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-MPVQ83E1Z9');
+</script>
+</head>
+<body>
+<!-- @header -->
+
+<div class="measure">
+<article class="book-sample gwa-chapter">
+<p class="guide-eyebrow"><a href="/go-with-ai/">Go with AI</a> · <span>Free online book</span></p>
+<h1>Chapter 3: Lists, Lookups and Loops</h1>
+<p class="gwa-summary"><span class="gwa-summary-h">In short:</span> Chapter 3 teaches Go&#x27;s slices, maps and its one loop keyword, for. Tracker learns to total expenses by category in a stable order, you see why Go maps have no order, and the AI switches from tutor to pair: you write the code and it reviews it.</p>
+<nav class="chapter-nav gwa-onpage" aria-label="On this page"><p class="onpage-h">On this page</p><ol><li><a href="#from-tutor-to-pair">From tutor to pair</a></li><li><a href="#mission">Mission</a></li><li><a href="#must-know">Must know</a></li><li><a href="#specify">Specify</a></li><li><a href="#use-the-ai">Use the AI</a></li><li><a href="#review">Review</a></li><li><a href="#explain">Explain</a></li><li><a href="#practice-optional">Practice (optional)</a></li><li><a href="#what-youve-done">What you’ve done</a></li></ol></nav>
+<p>So far, Tracker knows about one coffee and a hard-coded list of three amounts. Real spending doesn’t work like that. You buy food twice in one day, take a taxi, see a film, and at the end of the month you want to know: where did the money go?</p>
+<p>In this chapter, Tracker learns to record expenses by <strong>category</strong> and total each one. To do that, you’ll go deeper into the two tools Go gives you for groups of values: <strong>slices</strong> (lists) and <strong>maps</strong> (lookups). You’ll also meet loops and <code>if</code> properly, and a Go idea that quietly explains a lot of surprises: <strong>zero values</strong>.</p>
+<p>It’s the same SURE loop as before. But halfway through this chapter, something changes.</p>
+<h2 id="from-tutor-to-pair">From tutor to pair<a class="anchor" href="#from-tutor-to-pair" aria-label="Link to this section"></a></h2>
+<p>Until now, the AI has been your tutor: it explained, and you typed code from the book. In this chapter, you’ll do both jobs in turn:</p>
+<ul>
+<li><strong>First half: tutor.</strong> The AI explains maps and slices, and you type two functions from the book.</li>
+<li><strong>Second half: pair.</strong> You write two functions <strong>yourself</strong>, from the tests. Then you ask the AI to <strong>review</strong> your code, and you decide which of its suggestions to keep.</li>
+</ul>
+<p>That last part is the new skill. A review is a list of suggestions, not orders. Some will be good, some will be fine but unnecessary, and some will be wrong. Deciding which is which is how you learn, and it’s a skill you’ll use for the rest of your career.</p>
+<h2 id="mission">Mission<a class="anchor" href="#mission" aria-label="Link to this section"></a></h2>
+<p>By the end of this chapter, you’ll have:</p>
+<ul>
+<li>A way to add expenses, each with a category and an amount in cents</li>
+<li>Totals for each category, printed in a stable order</li>
+<li>A clear message for a category with no expenses</li>
+<li>Two functions you wrote yourself, reviewed by the AI</li>
+<li>A commit with a <code>Learned:</code> line</li>
+</ul>
+<h2 id="must-know">Must know<a class="anchor" href="#must-know" aria-label="Link to this section"></a></h2>
+<ol type="1">
+<li><strong>A slice is a list that can grow.</strong> <code>append</code> adds items and returns the new slice, so you always write <code>s = append(s, item)</code>. <code>len(s)</code> gives the number of items.</li>
+<li><strong>A map looks up a value by its key.</strong> In <code>map[string]int</code>, the keys are <code>string</code>s and the values are <code>int</code>s. You create one with <code>make(map[string]int)</code>.</li>
+<li><strong>Every type has a zero value.</strong> It’s what a variable holds before you give it anything: <code>0</code> for numbers, <code>""</code> for strings, <code>false</code> for <code>bool</code>, and <code>nil</code> for slices and maps. Looking up a missing map key gives you the zero value, not an error.</li>
+<li><strong>A <code>nil</code> slice is ready to use; a <code>nil</code> map is not.</strong> You can <code>append</code> to a nil slice and take its <code>len</code>. You can read from a nil map, but writing to one crashes your program. Always create maps with <code>make</code> before writing to them.</li>
+<li><strong>Map order is random, on purpose.</strong> When you loop over a map, Go may give you the keys in a different order each run. When order matters, collect the keys into a slice and sort it.</li>
+</ol>
+<h2 id="specify">Specify<a class="anchor" href="#specify" aria-label="Link to this section"></a></h2>
+<p>Update <code>SPEC.md</code> so it describes the new Tracker. Keep sentence 1 and replace the rest:</p>
+<pre><code class="language-markdown">1. `go run .` prints exactly:
+   Welcome to Tracker. Let&#39;s see where your money goes.
+2. Tracker records these expenses: Food 3.50, Transport 12.00,
+   Food 0.99, Fun 15.00.
+3. It prints one line per category, sorted by name, with the
+   category total:
+   Food: 4.49
+   Fun: 15.00
+   Transport: 12.00
+4. For a category with no expenses, it prints:
+   Travel: no expenses</code></pre>
+<p>Now turn those sentences into tests. In <code>main_test.go</code>, replace the line <code>import "testing"</code> with this import block, because the new tests use two more packages:</p>
+<pre><code class="language-go">import (
+    &quot;maps&quot;
+    &quot;slices&quot;
+    &quot;testing&quot;
+)</code></pre>
+<p>Then add these three tests at the end of the file:</p>
+<pre><code class="language-go">func TestTotalsByCategory(t *testing.T) {
+    expenses := make(map[string][]int)
+    addExpense(expenses, &quot;Food&quot;, 350)
+    addExpense(expenses, &quot;Transport&quot;, 1200)
+    addExpense(expenses, &quot;Food&quot;, 99)
+
+    got := totalsByCategory(expenses)
+    want := map[string]int{&quot;Food&quot;: 449, &quot;Transport&quot;: 1200}
+    if !maps.Equal(got, want) {
+        t.Errorf(&quot;totalsByCategory() = %v, want %v&quot;, got, want)
+    }
+}
+
+func TestSortedCategories(t *testing.T) {
+    totals := map[string]int{&quot;Transport&quot;: 1200, &quot;Food&quot;: 449, &quot;Fun&quot;: 1500}
+    got := sortedCategories(totals)
+    want := []string{&quot;Food&quot;, &quot;Fun&quot;, &quot;Transport&quot;}
+    if !slices.Equal(got, want) {
+        t.Errorf(&quot;sortedCategories() = %v, want %v&quot;, got, want)
+    }
+}
+
+func TestDescribeCategory(t *testing.T) {
+    totals := map[string]int{&quot;Food&quot;: 449, &quot;Gifts&quot;: 0}
+    tests := []struct {
+        category string
+        want     string
+    }{
+        {&quot;Food&quot;, &quot;Food: 4.49&quot;},
+        {&quot;Gifts&quot;, &quot;Gifts: 0.00&quot;},
+        {&quot;Travel&quot;, &quot;Travel: no expenses&quot;},
+    }
+    for _, tt := range tests {
+        got := describeCategory(totals, tt.category)
+        if got != tt.want {
+            t.Errorf(&quot;describeCategory(%q) = %q, want %q&quot;, tt.category, got, tt.want)
+        }
+    }
+}</code></pre>
+<p>Your Chapter 2 tests stay as they are. They still describe how Tracker formats money.</p>
+<p>A few things to notice:</p>
+<ul>
+<li>The expenses are a <code>map[string][]int</code>: each category maps to a <strong>slice</strong> of amounts in cents. Food gets <code>[350, 99]</code>, and Transport gets <code>[1200]</code>.</li>
+<li>The tests compare maps with <code>maps.Equal</code> and slices with <code>slices.Equal</code>. You’ll see in Review why <code>!=</code> doesn’t work for them.</li>
+<li>Look at <code>Gifts</code> in the last test. It’s in the map with a total of <code>0</code>. <code>Travel</code> isn’t in the map at all. The test says these must print differently, and that difference is what Must know #3 is about.</li>
+</ul>
+<p>Run the tests:</p>
+<pre><code class="language-bash">go test ./...</code></pre>
+<pre><code class="language-text"># tracker [tracker.test]
+./main_test.go:64:2: undefined: addExpense
+./main_test.go:65:2: undefined: addExpense
+./main_test.go:66:2: undefined: addExpense
+./main_test.go:68:9: undefined: totalsByCategory
+./main_test.go:77:9: undefined: sortedCategories
+./main_test.go:95:10: undefined: describeCategory
+FAIL    tracker [build failed]
+FAIL</code></pre>
+<p>There’s your to-do list: four functions.</p>
+<h2 id="use-the-ai">Use the AI<a class="anchor" href="#use-the-ai" aria-label="Link to this section"></a></h2>
+<h3 id="first-half-the-ai-as-tutor">First half: the AI as tutor<a class="anchor" href="#first-half-the-ai-as-tutor" aria-label="Link to this section"></a></h3>
+<p>Start your assistant in the <code>tracker</code> folder and ask:</p>
+<pre><code class="language-text">Explain Go maps and slices to a beginner. What does
+map[string][]int mean? What happens when I look up a key that
+isn&#39;t in a map? Don&#39;t write code for my project.</code></pre>
+<p>Follow up on anything unclear, especially what <code>expenses[category]</code> gives you when that category has no expenses yet. Then type these two functions at the <strong>end</strong> of <code>main.go</code>:</p>
+<pre><code class="language-go">func addExpense(expenses map[string][]int, category string, cents int) {
+    expenses[category] = append(expenses[category], cents)
+}
+
+func totalsByCategory(expenses map[string][]int) map[string]int {
+    totals := make(map[string]int)
+    for category, amounts := range expenses {
+        totals[category] = total(amounts)
+    }
+    return totals
+}</code></pre>
+<p><code>addExpense</code> is short, but it uses three ideas at once. The first time you add a Food expense, <code>expenses["Food"]</code> doesn’t exist yet, so the lookup gives the zero value for a slice: <code>nil</code>. Appending to <code>nil</code> works fine and gives a slice with one item. Then the result is stored back under <code>"Food"</code>. No special case is needed for “first expense in a category.”</p>
+<p><code>totalsByCategory</code> loops over a map. With a map, <code>range</code> gives you each key and its value. And it reuses <code>total</code> from Chapter 2, so code you’ve already tested does the adding.</p>
+<p>Go has only one loop keyword, <code>for</code>, and it comes in three shapes:</p>
+<ul>
+<li><code>for category, amounts := range expenses</code> visits every item in a map or slice. You’ll use this one most.</li>
+<li><code>for i := 0; i &lt; 3; i++</code> counts: start at 0, keep going while <code>i &lt; 3</code>, add 1 each time.</li>
+<li><code>for sum &lt; 1000</code> repeats while a condition is true, like <code>while</code> in other languages.</li>
+</ul>
+<p>If the AI ever writes <code>while</code>, it’s thinking of another language. Go doesn’t have it. Ask your tutor for a tiny example of each shape if you want to see them run.</p>
+<p>Run the tests again:</p>
+<pre><code class="language-bash">go test ./...</code></pre>
+<pre><code class="language-text"># tracker [tracker.test]
+./main_test.go:77:9: undefined: sortedCategories
+./main_test.go:95:10: undefined: describeCategory
+FAIL    tracker [build failed]
+FAIL</code></pre>
+<p>Two items left on the list. These two are yours.</p>
+<h3 id="see-for-yourself-maps-have-no-order">See for yourself: maps have no order<a class="anchor" href="#see-for-yourself-maps-have-no-order" aria-label="Link to this section"></a></h3>
+<p>Before you write <code>sortedCategories</code>, see why you need it. Open a second terminal in the <code>tracker</code> folder and go to your <code>practice</code> folder from Chapter 2:</p>
+<pre><code class="language-bash">cd ../practice</code></pre>
+<p>Create <code>order.go</code>:</p>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+    totals := map[string]int{&quot;Food&quot;: 449, &quot;Fun&quot;: 1500, &quot;Transport&quot;: 1200}
+    for category, cents := range totals {
+        fmt.Println(category, cents)
+    }
+}</code></pre>
+<p>Run it five or six times with <code>go run order.go</code>. Sooner or later, the order changes. One run might print:</p>
+<pre><code class="language-text">Transport 1200
+Food 449
+Fun 1500</code></pre>
+<p>Your runs will differ. That’s Must know #5. If Tracker printed straight from the map, your report would shuffle itself.</p>
+<h3 id="second-half-the-ai-as-pair">Second half: the AI as pair<a class="anchor" href="#second-half-the-ai-as-pair" aria-label="Link to this section"></a></h3>
+<p>Now the switch. First, tell your AI about its new job. Add this line to <code>AGENTS.md</code>:</p>
+<pre><code class="language-markdown">When I ask for a review: list problems and suggestions with a one-line reason each, and don&#39;t rewrite my code.</code></pre>
+<p>Your first rule, “do not write or change code unless I ask,” still holds. The new rule says how to review.</p>
+<p>Now write the last two functions yourself, at the end of <code>main.go</code>. Your tests tell you exactly what each one must do.</p>
+<p><strong><code>sortedCategories(totals map[string]int) []string</code></strong> returns the keys of <code>totals</code>, sorted by name. You’ll need:</p>
+<ul>
+<li>a <code>for ... range</code> loop over the map (you only need the keys: <code>for category := range totals</code>)</li>
+<li><code>append</code> to collect each key into a slice</li>
+<li><code>slices.Sort</code> to sort the slice, which means adding <code>"slices"</code> to the imports in <code>main.go</code></li>
+</ul>
+<p><strong><code>describeCategory(totals map[string]int, category string) string</code></strong> returns <code>"Food: 4.49"</code> for a category in the map and <code>"Travel: no expenses"</code> for one that isn’t. You’ll need:</p>
+<ul>
+<li>the <strong>comma-ok</strong> lookup, <code>cents, ok := totals[category]</code>, where <code>ok</code> is <code>true</code> only if the key is in the map</li>
+<li>an <code>if</code> to handle the missing case</li>
+<li><code>formatExpense</code> from Chapter 2, which already formats <code>"Food: 4.49"</code></li>
+</ul>
+<p>To add <code>"slices"</code>, change the top of <code>main.go</code> to:</p>
+<pre><code class="language-go">import (
+    &quot;fmt&quot;
+    &quot;slices&quot;
+)</code></pre>
+<p>Write, run <code>go test ./...</code>, read the errors, and repeat until you see <code>ok</code>. If you’re stuck, ask your AI to explain an error message or a concept, not to write the function.</p>
+<h3 id="ask-for-a-review">Ask for a review<a class="anchor" href="#ask-for-a-review" aria-label="Link to this section"></a></h3>
+<p>When your tests pass, ask for a review:</p>
+<pre><code class="language-text">Review my sortedCategories and describeCategory functions in
+main.go. List problems and suggestions, each with a one-line
+reason. Don&#39;t rewrite my code; I&#39;ll decide what to change.</code></pre>
+<p>Every review is different, so the book can’t show you yours. But you’ll decide on each suggestion with the same three questions:</p>
+<ol type="1">
+<li><strong>Do I understand it?</strong> If you can’t explain the suggestion, you can’t keep it. That’s the one rule. Ask about it, or skip it for now.</li>
+<li><strong>Does it fit this project?</strong> It must follow your rules: <code>AGENTS.md</code> (Go 1.27, standard library only) and the book’s Must know points, like money in cents.</li>
+<li><strong>Do the tests still pass?</strong> Make one change at a time and run <code>go test ./...</code> after each.</li>
+</ol>
+<p>Here are example suggestions (not real AI output) and how the three questions sort them:</p>
+<div class="table-wrap"><table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Suggestion</th>
+<th>Keep?</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Create the slice with <code>make([]string, 0, len(totals))</code> so it has room for every key</td>
+<td>Your call</td>
+<td>It saves a little work as the slice grows. Keep it if you can explain what the <code>len(totals)</code> part does; otherwise skip it for now.</td>
+</tr>
+<tr>
+<td>Add a comment above each function</td>
+<td>Keep</td>
+<td>Cheap, and it forces you to say what the function does, which is the Explain step in miniature.</td>
+</tr>
+<tr>
+<td>Use a struct for expenses instead of a map of slices</td>
+<td>Skip for now</td>
+<td>Probably right, and Chapter 4 does exactly that. Changing it now would mean code you can’t explain yet.</td>
+</tr>
+<tr>
+<td>Use <code>slices.Sorted(maps.Keys(totals))</code></td>
+<td>Skip for now</td>
+<td>It works in Go 1.27, but it uses iterators, which this book doesn’t cover. If you can’t explain it, don’t keep it.</td>
+</tr>
+<tr>
+<td>Import <code>golang.org/x/exp/slices</code></td>
+<td>Reject</td>
+<td>That’s an old location. The standard library has <code>slices</code> now, and your rules say standard library only.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Notice that “skip for now” isn’t “the AI was wrong.” It means the suggestion isn’t right for <em>you, today</em>. That’s a judgment only you can make.</p>
+<h3 id="compare-with-the-books-version">Compare with the book’s version<a class="anchor" href="#compare-with-the-books-version" aria-label="Link to this section"></a></h3>
+<p>Here’s one version that passes the tests. Yours may look different, and that’s fine if your tests pass and you can explain every line:</p>
+<pre><code class="language-go">func sortedCategories(totals map[string]int) []string {
+    var categories []string
+    for category := range totals {
+        categories = append(categories, category)
+    }
+    slices.Sort(categories)
+    return categories
+}
+
+func describeCategory(totals map[string]int, category string) string {
+    cents, ok := totals[category]
+    if !ok {
+        return category + &quot;: no expenses&quot;
+    }
+    return formatExpense(category, cents)
+}</code></pre>
+<p><code>var categories []string</code> starts as a nil slice, the zero value, and <code>append</code> grows it. That’s Must know #4 doing real work.</p>
+<h3 id="print-the-report">Print the report<a class="anchor" href="#print-the-report" aria-label="Link to this section"></a></h3>
+<p>Last, make <code>main</code> print the report from <code>SPEC.md</code>. Replace <code>main</code> with:</p>
+<pre><code class="language-go">func main() {
+    fmt.Println(welcome())
+
+    expenses := make(map[string][]int)
+    addExpense(expenses, &quot;Food&quot;, 350)
+    addExpense(expenses, &quot;Transport&quot;, 1200)
+    addExpense(expenses, &quot;Food&quot;, 99)
+    addExpense(expenses, &quot;Fun&quot;, 1500)
+
+    totals := totalsByCategory(expenses)
+    for _, category := range sortedCategories(totals) {
+        fmt.Println(describeCategory(totals, category))
+    }
+    fmt.Println(describeCategory(totals, &quot;Travel&quot;))
+}</code></pre>
+<p>Run it:</p>
+<pre><code class="language-bash">go run .</code></pre>
+<pre><code class="language-text">Welcome to Tracker. Let&#39;s see where your money goes.
+Food: 4.49
+Fun: 15.00
+Transport: 12.00
+Travel: no expenses</code></pre>
+<p>Run it as many times as you like. Thanks to <code>sortedCategories</code>, the order never changes.</p>
+<h2 id="review">Review<a class="anchor" href="#review" aria-label="Link to this section"></a></h2>
+<h3 id="let-go-check-first">Let Go check first<a class="anchor" href="#let-go-check-first" aria-label="Link to this section"></a></h3>
+<pre><code class="language-bash">gofmt -l .
+go vet ./...
+go test ./...</code></pre>
+<p>Silence, silence, <code>ok</code>.</p>
+<h3 id="break-it-on-purpose">Break it on purpose<a class="anchor" href="#break-it-on-purpose" aria-label="Link to this section"></a></h3>
+<p><strong>Break 1: a nil map.</strong> In <code>main</code>, change <code>expenses := make(map[string][]int)</code> to <code>var expenses map[string][]int</code>, and run <code>go run .</code>:</p>
+<pre><code class="language-text">Welcome to Tracker. Let&#39;s see where your money goes.
+panic: assignment to entry in nil map
+
+goroutine 1 [running]:
+main.addExpense(...)
+    /home/you/tracker/main.go:50
+main.main()
+    /home/you/tracker/main.go:12 +0x8c
+exit status 2</code></pre>
+<p>Your folder path and the <code>+0x8c</code> part will differ. This is a <strong>panic</strong>: Go stopped your program while it was running. The compiler couldn’t catch it, because the code is valid Go. The first line says what went wrong, and the list below it shows where: <code>addExpense</code>, called from <code>main</code>. That’s Must know #4: a <code>var</code> map is <code>nil</code>, and writing to it crashes. Put <code>make</code> back.</p>
+<p><strong>Break 2: forget the <code>ok</code>.</strong> In <code>describeCategory</code>, replace the first four lines of the body with <code>cents := totals[category]</code>, and run <code>go test ./...</code>:</p>
+<pre><code class="language-text">--- FAIL: TestDescribeCategory (0.00s)
+    main_test.go:97: describeCategory(&quot;Travel&quot;) = &quot;Travel: 0.00&quot;, want &quot;Travel: no expenses&quot;
+FAIL
+FAIL    tracker 0.001s
+FAIL</code></pre>
+<p>Without <code>ok</code>, a missing category looks exactly like a category that totals zero, because a missing key gives the zero value. Your <code>Travel</code> row caught it. The <code>Gifts</code> row, which still passes, shows why: zero and missing look the same without <code>ok</code>. Put the <code>ok</code> check back.</p>
+<h3 id="check-it-yourself">Check it yourself<a class="anchor" href="#check-it-yourself" aria-label="Link to this section"></a></h3>
+<ul class="task-list">
+<li><label><input type="checkbox" /><code>go run .</code> prints the report in <code>SPEC.md</code>, in the same order every time.</label></li>
+<li><label><input type="checkbox" /><code>gofmt -l .</code> and <code>go vet ./...</code> print nothing, and <code>go test ./...</code> prints <code>ok</code>.</label></li>
+<li><label><input type="checkbox" />You’ve seen a panic and can say which function caused it.</label></li>
+<li><label><input type="checkbox" />You can explain why <code>Gifts</code> and <code>Travel</code> print differently.</label></li>
+<li><label><input type="checkbox" />For each review suggestion, you decided keep, skip or reject, and can say why.</label></li>
+</ul>
+<p>Be SURE you can explain it, including every suggestion you kept.</p>
+<aside class="book-box">
+<p class="box-label">Where AI gets Go wrong: lists and maps</p>
+<ul>
+<li><p><strong>Counting on map order.</strong> AI-written code sometimes loops over a map and expects a fixed order. It can pass a test several times and then fail at random. Sort the keys.</p></li>
+<li><p><strong>Comparing maps or slices with <code>==</code> or <code>!=</code>.</strong> In <code>TestTotalsByCategory</code>, change <code>!maps.Equal(got, want)</code> to <code>got != want</code> and run <code>go test ./...</code>:</p>
+<pre><code class="language-text"># tracker [tracker.test]
+./main_test.go:4:2: &quot;maps&quot; imported and not used
+./main_test.go:70:5: invalid operation: got != want (map can only be compared to nil)
+FAIL    tracker [build failed]
+FAIL</code></pre>
+<p>Go doesn’t compare whole maps or slices with <code>==</code>. Use <code>maps.Equal</code> and <code>slices.Equal</code>. Change it back.</p></li>
+<li><p><strong>Dropping the result of <code>append</code>.</strong> <code>append</code> returns the new slice. Code that writes <code>append(categories, category)</code> without <code>categories =</code> doesn’t compile: <code>append(categories, category) (value of type []string) is not used</code>.</p></li>
+<li><p><strong>Old package paths.</strong> <code>golang.org/x/exp/slices</code> and <code>golang.org/x/exp/maps</code> were where these packages lived before Go 1.21. AI trained on older code may still suggest them. If you paste such code, <code>go test ./...</code> stops with:</p>
+<pre><code class="language-text">main.go:5:2: no required module provides package golang.org/x/exp/slices; to add it:
+    go get golang.org/x/exp/slices</code></pre>
+<p>Don’t run that <code>go get</code>. Change the import to <code>slices</code>.</p></li>
+<li><p><strong>Old code that treats <code>maps.Keys</code> as a slice.</strong> Code written for the old <code>golang.org/x/exp/maps</code> does <code>keys := maps.Keys(m)</code> and then <code>slices.Sort(keys)</code>. With the standard <code>maps</code> package, <code>maps.Keys</code> returns an iterator, not a slice, so Go stops with <code>in call to slices.Sort, S (type iter.Seq[string]) does not satisfy ~[]E</code>. Collect the keys with a loop, as <code>sortedCategories</code> does.</p></li>
+</ul>
+</aside>
+<h2 id="explain">Explain<a class="anchor" href="#explain" aria-label="Link to this section"></a></h2>
+<h3 id="say-it-in-your-own-words">Say it in your own words<a class="anchor" href="#say-it-in-your-own-words" aria-label="Link to this section"></a></h3>
+<p>Write a few sentences about how Tracker records and reports expenses. Include one sentence about a review suggestion: one you kept or skipped, and why. For example:</p>
+<aside class="book-box">
+<p>Tracker keeps a map from each category to a slice of amounts in cents. Adding an expense appends to that category’s slice; the first time, the slice is nil, and append still works. To print in a fixed order, I sort the map’s keys. I skipped the AI’s struct suggestion because I can’t explain structs yet.</p>
+</aside>
+<h3 id="let-the-ai-quiz-you">Let the AI quiz you<a class="anchor" href="#let-the-ai-quiz-you" aria-label="Link to this section"></a></h3>
+<pre><code class="language-text">Ask me two questions about maps, slices or zero values, using my
+code in main.go. Wait for my answers before you tell me if I&#39;m right.</code></pre>
+<h3 id="write-a-learned-line-in-your-commit">Write a <code>Learned:</code> line in your commit<a class="anchor" href="#write-a-learned-line-in-your-commit" aria-label="Link to this section"></a></h3>
+<pre><code class="language-bash">git add .
+git commit -m &quot;Record expenses and total them by category&quot; -m &quot;Learned: a missing map key gives the zero value, so use the comma-ok form to tell missing from zero.&quot;</code></pre>
+<h3 id="update-agents.md-if-something-surprised-you">Update AGENTS.md if something surprised you<a class="anchor" href="#update-agents.md-if-something-surprised-you" aria-label="Link to this section"></a></h3>
+<p>You already added the review rule. If the AI rewrote your code anyway, or suggested something that broke your rules, add a line about it now. Commit the change.</p>
+<h2 id="practice-optional">Practice (optional)<a class="anchor" href="#practice-optional" aria-label="Link to this section"></a></h2>
+<p>Add a count of expenses per category to Tracker’s report. After the totals, <code>go run .</code> should also print:</p>
+<pre><code class="language-text">Food: 2 expenses
+Fun: 1 expense
+Transport: 1 expense</code></pre>
+<p>Note “1 expense,” not “1 expenses.” That’s a job for <code>if</code>.</p>
+<p>Go around the whole SURE loop, in pair mode: add the sentence to <code>SPEC.md</code>, write a test first, write the code yourself, then ask the AI for a review and decide on each suggestion. Hint: <code>len</code> tells you how many items a slice has.</p>
+<p class="gwa-answer-link">Tried it? Compare with the <a href="/go-with-ai/answers/#chapter-3">worked answer for Chapter 3</a>.</p>
+<h2 id="what-youve-done">What you’ve done<a class="anchor" href="#what-youve-done" aria-label="Link to this section"></a></h2>
+<p>You used slices and maps for real, met zero values in three places (a missing key, a nil slice and a nil map), and saw your first panic. Most importantly, you wrote code yourself and treated the AI’s review as suggestions to judge, not orders to follow.</p>
+<p>In Chapter 4, Tracker gets a proper <code>Expense</code> type, the struct the AI kept suggesting, and saves your expenses to a file, so they’re still there tomorrow. Saving to a file means things can go wrong, so you’ll also learn how Go handles errors.</p>
+
+<footer class="guide-nav">
+  <div class="prev"><span class="label">Previous</span><a href="/go-with-ai/first-go-program-and-test/" rel="prev">Chapter 2: Your First Program and Your First Test</a></div>
+  <div class="next"><span class="label">Next</span><a href="/go-with-ai/go-structs-methods-errors/" rel="next">Chapter 4: Modeling Data and Handling Errors</a></div>
+</footer>
+<nav class="gwa-allpages" aria-label="Go with AI contents"><p class="onpage-h">Go with AI: all chapters</p><ol class="gwa-contents"><li><a href="/go-with-ai/introduction/">Introduction</a></li><li><a href="/go-with-ai/learn-to-code-with-ai/">Chapter 1: Learning to Code When AI Can Code</a></li><li><a href="/go-with-ai/first-go-program-and-test/">Chapter 2: Your First Program and Your First Test</a></li><li><a href="/go-with-ai/go-slices-maps-loops/" aria-current="page">Chapter 3: Lists, Lookups and Loops</a></li><li><a href="/go-with-ai/go-structs-methods-errors/">Chapter 4: Modeling Data and Handling Errors</a></li><li><a href="/go-with-ai/go-packages-interfaces/">Chapter 5: Organizing Code: Packages and Interfaces</a></li><li><a href="/go-with-ai/go-web-api-net-http/">Chapter 6: From Command Line to Web</a></li><li><a href="/go-with-ai/go-goroutines-race-detector/">Chapter 7: A Taste of Goroutines</a></li><li><a href="/go-with-ai/setup-ai-coding-assistant/">Appendix A: Setting up your AI assistant</a></li><li><a href="/go-with-ai/git-basics/">Appendix B: Just enough Git</a></li><li><a href="/go-with-ai/sure-loop/">Appendix C: The SURE loop at a glance</a></li><li><a href="/go-with-ai/review-checklists/">Appendix D: Review checklists</a></li><li><a href="/go-with-ai/answers/">Practice answers</a></li></ol></nav>
+</article>
+</div>
+
+<!-- @footer -->
+
+</body>
+</html>
