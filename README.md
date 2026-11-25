@@ -15,6 +15,10 @@ by `.github/workflows/pages.yml`.
     CNAME           bogie-go.com
     _includes/      the shared header and footer
     sponsors.json   book sponsors for the homepage Supporters section
+    go-with-ai/     the free Go with AI book (unpublished: noindex, not in the nav
+                    or sitemap). Its PDF/EPUB sign-up posts to a Kit (kit.com) form;
+                    Kit emails the download link, so no file is linked here. The build
+                    stops while the form's KIT_FORM_ID / KIT_FORM_UID placeholders remain.
     build.py        fills the pages in and writes _site/
 
 ## Building
