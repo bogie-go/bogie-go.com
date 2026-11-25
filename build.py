@@ -1083,6 +1083,8 @@ def main():
             left = [m for m in ("{{VERSION}}", "{{VERSION_NUM}}", "{{SECTION}}", "<!-- @") if m in out]
             if left:
                 sys.exit(f"error: unfilled {left} in {rel}")
+            if "KIT_FORM_" in out:  # the Kit form id/uid placeholders on /go-with-ai/
+                sys.exit(f"error: {rel}: set the Kit form id and uid (KIT_FORM_ID / KIT_FORM_UID)")
             dst.write_text(out)
             if rel.parts[0] == "docs":
                 m = re.search(r"<article>.*?</article>", out, re.S)
