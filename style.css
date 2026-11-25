@@ -469,3 +469,24 @@ a.pill { text-decoration: none; color: inherit; }
 .sale-banner code { font-family: var(--mono); font-size: 0.92em; background: var(--code-line); color: var(--code-fg); padding: 1px 6px; border-radius: 3px; }
 .sale-banner .sale-leanpub-soon, .sale-banner .sale-leanpub { color: var(--on-ink-muted); margin-left: 6px; }
 @media (max-width: 600px) { .sale-banner { font-size: 14px; padding: 9px 14px; } .sale-banner .sale-leanpub-soon, .sale-banner .sale-leanpub { display: block; margin: 2px 0 0; } }
+
+/* Go with AI (/go-with-ai/): the free PDF/EPUB sign-up, sent to Kit. */
+.gwa-download { margin: 40px 0 8px; padding: 24px 28px; background: var(--paper-2); border: 1.5px solid var(--ink); border-radius: 4px; }
+.gwa-download h2 { margin-top: 0; }
+.gwa-form { margin: 0; }
+.gwa-label { display: block; font-weight: 600; margin: 0 0 6px; }
+.gwa-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.gwa-input { flex: 1 1 260px; min-height: 52px; padding: 0 14px; font: inherit; color: var(--ink); background: #fff; border: 1.5px solid var(--ink); border-radius: 4px; box-sizing: border-box; }
+.gwa-input:focus { outline: 2px solid var(--rust); outline-offset: 1px; }
+.gwa-submit { cursor: pointer; font-family: inherit; }
+.gwa-submit[disabled] { opacity: 0.6; cursor: default; }
+.gwa-fine { margin: 10px 0 0; font-size: 14px; color: var(--muted); }
+.gwa-errors { list-style: none; margin: 0; padding: 0; color: var(--rust); font-weight: 600; }
+.gwa-errors:empty { display: none; }
+.gwa-errors li { margin: 0 0 10px; }
+.gwa-download .formkit-alert-success { padding: 14px 16px; border-left: 4px solid var(--rust); background: #fff; font-weight: 600; }
+.gwa-toc li { margin: 4px 0; }
+@media (max-width: 600px) {
+  .gwa-download { padding: 20px 18px; }
+  .gwa-submit { width: 100%; justify-content: center; }
+}
