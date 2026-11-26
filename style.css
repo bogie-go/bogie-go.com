@@ -498,7 +498,7 @@ a.pill { text-decoration: none; color: inherit; }
 @media (max-width: 600px) { .gwa-onpage ol { columns: 1; } .gwa-landing .book-buy .btn { width: 100%; justify-content: center; } }
 .gwa-answer-link { font-weight: 600; border-left: 3px solid var(--rust); padding-left: 12px; }
 
-/* Go with AI (/go-with-ai/): the free PDF/EPUB sign-up, sent to Kit. */
+/* Go with AI (/go-with-ai/): styles for the Kit PDF/EPUB sign-up. The form itself is parked in _includes/go-with-ai-kit-form.html until the form ids are set. */
 .gwa-download { margin: 40px 0 8px; padding: 24px 28px; background: var(--paper-2); border: 1.5px solid var(--ink); border-radius: 4px; }
 .gwa-download h2 { margin-top: 0; }
 .gwa-form { margin: 0; }
