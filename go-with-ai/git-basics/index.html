@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Just Enough Git for Beginners: Commit, Diff and Undo | Appendix B, Go with AI</title>
+<title>Just Enough Git for Beginners: Commit, Diff and Undo | Appendix B, Learn Go with AI</title>
 <meta name="description" content="Which Git commands does a beginner really need? Set up Git, commit each step with a Learned: line, see exactly what the AI changed, and undo changes you don&#x27;t want.">
 <meta name="author" content="Roonglit Chareonsupkul">
 <link rel="icon" type="image/png" href="/favicon.png">
@@ -12,18 +12,18 @@
 <link rel="canonical" href="https://bogie-go.com/go-with-ai/git-basics/">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="Bogie">
-<meta property="og:title" content="Just Enough Git for Beginners: Commit, Diff and Undo | Appendix B, Go with AI">
+<meta property="og:title" content="Just Enough Git for Beginners: Commit, Diff and Undo | Appendix B, Learn Go with AI">
 <meta property="og:description" content="Which Git commands does a beginner really need? Set up Git, commit each step with a Learned: line, see exactly what the AI changed, and undo changes you don&#x27;t want.">
 <meta property="og:url" content="https://bogie-go.com/go-with-ai/git-basics/">
 <meta property="og:image" content="https://bogie-go.com/go-with-ai/cover.jpg">
 <meta property="og:image:width" content="560">
 <meta property="og:image:height" content="687">
-<meta property="og:image:alt" content="Cover of Go with AI by Roonglit Chareonsupkul">
+<meta property="og:image:alt" content="Cover of Learn Go with AI by Roonglit Chareonsupkul">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Just Enough Git for Beginners: Commit, Diff and Undo | Appendix B, Go with AI">
+<meta name="twitter:title" content="Just Enough Git for Beginners: Commit, Diff and Undo | Appendix B, Learn Go with AI">
 <meta name="twitter:description" content="Which Git commands does a beginner really need? Set up Git, commit each step with a Learned: line, see exactly what the AI changed, and undo changes you don&#x27;t want.">
 <meta name="twitter:image" content="https://bogie-go.com/go-with-ai/cover.jpg">
-<script type="application/ld+json">{"@context": "https://schema.org","@graph": [{"@type": "Article","headline": "Appendix B: Just enough Git","name": "Just Enough Git for Beginners: Commit, Diff and Undo | Appendix B, Go with AI","description": "Which Git commands does a beginner really need? Set up Git, commit each step with a Learned: line, see exactly what the AI changed, and undo changes you don't want.","url": "https://bogie-go.com/go-with-ai/git-basics/","inLanguage": "en","author": {"@type": "Person","name": "Roonglit Chareonsupkul"},"datePublished": "2026-11-25","dateModified": "2026-11-25","image": "https://bogie-go.com/go-with-ai/cover.jpg","keywords": "git basics for beginners, git diff, git undo changes","isPartOf": {"@id": "https://bogie-go.com/go-with-ai/#book"},"mainEntityOfPage": "https://bogie-go.com/go-with-ai/git-basics/"},{"@type": "BreadcrumbList","itemListElement": [{"@type": "ListItem","position": 1,"name": "Bogie","item": "https://bogie-go.com/"},{"@type": "ListItem","position": 2,"name": "Go with AI","item": "https://bogie-go.com/go-with-ai/"},{"@type": "ListItem","position": 3,"name": "Appendix B: Just enough Git","item": "https://bogie-go.com/go-with-ai/git-basics/"}]}]}</script>
+<script type="application/ld+json">{"@context": "https://schema.org","@graph": [{"@type": "Article","headline": "Appendix B: Just enough Git","name": "Just Enough Git for Beginners: Commit, Diff and Undo | Appendix B, Learn Go with AI","description": "Which Git commands does a beginner really need? Set up Git, commit each step with a Learned: line, see exactly what the AI changed, and undo changes you don't want.","url": "https://bogie-go.com/go-with-ai/git-basics/","inLanguage": "en","author": {"@type": "Person","name": "Roonglit Chareonsupkul"},"datePublished": "2026-11-25","dateModified": "2026-11-25","image": "https://bogie-go.com/go-with-ai/cover.jpg","keywords": "git basics for beginners, git diff, git undo changes","isPartOf": {"@id": "https://bogie-go.com/go-with-ai/#book"},"mainEntityOfPage": "https://bogie-go.com/go-with-ai/git-basics/"},{"@type": "BreadcrumbList","itemListElement": [{"@type": "ListItem","position": 1,"name": "Bogie","item": "https://bogie-go.com/"},{"@type": "ListItem","position": 2,"name": "Learn Go with AI","item": "https://bogie-go.com/go-with-ai/"},{"@type": "ListItem","position": 3,"name": "Appendix B: Just enough Git","item": "https://bogie-go.com/go-with-ai/git-basics/"}]}]}</script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
 <script>
@@ -38,7 +38,7 @@
 
 <div class="measure">
 <article class="book-sample gwa-chapter">
-<p class="guide-eyebrow"><a href="/go-with-ai/">Go with AI</a> · <span>Free online book</span></p>
+<p class="guide-eyebrow"><a href="/go-with-ai/">Learn Go with AI</a> · <span>Free online book</span></p>
 <h1>Appendix B: Just enough Git</h1>
 <p class="gwa-summary"><span class="gwa-summary-h">In short:</span> Appendix B covers only the Git you need for this book: setting it up, committing each step with a Learned: line, checking what the AI changed before and after it edits your code, and undoing changes you don&#x27;t want.</p>
 <nav class="chapter-nav gwa-onpage" aria-label="On this page"><p class="onpage-h">On this page</p><ol><li><a href="#b.1-install-and-set-up-git-once">B.1 Install and set up Git (once)</a></li><li><a href="#b.2-start-a-project">B.2 Start a project</a></li><li><a href="#b.3-the-everyday-loop-status-add-commit">B.3 The everyday loop: status, add, commit</a></li><li><a href="#b.4-writing-a-good-learned-line">B.4 Writing a good Learned: line</a></li><li><a href="#b.5-before-and-after-the-ai-changes-code">B.5 Before and after the AI changes code</a></li><li><a href="#b.6-undo-changes">B.6 Undo changes</a></li><li><a href="#b.7-read-your-learning-journal">B.7 Read your learning journal</a></li></ol></nav>
@@ -162,7 +162,7 @@ Would remove util/</code></pre>
   <div class="prev"><span class="label">Previous</span><a href="/go-with-ai/setup-ai-coding-assistant/" rel="prev">Appendix A: Setting up your AI assistant</a></div>
   <div class="next"><span class="label">Next</span><a href="/go-with-ai/sure-loop/" rel="next">Appendix C: The SURE loop at a glance</a></div>
 </footer>
-<nav class="gwa-allpages" aria-label="Go with AI contents"><p class="onpage-h">Go with AI: all chapters</p><ol class="gwa-contents"><li><a href="/go-with-ai/introduction/">Introduction</a></li><li><a href="/go-with-ai/learn-to-code-with-ai/">Chapter 1: Learning to Code When AI Can Code</a></li><li><a href="/go-with-ai/first-go-program-and-test/">Chapter 2: Your First Program and Your First Test</a></li><li><a href="/go-with-ai/go-slices-maps-loops/">Chapter 3: Lists, Lookups and Loops</a></li><li><a href="/go-with-ai/go-structs-methods-errors/">Chapter 4: Modeling Data and Handling Errors</a></li><li><a href="/go-with-ai/go-packages-interfaces/">Chapter 5: Organizing Code: Packages and Interfaces</a></li><li><a href="/go-with-ai/go-web-api-net-http/">Chapter 6: From Command Line to Web</a></li><li><a href="/go-with-ai/go-goroutines-race-detector/">Chapter 7: A Taste of Goroutines</a></li><li><a href="/go-with-ai/setup-ai-coding-assistant/">Appendix A: Setting up your AI assistant</a></li><li><a href="/go-with-ai/git-basics/" aria-current="page">Appendix B: Just enough Git</a></li><li><a href="/go-with-ai/sure-loop/">Appendix C: The SURE loop at a glance</a></li><li><a href="/go-with-ai/review-checklists/">Appendix D: Review checklists</a></li><li><a href="/go-with-ai/answers/">Practice answers</a></li></ol></nav>
+<nav class="gwa-allpages" aria-label="Learn Go with AI contents"><p class="onpage-h">Learn Go with AI: all chapters</p><ol class="gwa-contents"><li><a href="/go-with-ai/introduction/">Introduction</a></li><li><a href="/go-with-ai/learn-to-code-with-ai/">Chapter 1: Learning to Code When AI Can Code</a></li><li><a href="/go-with-ai/first-go-program-and-test/">Chapter 2: Your First Program and Your First Test</a></li><li><a href="/go-with-ai/go-slices-maps-loops/">Chapter 3: Lists, Lookups and Loops</a></li><li><a href="/go-with-ai/go-structs-methods-errors/">Chapter 4: Modeling Data and Handling Errors</a></li><li><a href="/go-with-ai/go-packages-interfaces/">Chapter 5: Organizing Code: Packages and Interfaces</a></li><li><a href="/go-with-ai/go-web-api-net-http/">Chapter 6: From Command Line to Web</a></li><li><a href="/go-with-ai/go-goroutines-race-detector/">Chapter 7: A Taste of Goroutines</a></li><li><a href="/go-with-ai/setup-ai-coding-assistant/">Appendix A: Setting up your AI assistant</a></li><li><a href="/go-with-ai/git-basics/" aria-current="page">Appendix B: Just enough Git</a></li><li><a href="/go-with-ai/sure-loop/">Appendix C: The SURE loop at a glance</a></li><li><a href="/go-with-ai/review-checklists/">Appendix D: Review checklists</a></li><li><a href="/go-with-ai/answers/">Practice answers</a></li></ol></nav>
 </article>
 </div>
 
