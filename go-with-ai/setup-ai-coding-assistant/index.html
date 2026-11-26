@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Set Up Go, VS Code and an AI Coding Assistant | Appendix A, Go with AI</title>
+<meta name="description" content="How do you set up Go with an AI coding assistant? Install the Go tools, fix your PATH, pick an editor, install Claude Code, make it read AGENTS.md, and choose safe privacy settings.">
+<meta name="author" content="Roonglit Chareonsupkul">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="stylesheet" href="/fonts.css">
+<link rel="stylesheet" href="/style.css">
+<link rel="canonical" href="https://bogie-go.com/go-with-ai/setup-ai-coding-assistant/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Bogie">
+<meta property="og:title" content="Set Up Go, VS Code and an AI Coding Assistant | Appendix A, Go with AI">
+<meta property="og:description" content="How do you set up Go with an AI coding assistant? Install the Go tools, fix your PATH, pick an editor, install Claude Code, make it read AGENTS.md, and choose safe privacy settings.">
+<meta property="og:url" content="https://bogie-go.com/go-with-ai/setup-ai-coding-assistant/">
+<meta property="og:image" content="https://bogie-go.com/go-with-ai/cover.jpg">
+<meta property="og:image:width" content="560">
+<meta property="og:image:height" content="687">
+<meta property="og:image:alt" content="Cover of Go with AI by Roonglit Chareonsupkul">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Set Up Go, VS Code and an AI Coding Assistant | Appendix A, Go with AI">
+<meta name="twitter:description" content="How do you set up Go with an AI coding assistant? Install the Go tools, fix your PATH, pick an editor, install Claude Code, make it read AGENTS.md, and choose safe privacy settings.">
+<meta name="twitter:image" content="https://bogie-go.com/go-with-ai/cover.jpg">
+<script type="application/ld+json">{"@context": "https://schema.org","@graph": [{"@type": "Article","headline": "Appendix A: Setting up your AI assistant","name": "Set Up Go, VS Code and an AI Coding Assistant | Appendix A, Go with AI","description": "How do you set up Go with an AI coding assistant? Install the Go tools, fix your PATH, pick an editor, install Claude Code, make it read AGENTS.md, and choose safe privacy settings.","url": "https://bogie-go.com/go-with-ai/setup-ai-coding-assistant/","inLanguage": "en","author": {"@type": "Person","name": "Roonglit Chareonsupkul"},"datePublished": "2026-11-25","dateModified": "2026-11-25","image": "https://bogie-go.com/go-with-ai/cover.jpg","keywords": "install go, go vscode setup, ai coding assistant setup","isPartOf": {"@id": "https://bogie-go.com/go-with-ai/#book"},"mainEntityOfPage": "https://bogie-go.com/go-with-ai/setup-ai-coding-assistant/"},{"@type": "BreadcrumbList","itemListElement": [{"@type": "ListItem","position": 1,"name": "Bogie","item": "https://bogie-go.com/"},{"@type": "ListItem","position": 2,"name": "Go with AI","item": "https://bogie-go.com/go-with-ai/"},{"@type": "ListItem","position": 3,"name": "Appendix A: Setting up your AI assistant","item": "https://bogie-go.com/go-with-ai/setup-ai-coding-assistant/"}]}]}</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-MPVQ83E1Z9');
+</script>
+</head>
+<body>
+<!-- @header -->
+
+<div class="measure">
+<article class="book-sample gwa-chapter">
+<p class="guide-eyebrow"><a href="/go-with-ai/">Go with AI</a> · <span>Free online book</span></p>
+<h1>Appendix A: Setting up your AI assistant</h1>
+<p class="gwa-summary"><span class="gwa-summary-h">In short:</span> Appendix A is the setup guide: installing the Go tools and putting them on your PATH, choosing an editor, installing an AI coding assistant (Claude Code in the examples) and making sure it reads your AGENTS.md rules. It also covers privacy settings and what not to give the AI.</p>
+<nav class="chapter-nav gwa-onpage" aria-label="On this page"><p class="onpage-h">On this page</p><ol><li><a href="#a.1-install-the-go-tools">A.1 Install the Go tools</a></li><li><a href="#a.2-put-gos-bin-folder-on-your-path">A.2 Put Go’s bin folder on your PATH</a></li><li><a href="#a.3-an-editor">A.3 An editor</a></li><li><a href="#a.4-install-claude-code">A.4 Install Claude Code</a></li><li><a href="#a.5-make-sure-your-assistant-reads-agents.md">A.5 Make sure your assistant reads AGENTS.md</a></li><li><a href="#a.6-connect-gopls-to-your-assistant-optional">A.6 Connect gopls to your assistant (optional)</a></li><li><a href="#a.7-privacy-settings">A.7 Privacy settings</a></li><li><a href="#a.8-what-not-to-give-the-ai">A.8 What not to give the AI</a></li><li><a href="#a.9-windows-sending-json-with-curl">A.9 Windows: sending JSON with curl</a></li><li><a href="#a.10-windows-a-c-compiler-for-go-test--race">A.10 Windows: a C compiler for <code>go test -race</code></a></li></ol></nav>
+<p>This is the one part of the book that changes as tools change. The chapters stay the same; this appendix gets updated.</p>
+<p><strong>Last checked:</strong> November 2026, with Go 1.27.4, gopls v0.24.0, govulncheck v1.10.0 and Claude Code 2.1.331. Steps marked <strong>(Not tested for this edition)</strong> come from the tool’s official documentation but weren’t run on a real machine for this edition. If one doesn’t work for you, check the linked page: it will be more current than this book.</p>
+<h2 id="a.1-install-the-go-tools">A.1 Install the Go tools<a class="anchor" href="#a.1-install-the-go-tools" aria-label="Link to this section"></a></h2>
+<p>The book uses two tools that don’t come with Go. Install both with <code>go install</code>:</p>
+<pre><code class="language-bash">go install golang.org/x/tools/gopls@latest
+go install golang.org/x/vuln/cmd/govulncheck@latest</code></pre>
+<p>Each may print a few <code>go: downloading …</code> lines, or nothing at all. No error means it worked.</p>
+<ul>
+<li><strong>gopls</strong> is Go’s language server. Your editor uses it for autocomplete and error underlines, and your AI assistant can use it too (see A.6).</li>
+<li><strong>govulncheck</strong> checks your code for known security problems. Chapter 6 uses it.</li>
+</ul>
+<p>Check that both run:</p>
+<pre><code class="language-bash">gopls version
+govulncheck -version</code></pre>
+<p><code>gopls version</code> prints a line like this:</p>
+<pre><code class="language-text">golang.org/x/tools/gopls v0.24.0</code></pre>
+<p>Your version will be newer or the same; A.6 needs v0.20 or later. <code>govulncheck -version</code> prints the four lines shown in Chapter 6.</p>
+<p>If you get <code>command not found</code> (macOS, Linux) or <code>not recognized</code> (Windows), see A.2.</p>
+<h2 id="a.2-put-gos-bin-folder-on-your-path">A.2 Put Go’s bin folder on your PATH<a class="anchor" href="#a.2-put-gos-bin-folder-on-your-path" aria-label="Link to this section"></a></h2>
+<p><code>go install</code> puts programs in Go’s <strong>bin folder</strong>: <code>~/go/bin</code> on macOS and Linux, and <code>%USERPROFILE%\go\bin</code> on Windows. Your terminal only finds programs in folders listed in your <strong>PATH</strong>.</p>
+<p><strong>Just for this terminal (macOS and Linux):</strong></p>
+<pre><code class="language-bash">export PATH=&quot;$PATH:$(go env GOPATH)/bin&quot;</code></pre>
+<p><strong>Permanently, on macOS:</strong> the macOS installer adds Go itself to your PATH, but not its bin folder, so you’ll usually need this. macOS uses the zsh shell, so add the folder in <code>~/.zshrc</code>:</p>
+<pre><code class="language-bash">echo &#39;export PATH=&quot;$PATH:$HOME/go/bin&quot;&#39; &gt;&gt; ~/.zshrc</code></pre>
+<p>Then open a new terminal. (<code>~/go/bin</code> is Go’s default bin folder.) <strong>(Not tested for this edition.)</strong></p>
+<p><strong>Permanently, on Linux:</strong> most Linux systems use bash, so add the same folder in <code>~/.bashrc</code>:</p>
+<pre><code class="language-bash">echo &#39;export PATH=&quot;$PATH:$HOME/go/bin&quot;&#39; &gt;&gt; ~/.bashrc</code></pre>
+<p>Then open a new terminal.</p>
+<p><strong>Windows:</strong> the Go installer usually adds <code>%USERPROFILE%\go\bin</code> to your PATH already, so you only need to open a new terminal after installing a tool. If the tool still isn’t found: open <strong>Settings → System → About → Advanced system settings → Environment Variables</strong>, select <strong>Path</strong> under your user variables, choose <strong>Edit → New</strong>, add <code>%USERPROFILE%\go\bin</code>, and open a new terminal. <strong>(Not tested for this edition.)</strong></p>
+<h2 id="a.3-an-editor">A.3 An editor<a class="anchor" href="#a.3-an-editor" aria-label="Link to this section"></a></h2>
+<p>Any editor works. If you don’t have a favorite, use Visual Studio Code with the Go extension. <strong>(Not tested for this edition.)</strong></p>
+<ol type="1">
+<li>Install <strong>Visual Studio Code</strong> from <a href="https://code.visualstudio.com">code.visualstudio.com</a>.</li>
+<li>Open the <strong>Extensions</strong> view, search for “Go”, and install the one from the <strong>Go Team at Google</strong>.</li>
+<li>Open your <code>tracker</code> folder (<strong>File → Open Folder</strong>) and open any <code>.go</code> file or <code>go.mod</code>. The Go version appears in the bottom-right corner. If VS Code offers to install missing tools, choose <strong>Install</strong>.</li>
+<li>A ⚡ next to the Go version means gopls is running.</li>
+</ol>
+<h2 id="a.4-install-claude-code">A.4 Install Claude Code<a class="anchor" href="#a.4-install-claude-code" aria-label="Link to this section"></a></h2>
+<p>Claude Code needs a paid Claude plan (Pro, Max, Ultra, Team or Enterprise) or a Claude Console account; the free claude.ai plan doesn’t include it. It runs on macOS 13 or later, Windows 10 (version 1809) or later, and recent Linux versions.</p>
+<p>Install it with the command for your system (<a href="https://code.claude.com/docs/en/quickstart">official instructions</a>):</p>
+<p><strong>macOS, Linux:</strong></p>
+<pre><code class="language-bash">curl -fsSL https://claude.ai/install.sh | bash</code></pre>
+<p><strong>Windows PowerShell:</strong></p>
+<pre><code class="language-powershell">irm https://claude.ai/install.ps1 | iex</code></pre>
+<p><strong>Windows Command Prompt:</strong></p>
+<pre><code class="language-batch">curl -fsSL https://claude.ai/install.cmd -o install.cmd &amp;&amp; install.cmd &amp;&amp; del install.cmd</code></pre>
+<p>The installer shows no progress while it downloads. If it ends with <strong>Setup notes</strong> saying <code>~/.local/bin is not in your PATH</code>, add that folder the same way as Go’s bin folder in A.2. On macOS:</p>
+<pre><code class="language-bash">echo &#39;export PATH=&quot;$HOME/.local/bin:$PATH&quot;&#39; &gt;&gt; ~/.zshrc</code></pre>
+<p>On Linux, use <code>~/.bashrc</code> instead of <code>~/.zshrc</code>. On Windows, the folder is <code>%USERPROFILE%\.local\bin</code>. Then open a new terminal and check:</p>
+<pre><code class="language-bash">claude --version</code></pre>
+<pre><code class="language-text">2.1.331 (Claude Code)</code></pre>
+<p>Your version will be newer or the same. If <code>claude</code> still isn’t found, see the <a href="https://code.claude.com/docs/en/troubleshoot-install#verify-your-path">installation troubleshooting page</a>.</p>
+<p>On Windows, installing <a href="https://git-scm.com/downloads/win">Git for Windows</a> is recommended. You need Git for the book anyway (Appendix B).</p>
+<p><strong>First run:</strong> in any terminal, type <code>claude</code>. It asks you to log in through your browser. Later, when you start it in your <code>tracker</code> folder (Chapter 1), it asks whether you trust the files in that folder. It’s your own project, so say yes. <strong>(Not tested for this edition.)</strong></p>
+<h2 id="a.5-make-sure-your-assistant-reads-agents.md">A.5 Make sure your assistant reads AGENTS.md<a class="anchor" href="#a.5-make-sure-your-assistant-reads-agents.md" aria-label="Link to this section"></a></h2>
+<p><code>AGENTS.md</code> is where you keep your project’s rules (Chapter 1). Many assistants read it automatically. Claude Code does from version 2.1.277; check yours with <code>claude --version</code>.</p>
+<p>The following is from the Claude Code docs. <strong>(Not tested for this edition.)</strong></p>
+<ul>
+<li><p><strong>Check:</strong> when Claude Code starts in <code>tracker</code>, look for a line like <code>AGENTS.md loaded: …/tracker/AGENTS.md</code>.</p></li>
+<li><p><strong>Restart it once</strong> if the line is missing. In the first session after installing or upgrading, it may not read <code>AGENTS.md</code> yet. It does from the next session on.</p></li>
+<li><p><strong>Look for a <code>CLAUDE.md</code> above your project.</strong> If there’s a <code>CLAUDE.md</code> or <code>CLAUDE.local.md</code> file in your <code>tracker</code> folder or any folder above it (such as your home folder), Claude Code reads that instead of <code>AGENTS.md</code>. Your personal <code>~/.claude/CLAUDE.md</code> doesn’t count.</p></li>
+<li><p><strong>Fallback:</strong> create a <code>CLAUDE.md</code> next to <code>AGENTS.md</code> containing just this line, which loads your rules from <code>AGENTS.md</code>:</p>
+<pre><code class="language-markdown">@AGENTS.md</code></pre></li>
+</ul>
+<p><strong>Other assistants:</strong> look in your assistant’s documentation for its “project instructions” or “rules” file. If it doesn’t read <code>AGENTS.md</code>, point that file to <code>AGENTS.md</code>, or copy your rules into it.</p>
+<h2 id="a.6-connect-gopls-to-your-assistant-optional">A.6 Connect gopls to your assistant (optional)<a class="anchor" href="#a.6-connect-gopls-to-your-assistant-optional" aria-label="Link to this section"></a></h2>
+<p>gopls has an experimental <strong>MCP server</strong>. MCP is a standard way for AI assistants to use tools. Connected to gopls, your assistant can look up where a function is defined or used, instead of searching through whole files. It needs gopls v0.20 or later, which A.1 installed.</p>
+<p><strong>Claude Code:</strong> run this once, in any folder:</p>
+<pre><code class="language-bash">claude mcp add --scope user gopls -- gopls mcp</code></pre>
+<p><code>--scope user</code> makes gopls available in every folder, so you can run it now, before your project exists. Check it with:</p>
+<pre><code class="language-bash">claude mcp list</code></pre>
+<p>It should show <code>gopls: gopls mcp - ✔ Connected</code>. If it says <code>Executable not found in $PATH: "gopls"</code>, finish A.2 first.</p>
+<p>Inside a Claude Code session, you can also type <code>/mcp</code> to see gopls and its tools. <strong>(Not tested for this edition.)</strong></p>
+<p><strong>Other assistants:</strong> add an MCP server that runs the command <code>gopls mcp</code>. Your assistant’s documentation explains where; the <a href="https://go.dev/gopls/features/mcp">gopls MCP page</a> has examples for Gemini CLI and Claude Code.</p>
+<p>This is optional. Everything in the book works without it.</p>
+<h2 id="a.7-privacy-settings">A.7 Privacy settings<a class="anchor" href="#a.7-privacy-settings" aria-label="Link to this section"></a></h2>
+<p>Every AI assistant has settings for what happens to your conversations. Check them before you start.</p>
+<p>For Claude Code on a Pro, Max or Ultra plan, you choose whether your conversations may be used to improve future models, at <a href="https://claude.ai/settings/data-privacy-controls">claude.ai/settings/data-privacy-controls</a>. You can change it at any time. On Team and Enterprise plans, Anthropic doesn’t train on your Claude Code data unless your organization opts in.</p>
+<p>Claude Code also keeps session transcripts on your computer, in plain text under <code>~/.claude/projects/</code>, for 30 days by default. That’s one more reason never to paste a secret into a chat. The <a href="https://code.claude.com/docs/en/data-usage">data usage page</a> has the details.</p>
+<p>For other assistants, look for a privacy or data setting about “training” or “model improvement.”</p>
+<h2 id="a.8-what-not-to-give-the-ai">A.8 What not to give the AI<a class="anchor" href="#a.8-what-not-to-give-the-ai" aria-label="Link to this section"></a></h2>
+<p>The checklist from Chapter 1, to keep next to your keyboard:</p>
+<ul class="task-list">
+<li><label><input type="checkbox" /><strong>No passwords, API keys, access tokens or <code>.env</code> files.</strong> If a key ever ends up in a chat, treat it as leaked: create a new one and delete the old one.</label></li>
+<li><label><input type="checkbox" /><strong>No private data about real people,</strong> including your own bank statements. Use made-up data, like the expenses in this book.</label></li>
+<li><label><input type="checkbox" /><strong>No code you’re not allowed to share,</strong> such as code from your job, unless your employer allows that tool.</label></li>
+<li><label><input type="checkbox" /><strong>No secrets in your project folder.</strong> Coding assistants can read the files in the folder you run them in.</label></li>
+</ul>
+<p>If you wouldn’t post it on a public website, don’t give it to the AI.</p>
+<h2 id="a.9-windows-sending-json-with-curl">A.9 Windows: sending JSON with curl<a class="anchor" href="#a.9-windows-sending-json-with-curl" aria-label="Link to this section"></a></h2>
+<p><strong>(Not tested for this edition.)</strong> Chapter 6 sends JSON to your API with <code>curl</code>. On Windows, type <code>curl.exe</code>, not <code>curl</code>: in Windows PowerShell, <code>curl</code> means a different command.</p>
+<p>How to write the JSON depends on your terminal:</p>
+<ul>
+<li><p><strong>Any terminal (the safest way):</strong> put the JSON in a file, for example <code>expense.json</code> containing <code>{"category":"Food","cents":250}</code>, and send the file:</p>
+<pre><code class="language-powershell">curl.exe -s -X POST localhost:8080/expenses -d &quot;@expense.json&quot;</code></pre>
+<p>Keep the file outside your <code>tracker</code> folder, or delete it after, so it doesn’t end up in Git.</p></li>
+<li><p><strong>PowerShell 7.3 or later:</strong> the book’s commands work as printed, with <code>curl.exe</code>.</p></li>
+<li><p><strong>Windows PowerShell 5.1</strong> (the version that comes with Windows 10 and 11): it removes the double quotes inside single-quoted JSON, so the server answers <code>invalid JSON</code>. Put a backslash before each inner double quote:</p>
+<pre><code class="language-powershell">curl.exe -s -X POST localhost:8080/expenses -d &#39;{\&quot;category\&quot;:\&quot;Food\&quot;,\&quot;cents\&quot;:250}&#39;</code></pre>
+<p>Don’t use this form in PowerShell 7.3 or later: there, the backslashes are sent too, and the JSON breaks.</p></li>
+<li><p><strong>Command Prompt (cmd):</strong></p>
+<pre><code class="language-batch">curl -s -X POST localhost:8080/expenses -d &quot;{\&quot;category\&quot;:\&quot;Food\&quot;,\&quot;cents\&quot;:250}&quot;</code></pre></li>
+</ul>
+<p>Not sure which PowerShell you have? Type <code>$PSVersionTable.PSVersion</code>.</p>
+<h2 id="a.10-windows-a-c-compiler-for-go-test--race">A.10 Windows: a C compiler for <code>go test -race</code><a class="anchor" href="#a.10-windows-a-c-compiler-for-go-test--race" aria-label="Link to this section"></a></h2>
+<p><strong>(Not tested for this edition.)</strong> Chapter 7’s race detector needs a C compiler on Windows: a MinGW-w64 GCC, recent enough to include version 8 or later of its runtime libraries. This works only on 64-bit Intel or AMD Windows. On Windows on Arm, <code>-race</code> isn’t available (<a href="https://go.dev/doc/articles/race_detector#Requirements">race detector requirements</a>).</p>
+<p>One way to install a suitable GCC:</p>
+<ol type="1">
+<li><p>Install <strong>MSYS2</strong> from <a href="https://www.msys2.org/">msys2.org</a>.</p></li>
+<li><p>Open the <strong>MSYS2 UCRT64</strong> terminal and run:</p>
+<pre><code class="language-bash">pacman -S mingw-w64-ucrt-x86_64-gcc</code></pre></li>
+<li><p>Add <code>C:\msys64\ucrt64\bin</code> to your user <strong>Path</strong>, the same way as in A.2.</p></li>
+<li><p>Open a new terminal.</p></li>
+</ol>
+<p>Alternatively, download a UCRT build from <a href="https://winlibs.com/">winlibs.com</a>, unzip it, and add its <code>mingw64\bin</code> folder to your Path. Avoid the old “MinGW” from mingw.org and old TDM-GCC builds; they’re too old.</p>
+<p>Check it, in a new terminal:</p>
+<pre><code class="language-powershell">gcc --version
+gcc --print-file-name libsynchronization.a
+go env CGO_ENABLED</code></pre>
+<p>The second command should print a full path to a file. If it just prints <code>libsynchronization.a</code> back, your GCC is too old. (This check is for Windows only. On Linux, GCC prints the name back even when it’s fine.) The last command should print <code>1</code>.</p>
+<p><strong>On Linux,</strong> install GCC with your package manager, for example <code>sudo apt install gcc</code> (Debian, Ubuntu) or <code>sudo dnf install gcc</code> (Fedora). If you ever ran <code>go env -w CGO_ENABLED=0</code>, undo it with <code>go env -u CGO_ENABLED</code>. <strong>On macOS,</strong> you don’t need anything.</p>
+
+<footer class="guide-nav">
+  <div class="prev"><span class="label">Previous</span><a href="/go-with-ai/go-goroutines-race-detector/" rel="prev">Chapter 7: A Taste of Goroutines</a></div>
+  <div class="next"><span class="label">Next</span><a href="/go-with-ai/git-basics/" rel="next">Appendix B: Just enough Git</a></div>
+</footer>
+<nav class="gwa-allpages" aria-label="Go with AI contents"><p class="onpage-h">Go with AI: all chapters</p><ol class="gwa-contents"><li><a href="/go-with-ai/introduction/">Introduction</a></li><li><a href="/go-with-ai/learn-to-code-with-ai/">Chapter 1: Learning to Code When AI Can Code</a></li><li><a href="/go-with-ai/first-go-program-and-test/">Chapter 2: Your First Program and Your First Test</a></li><li><a href="/go-with-ai/go-slices-maps-loops/">Chapter 3: Lists, Lookups and Loops</a></li><li><a href="/go-with-ai/go-structs-methods-errors/">Chapter 4: Modeling Data and Handling Errors</a></li><li><a href="/go-with-ai/go-packages-interfaces/">Chapter 5: Organizing Code: Packages and Interfaces</a></li><li><a href="/go-with-ai/go-web-api-net-http/">Chapter 6: From Command Line to Web</a></li><li><a href="/go-with-ai/go-goroutines-race-detector/">Chapter 7: A Taste of Goroutines</a></li><li><a href="/go-with-ai/setup-ai-coding-assistant/" aria-current="page">Appendix A: Setting up your AI assistant</a></li><li><a href="/go-with-ai/git-basics/">Appendix B: Just enough Git</a></li><li><a href="/go-with-ai/sure-loop/">Appendix C: The SURE loop at a glance</a></li><li><a href="/go-with-ai/review-checklists/">Appendix D: Review checklists</a></li><li><a href="/go-with-ai/answers/">Practice answers</a></li></ol></nav>
+</article>
+</div>
+
+<!-- @footer -->
+
+</body>
+</html>

@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Install Go and Write Your First Go Program with AI | Chapter 1, Go with AI</title>
+<meta name="description" content="How do you start learning Go with an AI assistant? Install Go, set up your project and AI rules file, and write and commit your first Go program, the beginner-friendly way.">
+<meta name="author" content="Roonglit Chareonsupkul">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="stylesheet" href="/fonts.css">
+<link rel="stylesheet" href="/style.css">
+<link rel="canonical" href="https://bogie-go.com/go-with-ai/learn-to-code-with-ai/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Bogie">
+<meta property="og:title" content="Install Go and Write Your First Go Program with AI | Chapter 1, Go with AI">
+<meta property="og:description" content="How do you start learning Go with an AI assistant? Install Go, set up your project and AI rules file, and write and commit your first Go program, the beginner-friendly way.">
+<meta property="og:url" content="https://bogie-go.com/go-with-ai/learn-to-code-with-ai/">
+<meta property="og:image" content="https://bogie-go.com/go-with-ai/cover.jpg">
+<meta property="og:image:width" content="560">
+<meta property="og:image:height" content="687">
+<meta property="og:image:alt" content="Cover of Go with AI by Roonglit Chareonsupkul">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Install Go and Write Your First Go Program with AI | Chapter 1, Go with AI">
+<meta name="twitter:description" content="How do you start learning Go with an AI assistant? Install Go, set up your project and AI rules file, and write and commit your first Go program, the beginner-friendly way.">
+<meta name="twitter:image" content="https://bogie-go.com/go-with-ai/cover.jpg">
+<script type="application/ld+json">{"@context": "https://schema.org","@graph": [{"@type": "Article","headline": "Chapter 1: Learning to Code When AI Can Code","name": "Install Go and Write Your First Go Program with AI | Chapter 1, Go with AI","description": "How do you start learning Go with an AI assistant? Install Go, set up your project and AI rules file, and write and commit your first Go program, the beginner-friendly way.","url": "https://bogie-go.com/go-with-ai/learn-to-code-with-ai/","inLanguage": "en","author": {"@type": "Person","name": "Roonglit Chareonsupkul"},"datePublished": "2026-11-25","dateModified": "2026-11-25","image": "https://bogie-go.com/go-with-ai/cover.jpg","keywords": "install go, first go program, learn to code with ai","isPartOf": {"@id": "https://bogie-go.com/go-with-ai/#book"},"mainEntityOfPage": "https://bogie-go.com/go-with-ai/learn-to-code-with-ai/"},{"@type": "BreadcrumbList","itemListElement": [{"@type": "ListItem","position": 1,"name": "Bogie","item": "https://bogie-go.com/"},{"@type": "ListItem","position": 2,"name": "Go with AI","item": "https://bogie-go.com/go-with-ai/"},{"@type": "ListItem","position": 3,"name": "Chapter 1: Learning to Code When AI Can Code","item": "https://bogie-go.com/go-with-ai/learn-to-code-with-ai/"}]}]}</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-MPVQ83E1Z9');
+</script>
+</head>
+<body>
+<!-- @header -->
+
+<div class="measure">
+<article class="book-sample gwa-chapter">
+<p class="guide-eyebrow"><a href="/go-with-ai/">Go with AI</a> · <span>Free online book</span></p>
+<h1>Chapter 1: Learning to Code When AI Can Code</h1>
+<p class="gwa-summary"><span class="gwa-summary-h">In short:</span> Chapter 1 gets you from nothing to a running Go program. You install Go, start the Tracker project, give your AI assistant a one-line rules file so it teaches instead of writing your code, and go around the SURE loop once with a program that prints a welcome message.</p>
+<nav class="chapter-nav gwa-onpage" aria-label="On this page"><p class="onpage-h">On this page</p><ol><li><a href="#how-this-book-works">How this book works</a></li><li><a href="#mission">Mission</a></li><li><a href="#set-up">Set up</a></li><li><a href="#must-know">Must know</a></li><li><a href="#specify">Specify</a></li><li><a href="#use-the-ai">Use the AI</a></li><li><a href="#review">Review</a></li><li><a href="#explain">Explain</a></li><li><a href="#practice-optional">Practice (optional)</a></li><li><a href="#what-youve-done">What you’ve done</a></li></ol></nav>
+<p>Open any AI coding assistant and type: “Build me an expense tracker in Go.”</p>
+<p>Almost every time, the answer starts the same way:</p>
+<aside class="book-box">
+<p><strong>Sure!</strong> Here’s a complete expense tracker in Go…</p>
+</aside>
+<p>Then comes a wall of code. A hundred lines, maybe two hundred. You copy it, run it, and it might even work.</p>
+<p>Now try to answer three questions about it:</p>
+<ul>
+<li>What does line 40 do?</li>
+<li>What happens if the file it saves to is missing?</li>
+<li>If it breaks next week, where would you start looking?</li>
+</ul>
+<p>If you can’t answer, you don’t have a program. You have a program <em>someone</em> understands, and that someone isn’t you.</p>
+<p>The AI said “Sure!” This book keeps asking you one question back: <strong>are <em>you</em> sure?</strong></p>
+<p>You’ll use AI from the first page, because that’s how people write code now, but in a way that makes <em>you</em> better at Go. By the end, you’ll have built a small expense tracker, first as a command-line program and then as a web API, and you’ll understand every line of it.</p>
+<h2 id="how-this-book-works">How this book works<a class="anchor" href="#how-this-book-works" aria-label="Link to this section"></a></h2>
+<p>Every chapter follows the same loop, <strong>the SURE loop</strong>. It has four steps:</p>
+<figure class="book-figure"><img src="/go-with-ai/images/sure-loop.png" alt="The SURE loop: Specify, Use the AI, Review, Explain" width="1560" height="870" loading="lazy"><figcaption>The SURE loop: Specify, Use the AI, Review, Explain</figcaption></figure>
+<ol type="1">
+<li><strong>Specify.</strong> Before you talk to the AI, decide what “done” looks like. Write it down.</li>
+<li><strong>Use the AI.</strong> Ask the AI to explain, help or build, depending on the chapter. Give it what you wrote down.</li>
+<li><strong>Review.</strong> Let Go check the code first: the compiler, the formatter, the tests. Then read the code yourself until you can explain every line.</li>
+<li><strong>Explain.</strong> Say what you built in your own words, note what you learned, and let the AI quiz you.</li>
+</ol>
+<p>Then you start the loop again with the next feature.</p>
+<p>Use the AI and Review get the work done. Specify and Explain are the steps that make you smarter. Most people who use AI skip those two, and that’s why they don’t improve. You won’t skip them.</p>
+<p>There’s one rule in this book:</p>
+<aside class="book-box">
+<p><strong>Be SURE you can explain it.</strong> Never keep code you can’t explain.</p>
+</aside>
+<p>If you hit a line you can’t explain, go back to Use the AI and ask about it until you can. That’s not a failure. That’s the loop working.</p>
+<h3 id="the-ais-job-changes-as-you-grow">The AI’s job changes as you grow<a class="anchor" href="#the-ais-job-changes-as-you-grow" aria-label="Link to this section"></a></h3>
+<p>The loop stays the same, but the AI’s job changes:</p>
+<ul>
+<li><strong>Tutor (Chapters 1–3).</strong> You type the code. The AI only explains things and answers your questions.</li>
+<li><strong>Pair (Chapters 3–5).</strong> You write the code, and the AI reviews it.</li>
+<li><strong>Implementer (Chapters 5–7).</strong> You write the tests, the AI writes the code, and you review it.</li>
+</ul>
+<p>In this chapter the AI is your <strong>tutor</strong>. It explains; you type. It might feel slow, and that’s on purpose. Your fingers learn things your eyes skip.</p>
+<h3 id="what-the-book-does-and-what-the-ai-does">What the book does, and what the AI does<a class="anchor" href="#what-the-book-does-and-what-the-ai-does" aria-label="Link to this section"></a></h3>
+<p>Your AI can explain the basics as many times as you like, so this book doesn’t repeat them. Instead, it gives you what the AI won’t:</p>
+<ul>
+<li><strong>What to learn next,</strong> because you don’t yet know which questions to ask.</li>
+<li><strong>What to check,</strong> because AI code can run and still hide a problem.</li>
+<li><strong>When the AI is wrong,</strong> in a “Where AI gets Go wrong” box in every chapter.</li>
+</ul>
+<p>Each chapter has the same parts: <strong>Mission</strong>, <strong>Must know</strong> (the few facts the book states itself), the four SURE steps, and an optional <strong>Practice</strong> exercise.</p>
+<h2 id="mission">Mission<a class="anchor" href="#mission" aria-label="Link to this section"></a></h2>
+<p>By the end of this chapter, you’ll have:</p>
+<ul>
+<li>Go installed and working on your computer</li>
+<li>A project folder for the expense tracker, which we’ll simply call <strong>Tracker</strong></li>
+<li>A one-line rules file that tells your AI how to help you</li>
+<li>A first Go program that prints a welcome message</li>
+<li>Your first commit, with a note about what you learned</li>
+</ul>
+<p>That’s a small program. The point of this chapter is the loop, not the size of the program. Once you’ve gone around the SURE loop once with something small, every later chapter is the same loop with something bigger.</p>
+<h2 id="set-up">Set up<a class="anchor" href="#set-up" aria-label="Link to this section"></a></h2>
+<p>You need three tools, a project folder and a rules file.</p>
+<h3 id="install-your-tools">Install your tools<a class="anchor" href="#install-your-tools" aria-label="Link to this section"></a></h3>
+<p><strong>1. Install Go.</strong> Go to <a href="https://go.dev/dl">go.dev/dl</a>, download the installer for your computer and run it (on Linux, follow the steps on <a href="https://go.dev/doc/install">go.dev/doc/install</a>). This book uses Go 1.27.</p>
+<p>When it’s done, open a terminal and type:</p>
+<pre><code class="language-bash">go version</code></pre>
+<p>You should see something like this (your numbers and system name may differ):</p>
+<pre><code class="language-text">go version go1.27.4 darwin/arm64</code></pre>
+<p>If you see <code>command not found</code> (on Windows, a message saying <code>'go' is not recognized</code>), close the terminal, open a new one and try again. Only new terminals see the newly installed Go.</p>
+<p><strong>2. Install an editor.</strong> Any editor works. If you don’t have a favorite, Visual Studio Code with the official Go extension is free and works well. Appendix A walks through the setup.</p>
+<p><strong>3. Set up an AI assistant.</strong> The examples use <strong>Claude Code</strong>, an AI assistant that runs in your terminal. Every prompt in this book is plain English, so any AI coding assistant will do. If you haven’t set one up yet, follow Appendix A now and come back.</p>
+<h3 id="create-the-project">Create the project<a class="anchor" href="#create-the-project" aria-label="Link to this section"></a></h3>
+<p>Make a folder for Tracker and move into it:</p>
+<pre><code class="language-bash">mkdir tracker
+cd tracker</code></pre>
+<p>Now tell Go that this folder is a Go project. Go calls a project a <strong>module</strong>:</p>
+<pre><code class="language-bash">go mod init tracker</code></pre>
+<p>Go answers:</p>
+<pre><code class="language-text">go: creating new go.mod: module tracker</code></pre>
+<p>That command created one file, <code>go.mod</code>. Open it:</p>
+<pre><code class="language-text">module tracker
+
+go 1.27.4</code></pre>
+<p>The first line names your module. The second line is the Go version the project needs. It matches the Go you installed, so your number may differ slightly from mine. Leave this file alone; Go manages it for you.</p>
+<h3 id="write-the-rules-file-agents.md">Write the rules file: AGENTS.md<a class="anchor" href="#write-the-rules-file-agents.md" aria-label="Link to this section"></a></h3>
+<p><code>AGENTS.md</code> is a file in your project folder where you write the rules for how the AI should work in this project. Create it in the <code>tracker</code> folder with exactly one line:</p>
+<pre><code class="language-markdown">I am learning Go (1.27, standard library only): explain things and answer my questions, but do not write or change code unless I ask.</code></pre>
+<p>That one line tells the AI you’re a learner, pins your Go version and keeps the AI in its tutor role. “Standard library only” means no extra packages: all the code in this book uses only what comes with Go. Appendix A installs two helper tools, but your program never imports anything extra.</p>
+<p>Claude Code and many other assistants read <code>AGENTS.md</code> automatically. If yours doesn’t, Appendix A shows how to point it there.</p>
+<p>You’ll add to this file as you go. Every time the AI does something you didn’t want, you’ll add a rule so it doesn’t happen again.</p>
+<aside class="book-box">
+<p class="box-label">What not to give the AI</p>
+<p>Your AI assistant sends what you type, and often the files it reads, to a service on the internet. Before you paste anything or let the AI read a folder, check this list.</p>
+<ul>
+<li><strong>Never share passwords, API keys, access tokens or <code>.env</code> files.</strong> If a key ever ends up in a chat, treat it as leaked: create a new one and delete the old one.</li>
+<li><strong>Don’t share private data about real people.</strong> That includes your own bank statements. For Tracker, always use made-up expenses like “Coffee, 3.50.”</li>
+<li><strong>Don’t share code you’re not allowed to share,</strong> such as code from your job, unless your employer allows that tool.</li>
+<li><strong>Keep secrets out of your project folder.</strong> Coding assistants can read the files in the folder you run them in.</li>
+</ul>
+<p>A simple test: if you wouldn’t post it on a public website, don’t give it to the AI. Appendix A shows where to find your tool’s privacy settings.</p>
+</aside>
+<h2 id="must-know">Must know<a class="anchor" href="#must-know" aria-label="Link to this section"></a></h2>
+<p>These facts come from the book, not the AI. Everything the AI tells you in this chapter should agree with them. If it doesn’t, the AI is wrong.</p>
+<ol type="1">
+<li><strong>A runnable Go program is <code>package main</code> with a <code>func main</code>.</strong> Go starts running your program at <code>func main</code>.</li>
+<li><strong>Go is compiled.</strong> <code>go run .</code> turns your code into a program and then runs it. If Go spots a mistake, it stops before running anything and tells you the file and line.</li>
+<li><strong>Go refuses unused imports.</strong> If you import a package and don’t use it, the program won’t compile. It’s annoying at first, and it keeps your code clean forever.</li>
+<li><strong>Go has one code format.</strong> The <code>gofmt</code> tool decides where spaces and tabs go. There’s nothing to argue about.</li>
+<li><strong>The AI’s knowledge has a date; your tools don’t.</strong> The AI learned from code written before a certain date. When it talks about Go versions or commands, <code>go version</code> and the Go website are the truth.</li>
+</ol>
+<h2 id="specify">Specify<a class="anchor" href="#specify" aria-label="Link to this section"></a></h2>
+<p>Before you open the AI, decide what “done” means. One sentence is enough:</p>
+<aside class="book-box">
+<p>When I run <code>go run .</code> in the tracker folder, it prints exactly: <code>Welcome to Tracker. Let's see where your money goes.</code></p>
+</aside>
+<p>Write this in a file called <code>SPEC.md</code> in your project folder. That way you can show it to the AI and find it later.</p>
+<p>It’s a lot of ceremony for one line of output, but it’s a habit. As programs grow, “done” gets blurry, and the AI will happily build something slightly different from what you wanted. A clear “done” is how you notice.</p>
+<p>In Chapter 2, you’ll turn sentences like this into automated tests, so Go checks “done” for you. For now, you’ll check it with your own eyes.</p>
+<h2 id="use-the-ai">Use the AI<a class="anchor" href="#use-the-ai" aria-label="Link to this section"></a></h2>
+<p>Open your terminal in the <code>tracker</code> folder and start your assistant. With Claude Code, you type:</p>
+<pre><code class="language-bash">claude</code></pre>
+<p>The first time you run it in a folder, Claude Code asks whether you trust the files there. It’s your own project, so say yes.</p>
+<p>Your AI is a tutor in this chapter. You’re not asking it to write the program. You’re asking it to teach you what you need to write it yourself. Start with this prompt:</p>
+<pre><code class="language-text">I&#39;m new to Go. Read SPEC.md. Explain what the smallest Go program
+that does this needs, part by part. Don&#39;t write the whole program;
+I want to type it myself.</code></pre>
+<p>The answer will be worded differently every time, but it should mention three parts: <code>package main</code>, an <code>import</code> for the <code>fmt</code> package, and a <code>func main</code> that calls a print function. If it talks about setting up <code>GOPATH</code> instead, see the “Where AI gets Go wrong” box later in this chapter.</p>
+<p>Now create a file named <code>main.go</code> and <strong>type</strong> this program yourself. Don’t copy and paste:</p>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+    fmt.Println(&quot;Welcome to Tracker. Let&#39;s see where your money goes.&quot;)
+}</code></pre>
+<p>Type it exactly, including the capital <code>P</code> in <code>Println</code>. Go cares about capital letters.</p>
+<p>Run it:</p>
+<pre><code class="language-bash">go run .</code></pre>
+<p>You should see:</p>
+<pre><code class="language-text">Welcome to Tracker. Let&#39;s see where your money goes.</code></pre>
+<p>The <code>.</code> means “the package in this folder.” You’ll use <code>go run .</code> throughout the book.</p>
+<p>It works. But right now you have a program that works and maybe a vague sense of why. The next two steps fix that.</p>
+<h2 id="review">Review<a class="anchor" href="#review" aria-label="Link to this section"></a></h2>
+<p>Review has two parts: let Go check first, then check it yourself.</p>
+<h3 id="let-go-check-first">Let Go check first<a class="anchor" href="#let-go-check-first" aria-label="Link to this section"></a></h3>
+<p>Go comes with tools that catch problems before you even read the code. Run these two commands:</p>
+<pre><code class="language-bash">gofmt -l .
+go vet ./...</code></pre>
+<ul>
+<li><code>gofmt -l .</code> lists any files that aren’t formatted the Go way. <strong>No output means everything is formatted.</strong> If it lists <code>main.go</code>, run <code>gofmt -w main.go</code> to fix it.</li>
+<li><code>go vet ./...</code> looks for code that compiles but is probably a mistake. <strong>No output means it found nothing.</strong> The <code>./...</code> means “this folder and every folder inside it.”</li>
+</ul>
+<p>In Go, silence is good news.</p>
+<h3 id="break-it-on-purpose">Break it on purpose<a class="anchor" href="#break-it-on-purpose" aria-label="Link to this section"></a></h3>
+<p>The compiler is your first reviewer, so it’s worth learning what it sounds like. Make two small mistakes on purpose and read what Go says. (On Windows, the messages show <code>.\main.go</code> instead of <code>./main.go</code>. That’s normal.)</p>
+<p><strong>Mistake 1: a typo.</strong> Change <code>Println</code> to <code>Prinln</code> and run <code>go run .</code> again:</p>
+<pre><code class="language-text"># tracker
+./main.go:6:6: undefined: fmt.Prinln</code></pre>
+<p>Read it from left to right: the file (<code>main.go</code>), the line (<code>6</code>), the column (<code>6</code>), and the problem. The <code>fmt</code> package has nothing called <code>Prinln</code>. Fix the typo.</p>
+<p><strong>Mistake 2: an unused import.</strong> Delete the whole <code>fmt.Println(...)</code> line, leaving <code>func main() {}</code> empty, and run again:</p>
+<pre><code class="language-text"># tracker
+./main.go:3:8: &quot;fmt&quot; imported and not used</code></pre>
+<p>That’s Must know #3 in action. Put the line back and run <code>go run .</code> to make sure the welcome message is back.</p>
+<p>Compiler errors aren’t insults; they’re directions. Learning to read them is a skill the AI can’t learn for you.</p>
+<h3 id="check-it-yourself">Check it yourself<a class="anchor" href="#check-it-yourself" aria-label="Link to this section"></a></h3>
+<p>Every box should be ticked before you move on:</p>
+<ul class="task-list">
+<li><label><input type="checkbox" /><code>go run .</code> prints exactly the sentence in <code>SPEC.md</code>, word for word.</label></li>
+<li><label><input type="checkbox" /><code>gofmt -l .</code> and <code>go vet ./...</code> print nothing.</label></li>
+<li><label><input type="checkbox" />You can point at each line in <code>main.go</code> and say what it does.</label></li>
+<li><label><input type="checkbox" />Nothing in your project folder or your chat is on the “What not to give the AI” list.</label></li>
+</ul>
+<p>The third box matters most. If any line is still fuzzy, ask your tutor about it:</p>
+<pre><code class="language-text">In main.go, what does the line `import &quot;fmt&quot;` do? What would happen
+without it?</code></pre>
+<p>Keep asking until you could explain it to a friend. Be SURE you can explain it.</p>
+<aside class="book-box">
+<p class="box-label">Where AI gets Go wrong: getting started</p>
+<p>AI assistants learned from years of Go code, including a lot of old advice. Watch for these:</p>
+<ul>
+<li><strong>Old project setup.</strong> If the AI tells you to set up a <code>GOPATH</code> folder or set <code>GO111MODULE</code>, that’s how Go worked many years ago. Today you run <code>go mod init</code> in any folder, as you did in this chapter.</li>
+<li><strong><code>go get</code> to install tools.</strong> Old instructions use <code>go get</code> to install command-line tools. Today, tools are installed with <code>go install</code>, for example <code>go install golang.org/x/tools/gopls@latest</code>. <code>go get</code> is now only for adding packages to a project.</li>
+<li><strong>Old Go version numbers.</strong> The AI may call an older version “the latest.” Trust <code>go version</code> and <a href="https://go.dev">go.dev</a>, not the AI.</li>
+<li><strong>Old packages.</strong> If you see <code>io/ioutil</code> in AI-written code, that package was replaced years ago. Its functions now live in <code>io</code> and <code>os</code>. The code still compiles, so the compiler won’t warn you, which is exactly why this box exists.</li>
+</ul>
+</aside>
+<h2 id="explain">Explain<a class="anchor" href="#explain" aria-label="Link to this section"></a></h2>
+<p>The program is done. The loop isn’t. This last step is where the learning sticks.</p>
+<h3 id="say-it-in-your-own-words">Say it in your own words<a class="anchor" href="#say-it-in-your-own-words" aria-label="Link to this section"></a></h3>
+<p>Without looking at the AI’s explanations, write three or four sentences about what your program does. Here’s an example. Yours will be different, and that’s the point:</p>
+<aside class="book-box">
+<p>My program lives in package <code>main</code>, so Go knows it’s a program it can run. Go starts at <code>func main</code>. I import <code>fmt</code> so I can use <code>fmt.Println</code>, which prints a line of text. If I import something and don’t use it, Go won’t compile.</p>
+</aside>
+<p>If you get stuck halfway through a sentence, you’ve found exactly what to ask the AI about next.</p>
+<h3 id="let-the-ai-quiz-you">Let the AI quiz you<a class="anchor" href="#let-the-ai-quiz-you" aria-label="Link to this section"></a></h3>
+<p>Now turn the tables. Ask your tutor to test you:</p>
+<pre><code class="language-text">Ask me two questions about the code in main.go to check that I
+understand it. Wait for my answers before you tell me if I&#39;m right.</code></pre>
+<p>Answer honestly before you check. If you’re unsure, try it: change the code, run it, read the error, and change it back. For example, if the AI asks what happens when you rename <code>func main</code> to <code>func start</code>, try it. Go stops with <code>function main is undeclared in the main package</code>. That’s Must know #1, straight from the compiler.</p>
+<h3 id="write-a-learned-line-in-your-commit">Write a <code>Learned:</code> line in your commit<a class="anchor" href="#write-a-learned-line-in-your-commit" aria-label="Link to this section"></a></h3>
+<p>Finally, save your work with Git. Git keeps the history of your project, and its commit messages will become your learning journal.</p>
+<p>First time using Git? Install it and set your name and email once (Appendix B shows how):</p>
+<pre><code class="language-bash">git config --global user.name &quot;Your Name&quot;
+git config --global user.email &quot;you@example.com&quot;</code></pre>
+<p>Then run these commands in the <code>tracker</code> folder:</p>
+<pre><code class="language-bash">git init
+git add .
+git commit -m &quot;Print a welcome message&quot; -m &quot;Learned: Go starts at func main in package main, and won&#39;t compile with unused imports.&quot;</code></pre>
+<p><code>git init</code> may print a few <code>hint:</code> lines about the branch name. They’re safe to ignore.</p>
+<p>The first <code>-m</code> is a short title for the change. The second is your <code>Learned:</code> line: one sentence about something you understand now that you didn’t before. Write one with every commit in this book. Later, <code>git log</code> shows your whole learning path.</p>
+<h3 id="update-agents.md-if-something-surprised-you">Update AGENTS.md if something surprised you<a class="anchor" href="#update-agents.md-if-something-surprised-you" aria-label="Link to this section"></a></h3>
+<p>Did the AI do something you didn’t want? Maybe it wrote the whole program even though you asked it not to, or its explanation was far too long. Add a line to <code>AGENTS.md</code>, for example:</p>
+<pre><code class="language-markdown">Keep explanations under 10 lines unless I ask for more.</code></pre>
+<p>Then commit that change too. Your rules file grows with you, and by the end of the book it’ll describe how <em>you</em> like to work.</p>
+<h2 id="practice-optional">Practice (optional)<a class="anchor" href="#practice-optional" aria-label="Link to this section"></a></h2>
+<p>Make Tracker also print today’s date under the welcome message:</p>
+<pre><code class="language-text">Welcome to Tracker. Let&#39;s see where your money goes.
+Today is 2026-11-24</code></pre>
+<p>Your date will be different. Two hints: you’ll need the <code>time</code> package alongside <code>fmt</code>, and Go formats dates in an unusual way. Ask your tutor, “Explain Go’s reference time for formatting dates. Don’t write my code.” Use the SURE loop, starting with an updated <code>SPEC.md</code>.</p>
+<p class="gwa-answer-link">Tried it? Compare with the <a href="/go-with-ai/answers/#chapter-1">worked answer for Chapter 1</a>.</p>
+<h2 id="what-youve-done">What you’ve done<a class="anchor" href="#what-youve-done" aria-label="Link to this section"></a></h2>
+<p>You installed Go, created a module, wrote the rules for your AI, and went around the SURE loop once. It was a small program, but it’s the same loop you’ll use for everything else in this book.</p>
+<p>In Chapter 2, Tracker will print its first expense and add up a list of amounts, and you’ll turn your <code>SPEC.md</code> sentence into a test, so Go checks “done” for you.</p>
+<p>The AI will say “Sure!” again. You’ll know what to ask back.</p>
+
+<footer class="guide-nav">
+  <div class="prev"><span class="label">Previous</span><a href="/go-with-ai/introduction/" rel="prev">Introduction</a></div>
+  <div class="next"><span class="label">Next</span><a href="/go-with-ai/first-go-program-and-test/" rel="next">Chapter 2: Your First Program and Your First Test</a></div>
+</footer>
+<nav class="gwa-allpages" aria-label="Go with AI contents"><p class="onpage-h">Go with AI: all chapters</p><ol class="gwa-contents"><li><a href="/go-with-ai/introduction/">Introduction</a></li><li><a href="/go-with-ai/learn-to-code-with-ai/" aria-current="page">Chapter 1: Learning to Code When AI Can Code</a></li><li><a href="/go-with-ai/first-go-program-and-test/">Chapter 2: Your First Program and Your First Test</a></li><li><a href="/go-with-ai/go-slices-maps-loops/">Chapter 3: Lists, Lookups and Loops</a></li><li><a href="/go-with-ai/go-structs-methods-errors/">Chapter 4: Modeling Data and Handling Errors</a></li><li><a href="/go-with-ai/go-packages-interfaces/">Chapter 5: Organizing Code: Packages and Interfaces</a></li><li><a href="/go-with-ai/go-web-api-net-http/">Chapter 6: From Command Line to Web</a></li><li><a href="/go-with-ai/go-goroutines-race-detector/">Chapter 7: A Taste of Goroutines</a></li><li><a href="/go-with-ai/setup-ai-coding-assistant/">Appendix A: Setting up your AI assistant</a></li><li><a href="/go-with-ai/git-basics/">Appendix B: Just enough Git</a></li><li><a href="/go-with-ai/sure-loop/">Appendix C: The SURE loop at a glance</a></li><li><a href="/go-with-ai/review-checklists/">Appendix D: Review checklists</a></li><li><a href="/go-with-ai/answers/">Practice answers</a></li></ol></nav>
+</article>
+</div>
+
+<!-- @footer -->
+
+</body>
+</html>

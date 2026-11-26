@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Go Practice Exercises with Answers (Chapters 1-7) | Go with AI</title>
+<meta name="description" content="Worked answers to the Go with AI practice exercises: fixing compile errors, slices and maps, error handling, interfaces, a net/http endpoint and a data race, all run on Go 1.27.4.">
+<meta name="author" content="Roonglit Chareonsupkul">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="stylesheet" href="/fonts.css">
+<link rel="stylesheet" href="/style.css">
+<link rel="canonical" href="https://bogie-go.com/go-with-ai/answers/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Bogie">
+<meta property="og:title" content="Go Practice Exercises with Answers (Chapters 1-7) | Go with AI">
+<meta property="og:description" content="Worked answers to the Go with AI practice exercises: fixing compile errors, slices and maps, error handling, interfaces, a net/http endpoint and a data race, all run on Go 1.27.4.">
+<meta property="og:url" content="https://bogie-go.com/go-with-ai/answers/">
+<meta property="og:image" content="https://bogie-go.com/go-with-ai/cover.jpg">
+<meta property="og:image:width" content="560">
+<meta property="og:image:height" content="687">
+<meta property="og:image:alt" content="Cover of Go with AI by Roonglit Chareonsupkul">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Go Practice Exercises with Answers (Chapters 1-7) | Go with AI">
+<meta name="twitter:description" content="Worked answers to the Go with AI practice exercises: fixing compile errors, slices and maps, error handling, interfaces, a net/http endpoint and a data race, all run on Go 1.27.4.">
+<meta name="twitter:image" content="https://bogie-go.com/go-with-ai/cover.jpg">
+<script type="application/ld+json">{"@context": "https://schema.org","@graph": [{"@type": "WebPage","headline": "Practice answers","name": "Go Practice Exercises with Answers (Chapters 1-7) | Go with AI","description": "Worked answers to the Go with AI practice exercises: fixing compile errors, slices and maps, error handling, interfaces, a net/http endpoint and a data race, all run on Go 1.27.4.","url": "https://bogie-go.com/go-with-ai/answers/","inLanguage": "en","author": {"@type": "Person","name": "Roonglit Chareonsupkul"},"datePublished": "2026-11-25","dateModified": "2026-11-25","image": "https://bogie-go.com/go-with-ai/cover.jpg","keywords": "go exercises with solutions, golang practice problems, learn go","isPartOf": {"@id": "https://bogie-go.com/go-with-ai/#book"},"mainEntityOfPage": "https://bogie-go.com/go-with-ai/answers/"},{"@type": "BreadcrumbList","itemListElement": [{"@type": "ListItem","position": 1,"name": "Bogie","item": "https://bogie-go.com/"},{"@type": "ListItem","position": 2,"name": "Go with AI","item": "https://bogie-go.com/go-with-ai/"},{"@type": "ListItem","position": 3,"name": "Practice answers","item": "https://bogie-go.com/go-with-ai/answers/"}]}]}</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-MPVQ83E1Z9');
+</script>
+</head>
+<body>
+<!-- @header -->
+
+<div class="measure">
+<article class="book-sample gwa-chapter">
+<p class="guide-eyebrow"><a href="/go-with-ai/">Go with AI</a> · <span>Free online book</span></p>
+<h1>Practice answers</h1>
+<p class="gwa-summary"><span class="gwa-summary-h">In short:</span> Worked answers to the optional Practice exercise at the end of each chapter, from printing today&#x27;s date to finding a data race. Try each exercise first; every answer was run on Go 1.27.4.</p>
+<nav class="chapter-nav gwa-onpage" aria-label="On this page"><p class="onpage-h">On this page</p><ol><li><a href="#chapter-1">Chapter 1: print today’s date</a></li><li><a href="#chapter-2">Chapter 2: five broken programs</a></li><li><a href="#chapter-3">Chapter 3: count expenses per category</a></li><li><a href="#chapter-4">Chapter 4: find the four ignored errors</a></li><li><a href="#chapter-5">Chapter 5: test whether the AI follows your rules</a></li><li><a href="#chapter-6">Chapter 6: GET /totals/{category}</a></li><li><a href="#chapter-7">Chapter 7: find the data race</a></li></ol></nav>
+<p>These are worked answers to the optional <strong>Practice</strong> exercise at the end of each chapter. Try the exercise first: the struggle is where the learning happens. When you compare, remember that your code can look different and still be right, as long as your tests pass and you can explain every line.</p>
+<p>Every answer below was run on Go 1.27.4 with <code>gofmt -l .</code>, <code>go vet ./...</code> and <code>go test ./...</code> (and <code>go test -race ./...</code> for Chapters 6 and 7).</p>
+<h2 id="chapter-1">Chapter 1: print today’s date<a class="anchor" href="#chapter-1" aria-label="Link to this section"></a></h2>
+<p><a href="../learn-to-code-with-ai/#practice-optional">Back to the Chapter 1 exercise</a></p>
+<p>First, the spec. Add a second sentence to <code>SPEC.md</code>:</p>
+<pre><code class="language-markdown">It then prints &quot;Today is &quot; and today&#39;s date as YYYY-MM-DD, for example:
+`Today is 2026-11-24`</code></pre>
+<p>Then <code>main.go</code>:</p>
+<pre><code class="language-go">package main
+
+import (
+    &quot;fmt&quot;
+    &quot;time&quot;
+)
+
+func main() {
+    fmt.Println(&quot;Welcome to Tracker. Let&#39;s see where your money goes.&quot;)
+    fmt.Println(&quot;Today is &quot; + time.Now().Format(&quot;2006-01-02&quot;))
+}</code></pre>
+<p>Go doesn’t format dates with codes like <code>YYYY</code> or <code>%Y</code>. It uses one <strong>reference time</strong>, <code>Mon Jan 2 15:04:05 MST 2006</code>, and you write the layout by showing how that exact moment would look. <code>2006</code> means the year, <code>01</code> the month and <code>02</code> the day, so <code>"2006-01-02"</code> prints <code>2026-11-24</code>. If you’d written <code>"2006-02-01"</code>, Go would print the day before the month. That’s the trap AI-written date code falls into most often.</p>
+<p>Explain it: why can’t the test for this line say exactly what to print? (Hint: what’s different tomorrow?)</p>
+<h2 id="chapter-2">Chapter 2: five broken programs<a class="anchor" href="#chapter-2" aria-label="Link to this section"></a></h2>
+<p><a href="../first-go-program-and-test/#practice-optional">Back to the Chapter 2 exercise</a></p>
+<p><strong>fix1.go</strong>: <code>invalid operation: name + ": " + cents (mismatched types string and int)</code>. Go won’t add a number to a string. Let <code>fmt.Println</code> print both, and it puts a space between them:</p>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+    name := &quot;Coffee&quot;
+    cents := 350
+    fmt.Println(name+&quot;:&quot;, cents)
+}</code></pre>
+<p><code>strconv.Itoa(cents)</code> also works: it turns <code>350</code> into <code>"350"</code>. <code>string(cents)</code> doesn’t: it turns 350 into the character with code 350, <code>Ş</code>. <code>go vet</code> warns about it, as the box in the chapter says.</p>
+<p><strong>fix2.go</strong>: <code>declared and not used: count</code>. Go refuses to compile a local variable you never use. Delete it:</p>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+    amount := 350
+    fmt.Println(&quot;Amount:&quot;, amount)
+}</code></pre>
+<p><strong>fix3.go</strong>: <code>assignment mismatch: 1 variable but splitCents returns 2 values</code>. A function that returns two values needs two names on the left. Use <code>_</code> for the one you don’t need:</p>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func splitCents(cents int) (int, int) {
+    return cents / 100, cents % 100
+}
+
+func main() {
+    whole, _ := splitCents(1649)
+    fmt.Println(&quot;Whole units:&quot;, whole)
+}</code></pre>
+<p><strong>fix4.go</strong>: two errors, <code>declared and not used: result</code> and <code>missing return</code>. The function promises an <code>int</code> but never returns one. Returning <code>result</code> fixes both, because now <code>result</code> is used:</p>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func double(cents int) int {
+    result := cents * 2
+    return result
+}
+
+func main() {
+    fmt.Println(double(350))
+}</code></pre>
+<p><code>return cents * 2</code> on its own line also works.</p>
+<p><strong>fix5.go</strong>: <code>no new variables on left side of :=</code>. <code>:=</code> makes a new variable, and <code>total</code> already exists. To change it, use <code>=</code>:</p>
+<pre><code class="language-go">package main
+
+import &quot;fmt&quot;
+
+func main() {
+    total := 350
+    total = total + 1200
+    fmt.Println(&quot;Total:&quot;, total)
+}</code></pre>
+<h2 id="chapter-3">Chapter 3: count expenses per category<a class="anchor" href="#chapter-3" aria-label="Link to this section"></a></h2>
+<p><a href="../go-slices-maps-loops/#practice-optional">Back to the Chapter 3 exercise</a></p>
+<p>Specify first. Add sentence 5 to <code>SPEC.md</code>:</p>
+<pre><code class="language-markdown">5. After the totals, it prints how many expenses each category has,
+   sorted by name, with &quot;expense&quot; for one and &quot;expenses&quot; for more:
+   Food: 2 expenses
+   Fun: 1 expense
+   Transport: 1 expense</code></pre>
+<p>Then a test, at the end of <code>main_test.go</code>. It has a row for “1 expense” and one for “2 expenses”, because that difference is the whole point of the exercise:</p>
+<pre><code class="language-go">func TestDescribeCount(t *testing.T) {
+    expenses := make(map[string][]int)
+    addExpense(expenses, &quot;Food&quot;, 350)
+    addExpense(expenses, &quot;Food&quot;, 99)
+    addExpense(expenses, &quot;Fun&quot;, 1500)
+
+    tests := []struct {
+        category string
+        want     string
+    }{
+        {&quot;Food&quot;, &quot;Food: 2 expenses&quot;},
+        {&quot;Fun&quot;, &quot;Fun: 1 expense&quot;},
+    }
+    for _, tt := range tests {
+        got := describeCount(expenses, tt.category)
+        if got != tt.want {
+            t.Errorf(&quot;describeCount(%q) = %q, want %q&quot;, tt.category, got, tt.want)
+        }
+    }
+}</code></pre>
+<p>Run <code>go test ./...</code> and watch it fail with <code>undefined: describeCount</code>. Then the function, at the end of <code>main.go</code>:</p>
+<pre><code class="language-go">func describeCount(expenses map[string][]int, category string) string {
+    count := len(expenses[category])
+    if count == 1 {
+        return fmt.Sprintf(&quot;%s: %d expense&quot;, category, count)
+    }
+    return fmt.Sprintf(&quot;%s: %d expenses&quot;, category, count)
+}</code></pre>
+<p><code>len(expenses[category])</code> is the number of amounts in that category’s slice. For a category that isn’t in the map, the lookup gives a <code>nil</code> slice, and <code>len</code> of <code>nil</code> is <code>0</code>, so this never crashes.</p>
+<p>Last, print the counts at the end of <code>main</code>, reusing <code>sortedCategories</code> so the order stays fixed:</p>
+<pre><code class="language-go">    for _, category := range sortedCategories(totals) {
+        fmt.Println(describeCount(expenses, category))
+    }</code></pre>
+<p><code>go run .</code> now ends with:</p>
+<pre><code class="language-text">Food: 2 expenses
+Fun: 1 expense
+Transport: 1 expense</code></pre>
+<p>A review suggestion you might get: “use <code>if count != 1</code>” so that <code>0 expenses</code> also reads well. Keep it if you can explain it.</p>
+<h2 id="chapter-4">Chapter 4: find the four ignored errors<a class="anchor" href="#chapter-4" aria-label="Link to this section"></a></h2>
+<p><a href="../go-structs-methods-errors/#practice-optional">Back to the Chapter 4 exercise</a></p>
+<p>The four ignored errors are:</p>
+<ol type="1">
+<li><code>json.MarshalIndent</code> in <code>save</code> (<code>data, _ :=</code>)</li>
+<li><code>os.WriteFile</code> in <code>save</code> (its result isn’t used at all)</li>
+<li><code>os.ReadFile</code> in <code>load</code> (<code>data, _ :=</code>)</li>
+<li><code>json.Unmarshal</code> in <code>load</code> (its result isn’t used at all)</li>
+</ol>
+<p>Here’s one fixed version. <code>save</code> and <code>load</code> return wrapped errors, and <code>main</code> prints the error and stops, the way Tracker’s <code>main</code> does with <code>run</code>:</p>
+<pre><code class="language-go">package main
+
+import (
+    &quot;encoding/json&quot;
+    &quot;fmt&quot;
+    &quot;os&quot;
+)
+
+type Expense struct {
+    Category string `json:&quot;category&quot;`
+    Cents    int    `json:&quot;cents&quot;`
+}
+
+func save(path string, expenses []Expense) error {
+    data, err := json.MarshalIndent(expenses, &quot;&quot;, &quot;  &quot;)
+    if err != nil {
+        return fmt.Errorf(&quot;save expenses: %w&quot;, err)
+    }
+    if err := os.WriteFile(path, data, 0o644); err != nil {
+        return fmt.Errorf(&quot;save expenses: %w&quot;, err)
+    }
+    return nil
+}
+
+func load(path string) ([]Expense, error) {
+    data, err := os.ReadFile(path)
+    if err != nil {
+        return nil, fmt.Errorf(&quot;load expenses: %w&quot;, err)
+    }
+    var expenses []Expense
+    if err := json.Unmarshal(data, &amp;expenses); err != nil {
+        return nil, fmt.Errorf(&quot;load expenses: %w&quot;, err)
+    }
+    return expenses, nil
+}
+
+func main() {
+    if err := run(); err != nil {
+        fmt.Fprintln(os.Stderr, &quot;Error:&quot;, err)
+        os.Exit(1)
+    }
+}
+
+func run() error {
+    expenses := []Expense{
+        {Category: &quot;Food&quot;, Cents: 350},
+        {Category: &quot;Fun&quot;, Cents: 1500},
+    }
+    if err := save(&quot;backup/expenses.json&quot;, expenses); err != nil {
+        return err
+    }
+    fmt.Println(&quot;Saved&quot;, len(expenses), &quot;expenses&quot;)
+
+    loaded, err := load(&quot;backup/expenses.json&quot;)
+    if err != nil {
+        return err
+    }
+    fmt.Println(&quot;Loaded&quot;, len(loaded), &quot;expenses&quot;)
+    return nil
+}</code></pre>
+<p>Run it with no <code>backup</code> folder:</p>
+<pre><code class="language-text">Error: save expenses: open backup/expenses.json: no such file or directory
+exit status 1</code></pre>
+<p>On Windows, the last part says <code>The system cannot find the path specified.</code> Make the folder (<code>mkdir backup</code>) and run it again, and it prints <code>Saved 2 expenses</code> and <code>Loaded 2 expenses</code>.</p>
+<p>The wrapping is what makes that message useful: <code>save expenses:</code> says what you were doing, and the error from <code>os.WriteFile</code> inside it says what went wrong and with which file.</p>
+<h2 id="chapter-5">Chapter 5: test whether the AI follows your rules<a class="anchor" href="#chapter-5" aria-label="Link to this section"></a></h2>
+<p><a href="../go-packages-interfaces/#practice-optional">Back to the Chapter 5 exercise</a></p>
+<p>This exercise is about the AI, so there’s no single answer: what matters is whether <em>your</em> AI followed <em>your</em> three rules. Here’s what a correct result looks like, so you have something to check against.</p>
+<p>The test, in <code>ledger/ledger_test.go</code>, committed before you ask the AI:</p>
+<pre><code class="language-go">func TestTrackerCount(t *testing.T) {
+    var empty Tracker
+    if got := empty.Count(); got != 0 {
+        t.Errorf(&quot;empty Count() = %d, want 0&quot;, got)
+    }
+
+    var tr Tracker
+    if err := tr.Add(&quot;Food&quot;, 350); err != nil {
+        t.Fatalf(&quot;Add() error = %v&quot;, err)
+    }
+    if err := tr.Add(&quot;Fun&quot;, 1500); err != nil {
+        t.Fatalf(&quot;Add() error = %v&quot;, err)
+    }
+    if got := tr.Count(); got != 2 {
+        t.Errorf(&quot;Count() = %d, want 2&quot;, got)
+    }
+}</code></pre>
+<p>The method the AI should write, in <code>ledger/ledger.go</code>:</p>
+<pre><code class="language-go">// Count returns how many expenses the Tracker holds.
+func (tr *Tracker) Count() int {
+    return len(tr.expenses)
+}</code></pre>
+<p>Check it against your rules:</p>
+<ul>
+<li><strong>Doc comment:</strong> it starts with the name, <code>Count</code>.</li>
+<li><strong>Test files:</strong> <code>git status</code> shows only <code>ledger/ledger.go</code> changed. If a <code>_test.go</code> file is listed, the AI broke the rule: <code>git restore</code> it and ask again.</li>
+<li><strong>Error messages:</strong> <code>Count</code> can’t fail, so this rule isn’t tested by this feature. To test it, specify a feature that returns an error, and check that its message starts with a lowercase letter and has no full stop at the end.</li>
+</ul>
+<p>If a rule keeps failing, make it more specific. “Never edit files ending in _test.go unless I ask” works better than “don’t touch the tests,” because the AI can check it against a file name.</p>
+<h2 id="chapter-6">Chapter 6: GET /totals/{category}<a class="anchor" href="#chapter-6" aria-label="Link to this section"></a></h2>
+<p><a href="../go-web-api-net-http/#practice-optional">Back to the Chapter 6 exercise</a></p>
+<p>The two sentences go at the end of <code>SPEC.md</code>, as the exercise shows. Then the tests, at the end of <code>api/api_test.go</code>:</p>
+<pre><code class="language-go">func TestCategoryTotal(t *testing.T) {
+    h := newTestHandler(t, &amp;ledger.MemoryStorage{})
+    add(t, h, `{&quot;category&quot;:&quot;Food&quot;,&quot;cents&quot;:350}`)
+    add(t, h, `{&quot;category&quot;:&quot;Transport&quot;,&quot;cents&quot;:1200}`)
+    add(t, h, `{&quot;category&quot;:&quot;Food&quot;,&quot;cents&quot;:99}`)
+
+    rec := send(h, &quot;GET&quot;, &quot;/totals/Food&quot;, &quot;&quot;)
+    if rec.Code != http.StatusOK {
+        t.Fatalf(&quot;status = %d, want %d&quot;, rec.Code, http.StatusOK)
+    }
+    want := `{&quot;category&quot;:&quot;Food&quot;,&quot;cents&quot;:449}` + &quot;\n&quot;
+    if got := rec.Body.String(); got != want {
+        t.Errorf(&quot;body = %q, want %q&quot;, got, want)
+    }
+}
+
+func TestCategoryTotalNotFound(t *testing.T) {
+    h := newTestHandler(t, &amp;ledger.MemoryStorage{})
+    add(t, h, `{&quot;category&quot;:&quot;Food&quot;,&quot;cents&quot;:350}`)
+
+    rec := send(h, &quot;GET&quot;, &quot;/totals/Travel&quot;, &quot;&quot;)
+    if rec.Code != http.StatusNotFound {
+        t.Errorf(&quot;status = %d, want %d&quot;, rec.Code, http.StatusNotFound)
+    }
+}</code></pre>
+<p>Run <code>go test ./...</code> before writing any handler:</p>
+<pre><code class="language-text">--- FAIL: TestCategoryTotal (0.00s)
+    api_test.go:118: status = 404, want 200
+FAIL</code></pre>
+<p>Your line number may differ. Notice that <code>TestCategoryTotalNotFound</code> already <strong>passes</strong>: with no handler for the path, the mux answers 404 for every category. A test that passes before you write the code isn’t proving much on its own. It’s the <code>Food</code> test that forces the real work, and the two tests together pin down the difference.</p>
+<p>If you went further and had the AI implement it, a good handler in <code>NewHandler</code> looks like this:</p>
+<pre><code class="language-go">    mux.HandleFunc(&quot;GET /totals/{category}&quot;, func(w http.ResponseWriter, r *http.Request) {
+        category := r.PathValue(&quot;category&quot;)
+        cents, ok := tr.Totals()[category]
+        if !ok {
+            http.Error(w, &quot;no expenses in &quot;+category, http.StatusNotFound)
+            return
+        }
+        writeJSON(w, http.StatusOK, ledger.Expense{Category: category, Cents: cents})
+    })</code></pre>
+<p>Review points: it uses the comma-ok lookup from Chapter 3, so a missing category is a 404 and not a total of <code>0</code>. It reuses <code>ledger.Expense</code>, whose JSON tags already give <code>{"category":"Food","cents":449}</code>. And it reuses <code>writeJSON</code>, so the <code>Content-Type</code> header is set the same way as everywhere else.</p>
+<h2 id="chapter-7">Chapter 7: find the data race<a class="anchor" href="#chapter-7" aria-label="Link to this section"></a></h2>
+<p><a href="../go-goroutines-race-detector/#practice-optional">Back to the Chapter 7 exercise</a></p>
+<p><code>go test -race ./...</code> reports a race between:</p>
+<ul>
+<li><strong><code>Add</code></strong>, writing <code>s.total</code> on the <code>s.total += cents</code> line (line 15 of <code>spending.go</code>), and</li>
+<li><strong><code>Total</code></strong>, reading <code>s.total</code> on the <code>return s.total</code> line (line 21).</li>
+</ul>
+<p>Your report may list them the other way round. <code>Add</code> holds the lock, but <code>Total</code> doesn’t, so one goroutine can read the total while another is writing it. A mutex only protects the data if <strong>every</strong> access takes the lock, reads included.</p>
+<p>The fix is two lines in <code>Total</code>:</p>
+<pre><code class="language-go">// Total returns the total so far.
+func (s *Spending) Total() int {
+    s.mu.Lock()
+    defer s.mu.Unlock()
+    return s.total
+}</code></pre>
+<p>Run <code>go test -race ./...</code> again, a few times:</p>
+<pre><code class="language-text">ok      racy    1.013s</code></pre>
+<p>Why did the plain test pass every time? The race detector looks at how the goroutines access memory, not at the answer. On most runs the timing works out and the total is right, which is exactly why a race can hide in a passing test.</p>
+
+<footer class="guide-nav">
+  <div class="prev"><span class="label">Previous</span><a href="/go-with-ai/review-checklists/" rel="prev">Appendix D: Review checklists</a></div>
+  <div class="next"></div>
+</footer>
+<nav class="gwa-allpages" aria-label="Go with AI contents"><p class="onpage-h">Go with AI: all chapters</p><ol class="gwa-contents"><li><a href="/go-with-ai/introduction/">Introduction</a></li><li><a href="/go-with-ai/learn-to-code-with-ai/">Chapter 1: Learning to Code When AI Can Code</a></li><li><a href="/go-with-ai/first-go-program-and-test/">Chapter 2: Your First Program and Your First Test</a></li><li><a href="/go-with-ai/go-slices-maps-loops/">Chapter 3: Lists, Lookups and Loops</a></li><li><a href="/go-with-ai/go-structs-methods-errors/">Chapter 4: Modeling Data and Handling Errors</a></li><li><a href="/go-with-ai/go-packages-interfaces/">Chapter 5: Organizing Code: Packages and Interfaces</a></li><li><a href="/go-with-ai/go-web-api-net-http/">Chapter 6: From Command Line to Web</a></li><li><a href="/go-with-ai/go-goroutines-race-detector/">Chapter 7: A Taste of Goroutines</a></li><li><a href="/go-with-ai/setup-ai-coding-assistant/">Appendix A: Setting up your AI assistant</a></li><li><a href="/go-with-ai/git-basics/">Appendix B: Just enough Git</a></li><li><a href="/go-with-ai/sure-loop/">Appendix C: The SURE loop at a glance</a></li><li><a href="/go-with-ai/review-checklists/">Appendix D: Review checklists</a></li><li><a href="/go-with-ai/answers/" aria-current="page">Practice answers</a></li></ol></nav>
+</article>
+</div>
+
+<!-- @footer -->
+
+</body>
+</html>

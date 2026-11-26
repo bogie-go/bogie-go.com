@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Go Packages and Interfaces Explained for Beginners | Chapter 5, Go with AI</title>
+<meta name="description" content="How do packages and interfaces work in Go? Split a program into packages, define a Storage interface with file and memory versions, and refactor safely with tests while the AI implements.">
+<meta name="author" content="Roonglit Chareonsupkul">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="stylesheet" href="/fonts.css">
+<link rel="stylesheet" href="/style.css">
+<link rel="canonical" href="https://bogie-go.com/go-with-ai/go-packages-interfaces/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Bogie">
+<meta property="og:title" content="Go Packages and Interfaces Explained for Beginners | Chapter 5, Go with AI">
+<meta property="og:description" content="How do packages and interfaces work in Go? Split a program into packages, define a Storage interface with file and memory versions, and refactor safely with tests while the AI implements.">
+<meta property="og:url" content="https://bogie-go.com/go-with-ai/go-packages-interfaces/">
+<meta property="og:image" content="https://bogie-go.com/go-with-ai/cover.jpg">
+<meta property="og:image:width" content="560">
+<meta property="og:image:height" content="687">
+<meta property="og:image:alt" content="Cover of Go with AI by Roonglit Chareonsupkul">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Go Packages and Interfaces Explained for Beginners | Chapter 5, Go with AI">
+<meta name="twitter:description" content="How do packages and interfaces work in Go? Split a program into packages, define a Storage interface with file and memory versions, and refactor safely with tests while the AI implements.">
+<meta name="twitter:image" content="https://bogie-go.com/go-with-ai/cover.jpg">
+<script type="application/ld+json">{"@context": "https://schema.org","@graph": [{"@type": "Article","headline": "Chapter 5: Organizing Code: Packages and Interfaces","name": "Go Packages and Interfaces Explained for Beginners | Chapter 5, Go with AI","description": "How do packages and interfaces work in Go? Split a program into packages, define a Storage interface with file and memory versions, and refactor safely with tests while the AI implements.","url": "https://bogie-go.com/go-with-ai/go-packages-interfaces/","inLanguage": "en","author": {"@type": "Person","name": "Roonglit Chareonsupkul"},"datePublished": "2026-11-25","dateModified": "2026-11-25","image": "https://bogie-go.com/go-with-ai/cover.jpg","keywords": "go packages, golang interfaces, go refactoring","isPartOf": {"@id": "https://bogie-go.com/go-with-ai/#book"},"mainEntityOfPage": "https://bogie-go.com/go-with-ai/go-packages-interfaces/"},{"@type": "BreadcrumbList","itemListElement": [{"@type": "ListItem","position": 1,"name": "Bogie","item": "https://bogie-go.com/"},{"@type": "ListItem","position": 2,"name": "Go with AI","item": "https://bogie-go.com/go-with-ai/"},{"@type": "ListItem","position": 3,"name": "Chapter 5: Organizing Code: Packages and Interfaces","item": "https://bogie-go.com/go-with-ai/go-packages-interfaces/"}]}]}</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-MPVQ83E1Z9');
+</script>
+</head>
+<body>
+<!-- @header -->
+
+<div class="measure">
+<article class="book-sample gwa-chapter">
+<p class="guide-eyebrow"><a href="/go-with-ai/">Go with AI</a> · <span>Free online book</span></p>
+<h1>Chapter 5: Organizing Code: Packages and Interfaces</h1>
+<p class="gwa-summary"><span class="gwa-summary-h">In short:</span> Chapter 5 splits Tracker into packages and introduces interfaces, with one Storage interface that has a file version and an in-memory version for tests. The behavior doesn&#x27;t change, so your tests make the refactor safe, and the AI starts implementing code to your rules.</p>
+<nav class="chapter-nav gwa-onpage" aria-label="On this page"><p class="onpage-h">On this page</p><ol><li><a href="#mission">Mission</a></li><li><a href="#must-know">Must know</a></li><li><a href="#specify">Specify</a></li><li><a href="#use-the-ai-pair">Use the AI: pair</a></li><li><a href="#use-the-ai-implementer">Use the AI: implementer</a></li><li><a href="#review">Review</a></li><li><a href="#explain">Explain</a></li><li><a href="#practice-optional">Practice (optional)</a></li><li><a href="#what-youve-done">What you’ve done</a></li></ol></nav>
+<p>Look at Tracker’s folder. Formatting money, storing expenses, reading the command line and printing the report all live in package <code>main</code>. It works, but it’s getting crowded, and a crowded package is hard to read, for you and for the AI. When everything can touch everything, every change is risky.</p>
+<p>In this chapter, you’ll split Tracker into <strong>packages</strong>: one for money, one for expenses. You’ll decide what each package shows to the outside world with <strong>exported names</strong>. And you’ll give Tracker an <strong>interface</strong> for storage, so the same code can save to a file in real use and keep everything in memory during tests.</p>
+<p>The AI’s role changes twice in this chapter. First it’s your <strong>pair</strong>: you do the reorganizing, and it reviews. Then, for the first time, it’s the <strong>implementer</strong>: you write the tests, the AI writes the code, and you review it. It’s the same SURE loop, but by the end of this chapter the AI is typing and you’re the one deciding whether its work is good enough.</p>
+<h2 id="mission">Mission<a class="anchor" href="#mission" aria-label="Link to this section"></a></h2>
+<p>By the end of this chapter, you’ll have:</p>
+<ul>
+<li>A <code>money</code> package that formats amounts, and a <code>ledger</code> package that records and stores expenses</li>
+<li>A <code>Storage</code> interface, with a file version for the program and a memory version for tests</li>
+<li>One set of tests that every kind of storage must pass</li>
+<li>Your expenses kept out of Git with a <code>.gitignore</code> file</li>
+<li>Two commits: one for your reorganization, one for the AI’s code</li>
+</ul>
+<p>Tracker’s behavior won’t change at all. Every command from Chapter 4 prints exactly what it did before. Changing how code is organized without changing what it does is called <strong>refactoring</strong>, and your tests are what make it safe.</p>
+<h2 id="must-know">Must know<a class="anchor" href="#must-know" aria-label="Link to this section"></a></h2>
+<ol type="1">
+<li><strong>A package is a folder.</strong> Every <code>.go</code> file in a folder starts with the same <code>package</code> line. Other code imports it by your module’s name plus the folder: <code>"tracker/ledger"</code>.</li>
+<li><strong>A capital first letter means exported.</strong> <code>money.Format</code> can be used from other packages; <code>money.splitCents</code> can’t. The rule is the same for functions, types, methods and struct fields.</li>
+<li><strong>Name things for how they read from outside.</strong> Callers write <code>money.Format(350)</code> and <code>ledger.Open(...)</code>, so don’t repeat the package name: <code>money.FormatMoney</code> says “money” twice.</li>
+<li><strong>An interface is a list of methods.</strong> Any type that has all those methods satisfies the interface automatically. Go has no <code>implements</code> keyword.</li>
+<li><strong>Pointer receivers count.</strong> If a type’s methods have pointer receivers, like <code>(m *MemoryStorage)</code>, then only the pointer, <code>&amp;MemoryStorage{}</code>, satisfies the interface.</li>
+</ol>
+<h2 id="specify">Specify<a class="anchor" href="#specify" aria-label="Link to this section"></a></h2>
+<p>Add these sentences to <code>SPEC.md</code>, after the existing five:</p>
+<pre><code class="language-markdown">6. Every command in sentences 1-5 works exactly as before.
+7. Package money formats amounts. Package ledger records expenses
+   and saves them through a Storage interface.
+8. Storage has two versions: a JSON file, used by the program,
+   and memory, used in tests. Both pass the same storage tests.
+9. expenses.json is not tracked by Git.</code></pre>
+<p>Sentence 6 is the most important one. A refactor that changes behavior isn’t a refactor; it’s a bug.</p>
+<h3 id="write-the-tests-first">Write the tests first<a class="anchor" href="#write-the-tests-first" aria-label="Link to this section"></a></h3>
+<p>Make the two package folders, from the <code>tracker</code> folder:</p>
+<pre><code class="language-bash">mkdir money
+mkdir ledger</code></pre>
+<p>In <code>money</code>, create <code>money_test.go</code>. It’s your old <code>TestFormatAmount</code>, moved and renamed:</p>
+<pre><code class="language-go">package money
+
+import &quot;testing&quot;
+
+func TestFormat(t *testing.T) {
+    tests := []struct {
+        cents int
+        want  string
+    }{
+        {350, &quot;3.50&quot;},
+        {1200, &quot;12.00&quot;},
+        {99, &quot;0.99&quot;},
+        {5, &quot;0.05&quot;},
+        {0, &quot;0.00&quot;},
+    }
+    for _, tt := range tests {
+        got := Format(tt.cents)
+        if got != tt.want {
+            t.Errorf(&quot;Format(%d) = %q, want %q&quot;, tt.cents, got, tt.want)
+        }
+    }
+}</code></pre>
+<p>The first line says <code>package money</code>, not <code>package main</code>. A test file belongs to the package in its folder.</p>
+<p>In <code>ledger</code>, create <code>ledger_test.go</code>. The first two tests come from <code>tracker_test.go</code>. The third is new: it opens a Tracker, adds an expense, saves it, then opens a second Tracker on the same storage to check the expense is still there.</p>
+<pre><code class="language-go">package ledger
+
+import (
+    &quot;errors&quot;
+    &quot;maps&quot;
+    &quot;testing&quot;
+)
+
+func TestTrackerAdd(t *testing.T) {
+    tests := []struct {
+        name     string
+        category string
+        cents    int
+        wantErr  error
+        wantLen  int
+    }{
+        {&quot;valid&quot;, &quot;Food&quot;, 350, nil, 1},
+        {&quot;zero&quot;, &quot;Food&quot;, 0, ErrInvalidAmount, 0},
+        {&quot;negative&quot;, &quot;Food&quot;, -100, ErrInvalidAmount, 0},
+    }
+    for _, tt := range tests {
+        var tr Tracker
+        err := tr.Add(tt.category, tt.cents)
+        if !errors.Is(err, tt.wantErr) {
+            t.Errorf(&quot;%s: Add() error = %v, want %v&quot;, tt.name, err, tt.wantErr)
+        }
+        if len(tr.expenses) != tt.wantLen {
+            t.Errorf(&quot;%s: %d expenses after Add, want %d&quot;, tt.name, len(tr.expenses), tt.wantLen)
+        }
+    }
+}
+
+func TestTrackerTotals(t *testing.T) {
+    tr := Tracker{expenses: []Expense{
+        {Category: &quot;Food&quot;, Cents: 350},
+        {Category: &quot;Transport&quot;, Cents: 1200},
+        {Category: &quot;Food&quot;, Cents: 99},
+    }}
+    got := tr.Totals()
+    want := map[string]int{&quot;Food&quot;: 449, &quot;Transport&quot;: 1200}
+    if !maps.Equal(got, want) {
+        t.Errorf(&quot;Totals() = %v, want %v&quot;, got, want)
+    }
+}
+
+func TestOpenAddSave(t *testing.T) {
+    store := &amp;MemoryStorage{}
+
+    first, err := Open(store)
+    if err != nil {
+        t.Fatalf(&quot;Open() error = %v&quot;, err)
+    }
+    if err := first.Add(&quot;Food&quot;, 350); err != nil {
+        t.Fatalf(&quot;Add() error = %v&quot;, err)
+    }
+    if err := first.Save(); err != nil {
+        t.Fatalf(&quot;Save() error = %v&quot;, err)
+    }
+
+    second, err := Open(store)
+    if err != nil {
+        t.Fatalf(&quot;Open() again error = %v&quot;, err)
+    }
+    got := second.Totals()
+    want := map[string]int{&quot;Food&quot;: 350}
+    if !maps.Equal(got, want) {
+        t.Errorf(&quot;Totals() after reopening = %v, want %v&quot;, got, want)
+    }
+}</code></pre>
+<p><code>TestOpenAddSave</code> uses <code>MemoryStorage</code>, so it never touches the disk. That’s the first payoff of an interface: Tracker doesn’t care where its expenses go.</p>
+<p>Also in <code>ledger</code>, create <code>storage_test.go</code>. This is the heart of the chapter:</p>
+<pre><code class="language-go">package ledger
+
+import (
+    &quot;os&quot;
+    &quot;path/filepath&quot;
+    &quot;slices&quot;
+    &quot;testing&quot;
+)
+
+// testStorage checks the rules every Storage must follow.
+func testStorage(t *testing.T, store Storage) {
+    t.Helper()
+
+    saved := []Expense{
+        {Category: &quot;Food&quot;, Cents: 350},
+        {Category: &quot;Fun&quot;, Cents: 1500},
+    }
+    if err := store.Save(saved); err != nil {
+        t.Fatalf(&quot;Save() error = %v&quot;, err)
+    }
+    saved[0].Cents = 1 // Changing our slice must not change what was saved.
+
+    got, err := store.Load()
+    if err != nil {
+        t.Fatalf(&quot;Load() error = %v&quot;, err)
+    }
+    want := []Expense{
+        {Category: &quot;Food&quot;, Cents: 350},
+        {Category: &quot;Fun&quot;, Cents: 1500},
+    }
+    if !slices.Equal(got, want) {
+        t.Errorf(&quot;Load() = %v, want %v&quot;, got, want)
+    }
+}
+
+func TestFileStorage(t *testing.T) {
+    path := filepath.Join(t.TempDir(), &quot;expenses.json&quot;)
+    testStorage(t, FileStorage{Path: path})
+}
+
+func TestFileStorageMissingFile(t *testing.T) {
+    path := filepath.Join(t.TempDir(), &quot;missing.json&quot;)
+    store := FileStorage{Path: path}
+    got, err := store.Load()
+    if err != nil {
+        t.Fatalf(&quot;Load() error = %v, want nil&quot;, err)
+    }
+    if len(got) != 0 {
+        t.Errorf(&quot;Load() returned %d expenses, want 0&quot;, len(got))
+    }
+}
+
+func TestFileStorageBrokenFile(t *testing.T) {
+    path := filepath.Join(t.TempDir(), &quot;expenses.json&quot;)
+    if err := os.WriteFile(path, []byte(&quot;not json&quot;), 0o644); err != nil {
+        t.Fatal(err)
+    }
+    store := FileStorage{Path: path}
+    if _, err := store.Load(); err == nil {
+        t.Error(&quot;Load() error = nil, want an error for a broken file&quot;)
+    }
+}
+
+func TestMemoryStorage(t *testing.T) {
+    testStorage(t, &amp;MemoryStorage{})
+}</code></pre>
+<p><code>testStorage</code> isn’t a test by itself; its name doesn’t start with <code>Test</code>. It’s a helper that takes <strong>any</strong> <code>Storage</code> and checks the rules every storage must follow. <code>TestFileStorage</code> and <code>TestMemoryStorage</code> each run it on one kind of storage. Write the rules once, check every version.</p>
+<p>Look at the line <code>saved[0].Cents = 1</code>. After saving, the test changes its own slice, and then checks that the storage still returns the original amounts. A file naturally keeps its own copy. The memory version must do the same on purpose, and this line checks that it does.</p>
+<p><code>t.Helper()</code> tells Go that this is a helper, so when it fails, Go reports the line in the test that called it, not a line inside the helper.</p>
+<p>Run the tests:</p>
+<pre><code class="language-bash">go test ./...</code></pre>
+<pre><code class="language-text">ok      tracker (cached)
+# tracker/money [tracker/money.test]
+money/money_test.go:17:10: undefined: Format
+# tracker/ledger [tracker/ledger.test]
+ledger/storage_test.go:11:38: undefined: Storage
+ledger/storage_test.go:14:13: undefined: Expense
+ledger/ledger_test.go:18:23: undefined: ErrInvalidAmount
+ledger/ledger_test.go:19:30: undefined: ErrInvalidAmount
+ledger/ledger_test.go:22:10: undefined: Tracker
+ledger/ledger_test.go:34:8: undefined: Tracker
+ledger/ledger_test.go:34:28: undefined: Expense
+ledger/ledger_test.go:47:12: undefined: MemoryStorage
+ledger/ledger_test.go:49:16: undefined: Open
+ledger/ledger_test.go:60:17: undefined: Open
+ledger/storage_test.go:14:13: too many errors
+FAIL    tracker/ledger [build failed]
+FAIL    tracker/money [build failed]
+FAIL</code></pre>
+<p><code>go test ./...</code> now tests three packages: <code>tracker</code> (your <code>main</code> package, still passing), <code>tracker/ledger</code> and <code>tracker/money</code>. <code>tracker</code> hasn’t changed since Chapter 4, so Go reuses its last result and prints <code>(cached)</code>. Go builds packages in parallel, so the <code>money</code> and <code>ledger</code> error blocks may appear in the other order for you.</p>
+<h2 id="use-the-ai-pair">Use the AI: pair<a class="anchor" href="#use-the-ai-pair" aria-label="Link to this section"></a></h2>
+<p>You’ll do the reorganizing yourself, one package at a time. After each step, compare your file with the book’s listing.</p>
+<h3 id="the-money-package">The money package<a class="anchor" href="#the-money-package" aria-label="Link to this section"></a></h3>
+<p>Create <code>money/money.go</code>. Move <code>formatAmount</code> and <code>splitCents</code> into it from <code>main.go</code>, rename <code>formatAmount</code> to <code>Format</code> (capital F, so other packages can use it), and add comments. It should look like this:</p>
+<pre><code class="language-go">// Package money formats amounts stored as whole cents.
+package money
+
+import &quot;fmt&quot;
+
+// Format returns an amount in cents as text, like &quot;3.50&quot;.
+func Format(cents int) string {
+    whole, rest := splitCents(cents)
+    return fmt.Sprintf(&quot;%d.%02d&quot;, whole, rest)
+}
+
+func splitCents(cents int) (int, int) {
+    return cents / 100, cents % 100
+}</code></pre>
+<p><code>splitCents</code> stays lowercase. Nothing outside <code>money</code> needs it, so it stays private, and you can change it later without breaking anyone.</p>
+<p>A comment that starts with the name it describes, like <code>// Format returns...</code>, is a <strong>doc comment</strong>. Go’s tools show it to anyone who uses the package.</p>
+<h3 id="the-ledger-package">The ledger package<a class="anchor" href="#the-ledger-package" aria-label="Link to this section"></a></h3>
+<p>Create <code>ledger/ledger.go</code>. Move <code>Expense</code>, <code>ErrInvalidAmount</code>, <code>Tracker</code>, <code>Add</code> and <code>Totals</code> into it from <code>tracker.go</code>. Two things change:</p>
+<ul>
+<li><code>Tracker</code> gets a second field, <code>store Storage</code>, so it knows where its expenses are saved.</li>
+<li>Instead of <code>Load(path)</code>, there’s <code>Open(store)</code>, which loads expenses from any <code>Storage</code>. <code>Save</code> loses its <code>path</code> parameter, because the Tracker already knows its store.</li>
+</ul>
+<pre><code class="language-go">// Package ledger records expenses and totals them by category.
+package ledger
+
+import (
+    &quot;errors&quot;
+    &quot;fmt&quot;
+)
+
+// Expense is one thing you spent money on.
+type Expense struct {
+    Category string `json:&quot;category&quot;`
+    Cents    int    `json:&quot;cents&quot;`
+}
+
+// ErrInvalidAmount means an expense amount was zero or negative.
+var ErrInvalidAmount = errors.New(&quot;amount must be more than zero&quot;)
+
+// Tracker holds all your expenses and the storage they live in.
+type Tracker struct {
+    store    Storage
+    expenses []Expense
+}
+
+// Open loads the expenses from store into a new Tracker.
+func Open(store Storage) (*Tracker, error) {
+    expenses, err := store.Load()
+    if err != nil {
+        return nil, err
+    }
+    return &amp;Tracker{store: store, expenses: expenses}, nil
+}
+
+// Add records one expense.
+func (tr *Tracker) Add(category string, cents int) error {
+    if cents &lt;= 0 {
+        return fmt.Errorf(&quot;add %q: %w&quot;, category, ErrInvalidAmount)
+    }
+    tr.expenses = append(tr.expenses, Expense{Category: category, Cents: cents})
+    return nil
+}
+
+// Totals returns the total in cents for each category.
+func (tr *Tracker) Totals() map[string]int {
+    totals := make(map[string]int)
+    for _, e := range tr.expenses {
+        totals[e.Category] += e.Cents
+    }
+    return totals
+}
+
+// Save writes all expenses to the Tracker&#39;s storage.
+func (tr *Tracker) Save() error {
+    return tr.store.Save(tr.expenses)
+}</code></pre>
+<p>Now create <code>ledger/storage.go</code>, with the <code>Storage</code> interface and the file version. <code>FileStorage</code>’s two methods are your old <code>Load</code> and <code>Save</code>, reshaped to fit the interface:</p>
+<pre><code class="language-go">package ledger
+
+import (
+    &quot;encoding/json&quot;
+    &quot;errors&quot;
+    &quot;fmt&quot;
+    &quot;os&quot;
+)
+
+// Storage saves and loads expenses.
+type Storage interface {
+    Load() ([]Expense, error)
+    Save(expenses []Expense) error
+}
+
+// FileStorage keeps expenses in a JSON file.
+type FileStorage struct {
+    Path string
+}
+
+// Load reads expenses from the file. A missing file means no expenses yet.
+func (s FileStorage) Load() ([]Expense, error) {
+    data, err := os.ReadFile(s.Path)
+    if errors.Is(err, os.ErrNotExist) {
+        return nil, nil
+    }
+    if err != nil {
+        return nil, fmt.Errorf(&quot;load expenses: %w&quot;, err)
+    }
+    var expenses []Expense
+    if err := json.Unmarshal(data, &amp;expenses); err != nil {
+        return nil, fmt.Errorf(&quot;load expenses: %w&quot;, err)
+    }
+    return expenses, nil
+}
+
+// Save writes expenses to the file as JSON.
+func (s FileStorage) Save(expenses []Expense) error {
+    data, err := json.MarshalIndent(expenses, &quot;&quot;, &quot;  &quot;)
+    if err != nil {
+        return fmt.Errorf(&quot;save expenses: %w&quot;, err)
+    }
+    if err := os.WriteFile(s.Path, data, 0o644); err != nil {
+        return fmt.Errorf(&quot;save expenses: %w&quot;, err)
+    }
+    return nil
+}</code></pre>
+<p>The interface says <em>what</em> storage can do: <code>Load</code> and <code>Save</code>. <code>FileStorage</code> says <em>how</em>. Nowhere does <code>FileStorage</code> mention <code>Storage</code>. It has both methods, so it satisfies the interface, and that’s all Go needs.</p>
+<p><code>FileStorage</code>’s methods use a value receiver, <code>(s FileStorage)</code>, because they never change <code>s</code>. They only read <code>s.Path</code>.</p>
+<h3 id="connect-main-and-tidy-up">Connect main, and tidy up<a class="anchor" href="#connect-main-and-tidy-up" aria-label="Link to this section"></a></h3>
+<p><code>main</code> now uses the new packages, so the old code goes:</p>
+<ul>
+<li>Delete <code>tracker.go</code> and <code>tracker_test.go</code>. Their code now lives in <code>ledger</code>.</li>
+<li>In <code>main.go</code>, delete <code>formatAmount</code> and <code>splitCents</code> (now in <code>money</code>) and <code>total</code>.</li>
+<li>In <code>main_test.go</code>, delete <code>TestFormatAmount</code> (now <code>TestFormat</code> in <code>money</code>) and <code>TestTotal</code>.</li>
+</ul>
+<p>Why delete <code>total</code>? Since Chapter 4, <code>Tracker.Totals</code> does the adding, so <code>total</code> is only called by its own test. Code that only its test uses is <strong>dead code</strong>: it costs reading time and does nothing. Git remembers it if you ever want it back.</p>
+<p>Then make three small changes in <code>main.go</code>. Replace the import block:</p>
+<pre><code class="language-go">import (
+    &quot;errors&quot;
+    &quot;fmt&quot;
+    &quot;os&quot;
+    &quot;slices&quot;
+    &quot;strconv&quot;
+
+    &quot;tracker/ledger&quot;
+    &quot;tracker/money&quot;
+)</code></pre>
+<p>The blank line separates the standard library from your own packages. <code>gofmt</code> keeps each group sorted.</p>
+<p>In <code>run</code>, open the Tracker with file storage, and save without a path:</p>
+<pre><code class="language-go">    tracker, err := ledger.Open(ledger.FileStorage{Path: dataFile})</code></pre>
+<pre><code class="language-go">        if err := tracker.Save(); err != nil {</code></pre>
+<p>And in <code>formatExpense</code>, use the money package:</p>
+<pre><code class="language-go">    return name + &quot;: &quot; + money.Format(cents)</code></pre>
+<p>Now check sentence 6: nothing should have changed. Your <code>expenses.json</code> from Chapter 4 is still there, so run:</p>
+<pre><code class="language-bash">go run .</code></pre>
+<pre><code class="language-text">Welcome to Tracker. Let&#39;s see where your money goes.
+Food: 4.49
+Fun: 15.00
+Transport: 12.00</code></pre>
+<p>Same as before. Then run the tests:</p>
+<pre><code class="language-bash">go test ./...</code></pre>
+<pre><code class="language-text"># tracker/ledger [tracker/ledger.test]
+ledger/ledger_test.go:47:12: undefined: MemoryStorage
+ledger/storage_test.go:65:18: undefined: MemoryStorage
+ok      tracker 0.002s
+FAIL    tracker/ledger [build failed]
+ok      tracker/money   0.001s
+FAIL</code></pre>
+<p>One thing left: <code>MemoryStorage</code>. That’s the AI’s job, in a moment.</p>
+<h3 id="ask-for-a-review">Ask for a review<a class="anchor" href="#ask-for-a-review" aria-label="Link to this section"></a></h3>
+<pre><code class="language-text">Review how I split Tracker into the money and ledger packages:
+package names, exported names, doc comments and the Storage
+interface. List problems and suggestions with a one-line reason
+each. Don&#39;t rewrite my code; I&#39;ll decide what to change.</code></pre>
+<p>Use the same three questions: <strong>Do I understand it? Does it fit this project? Do the tests still pass?</strong> Here are example suggestions (not real AI output) and how they sort:</p>
+<div class="table-wrap"><table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Suggestion</th>
+<th>Keep?</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rename <code>ledger</code> to <code>models</code> or <code>utils</code></td>
+<td>Reject</td>
+<td>Vague names say nothing about what’s inside. <code>ledger</code> says what it is.</td>
+</tr>
+<tr>
+<td>Export <code>Tracker.expenses</code> so <code>main</code> can read it</td>
+<td>Reject</td>
+<td><code>main</code> only needs <code>Totals</code>. Keeping the slice private means only <code>Add</code> can change it, and <code>Add</code> checks the amount.</td>
+</tr>
+<tr>
+<td>Wrap the error in <code>Open</code>: <code>fmt.Errorf("open tracker: %w", err)</code></td>
+<td>Your call</td>
+<td>More context in messages. The storage errors already say “load expenses,” so it’s optional.</td>
+</tr>
+<tr>
+<td>Add a <code>DatabaseStorage</code> for the future</td>
+<td>Skip</td>
+<td>Nothing needs it yet. An interface with two real versions is enough.</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="keep-personal-data-out-of-git">Keep personal data out of Git<a class="anchor" href="#keep-personal-data-out-of-git" aria-label="Link to this section"></a></h3>
+<p>Since storage moved, now’s the time to fix something from Chapter 4: <code>expenses.json</code> is in Git. Your expenses are made up, but real ones are personal. And once something is committed, it stays in your project’s history even after you delete the file. If you ever push the project online, everyone can read that history. The safest data is data that never enters Git.</p>
+<p>Create a file named <code>.gitignore</code> in the <code>tracker</code> folder with one line:</p>
+<pre><code class="language-text">expenses.json</code></pre>
+<p>Make sure the file is named exactly <code>.gitignore</code>, with no <code>.txt</code> at the end. (Notepad on Windows likes to add one.) <code>.gitignore</code> tells Git which files to leave alone. But it only affects files Git isn’t already tracking, and Git has tracked <code>expenses.json</code> since Chapter 4. So tell Git to stop, without deleting your file:</p>
+<pre><code class="language-bash">git rm --cached expenses.json</code></pre>
+<pre><code class="language-text">rm &#39;expenses.json&#39;</code></pre>
+<p><code>--cached</code> means “remove it from Git, but keep it on disk.” Your expenses are still there; run <code>go run .</code> to check.</p>
+<h3 id="commit-your-part">Commit your part<a class="anchor" href="#commit-your-part" aria-label="Link to this section"></a></h3>
+<p>Commit before the AI starts, so its changes are easy to see on their own. The ledger tests don’t build yet; that’s expected, because <code>MemoryStorage</code> is the AI’s job next.</p>
+<pre><code class="language-bash">git add .
+git commit -m &quot;Split Tracker into money and ledger packages&quot; -m &quot;Learned: a capital first letter exports a name from its package; lowercase keeps it private.&quot;</code></pre>
+<h2 id="use-the-ai-implementer">Use the AI: implementer<a class="anchor" href="#use-the-ai-implementer" aria-label="Link to this section"></a></h2>
+<p>Now the AI writes code, for the first time in this book. You’ve already done the most important part: the tests in <code>storage_test.go</code> say exactly what <code>MemoryStorage</code> must do. Ask:</p>
+<pre><code class="language-text">Implement MemoryStorage in ledger/storage.go so that
+go test ./... passes. It keeps expenses in memory and must satisfy
+the Storage interface. Use only the standard library. Don&#39;t change
+any test files.</code></pre>
+<p>The last sentence matters. An AI asked to make tests pass can be tempted to change the tests.</p>
+<h3 id="review-the-ais-work">Review the AI’s work<a class="anchor" href="#review-the-ais-work" aria-label="Link to this section"></a></h3>
+<p>As the implementer’s reviewer, check in this order:</p>
+<ol type="1">
+<li><p><strong>Did it touch only what you asked?</strong></p>
+<pre><code class="language-bash">git status --short</code></pre>
+<pre><code class="language-text"> M ledger/storage.go</code></pre>
+<p>One changed file. If a test file appears here, the AI changed your tests. Undo that with <code>git restore</code> and the file’s name, and ask again.</p></li>
+<li><p><strong>Let Go check.</strong> <code>gofmt -l .</code> and <code>go vet ./...</code> print nothing, and <code>go test ./...</code> prints <code>ok</code> three times.</p></li>
+<li><p><strong>Read the change.</strong> <code>git diff</code> shows exactly which lines the AI added. Read every one. Can you explain each line? Why does it need a pointer receiver? How does it keep its own copy?</p></li>
+</ol>
+<p>Here’s one version that passes. The AI’s may look different:</p>
+<pre><code class="language-go">// MemoryStorage keeps expenses in memory. Nothing is written to disk.
+type MemoryStorage struct {
+    expenses []Expense
+}
+
+// Load returns a copy of the saved expenses.
+func (m *MemoryStorage) Load() ([]Expense, error) {
+    return slices.Clone(m.expenses), nil
+}
+
+// Save keeps a copy of expenses.
+func (m *MemoryStorage) Save(expenses []Expense) error {
+    m.expenses = slices.Clone(expenses)
+    return nil
+}</code></pre>
+<p>This version also adds <code>"slices"</code> to the imports in <code>storage.go</code>. <code>Save</code> needs a pointer receiver because it changes <code>m.expenses</code>; that’s Chapter 4’s lesson again. <code>slices.Clone</code> makes a copy, so changing the caller’s slice can’t change what was saved. That’s what the <code>saved[0].Cents = 1</code> line in your test checks.</p>
+<p>When you understand every line, run everything one last time:</p>
+<pre><code class="language-bash">go test ./...</code></pre>
+<pre><code class="language-text">ok      tracker 0.002s
+ok      tracker/ledger  0.003s
+ok      tracker/money   0.001s</code></pre>
+<h2 id="review">Review<a class="anchor" href="#review" aria-label="Link to this section"></a></h2>
+<h3 id="let-go-check-first">Let Go check first<a class="anchor" href="#let-go-check-first" aria-label="Link to this section"></a></h3>
+<pre><code class="language-bash">gofmt -l .
+go vet ./...
+go test ./...</code></pre>
+<h3 id="break-it-on-purpose">Break it on purpose<a class="anchor" href="#break-it-on-purpose" aria-label="Link to this section"></a></h3>
+<p><strong>Break 1: use a private name.</strong> In <code>main.go</code>, change <code>money.Format(cents)</code> to <code>money.splitCents(cents)</code> and run <code>go build .</code>:</p>
+<pre><code class="language-text"># tracker
+./main.go:65:29: undefined: money.splitCents</code></pre>
+<p>Your line number may differ. From outside its package, a lowercase name doesn’t exist. Change it back.</p>
+<p><strong>Break 2: forget the copy.</strong> In <code>MemoryStorage</code>, change <code>Load</code> to <code>return m.expenses, nil</code> and <code>Save</code> to <code>m.expenses = expenses</code>, then remove <code>"slices"</code> from the imports. Run <code>go test ./...</code>:</p>
+<pre><code class="language-text">ok      tracker 0.002s
+--- FAIL: TestMemoryStorage (0.00s)
+    storage_test.go:65: Load() = [{Food 1} {Fun 1500}], want [{Food 350} {Fun 1500}]
+FAIL
+FAIL    tracker/ledger  0.003s
+ok      tracker/money   0.001s
+FAIL</code></pre>
+<p>Without the copy, the storage and the test share one slice, so the test’s change after saving leaked into the “saved” data. Notice the line number: <code>65</code> is the line in <code>TestMemoryStorage</code> that called <code>testStorage</code>, thanks to <code>t.Helper()</code>. Put the copies back.</p>
+<h3 id="check-it-yourself">Check it yourself<a class="anchor" href="#check-it-yourself" aria-label="Link to this section"></a></h3>
+<ul class="task-list">
+<li><label><input type="checkbox" /><code>go run .</code> prints the same report as before the refactor.</label></li>
+<li><label><input type="checkbox" /><code>go test ./...</code> prints <code>ok</code> for all three packages.</label></li>
+<li><label><input type="checkbox" /><code>git status</code> doesn’t list <code>expenses.json</code>, and the file is still on disk.</label></li>
+<li><label><input type="checkbox" />You can say which names in <code>ledger</code> and <code>money</code> are exported, and why.</label></li>
+<li><label><input type="checkbox" />You checked that the AI changed only <code>ledger/storage.go</code>, and you can explain every line it wrote.</label></li>
+</ul>
+<p>Be SURE you can explain it, especially the code you didn’t type.</p>
+<aside class="book-box">
+<p class="box-label">Where AI gets Go wrong: packages and interfaces</p>
+<ul>
+<li><strong>Changing tests to make them pass.</strong> When asked to “make the tests pass,” an AI may edit the tests instead of the code. Always check <code>git status</code> after an implementer task.</li>
+<li><strong>Vague package names.</strong> <code>utils</code>, <code>common</code>, <code>helpers</code> and <code>models</code> say nothing about what’s inside, and they grow into junk drawers. Name a package for what it provides.</li>
+<li><strong>Stutter.</strong> <code>money.FormatMoney</code> or <code>ledger.LedgerTracker</code> repeats the package name. Callers already see it.</li>
+<li><strong>Interfaces for everything.</strong> AI often creates an interface for every type “just in case.” Make one when you have two real versions, as with <code>Storage</code>, and keep it as small as its users need.</li>
+<li><strong>Value instead of pointer.</strong> If <code>TestMemoryStorage</code> used <code>MemoryStorage{}</code> instead of <code>&amp;MemoryStorage{}</code>, the test wouldn’t compile: <code>MemoryStorage does not implement Storage (method Load has pointer receiver)</code>. The fix is the <code>&amp;</code>, not changing the receivers.</li>
+</ul>
+</aside>
+<h2 id="explain">Explain<a class="anchor" href="#explain" aria-label="Link to this section"></a></h2>
+<h3 id="say-it-in-your-own-words">Say it in your own words<a class="anchor" href="#say-it-in-your-own-words" aria-label="Link to this section"></a></h3>
+<p>Write a few sentences about how Tracker is organized now. For example:</p>
+<aside class="book-box">
+<p>The money package formats amounts and keeps splitCents private. The ledger package has the Tracker and a Storage interface with two versions: a file for the real program and memory for tests. One helper, testStorage, checks both against the same rules. The AI wrote MemoryStorage from my tests, and I checked that it didn’t change them.</p>
+</aside>
+<h3 id="let-the-ai-quiz-you">Let the AI quiz you<a class="anchor" href="#let-the-ai-quiz-you" aria-label="Link to this section"></a></h3>
+<pre><code class="language-text">Ask me two questions about packages, exported names or interfaces,
+using my code. Wait for my answers before you tell me if I&#39;m right.</code></pre>
+<h3 id="write-a-learned-line-in-your-commit">Write a <code>Learned:</code> line in your commit<a class="anchor" href="#write-a-learned-line-in-your-commit" aria-label="Link to this section"></a></h3>
+<pre><code class="language-bash">git add .
+git commit -m &quot;Add MemoryStorage&quot; -m &quot;Learned: any type with the right methods satisfies an interface, so one test can check every kind of storage.&quot;</code></pre>
+<h3 id="update-agents.md-if-something-surprised-you">Update AGENTS.md if something surprised you<a class="anchor" href="#update-agents.md-if-something-surprised-you" aria-label="Link to this section"></a></h3>
+<p>Did the AI change a test, add an extra package, or leave out doc comments? Add a rule, then commit it.</p>
+<h2 id="practice-optional">Practice (optional)<a class="anchor" href="#practice-optional" aria-label="Link to this section"></a></h2>
+<p>Your <code>AGENTS.md</code> has grown chapter by chapter. Now test whether the AI actually follows it.</p>
+<ol type="1">
+<li><p><strong>Add three rules</strong> to <code>AGENTS.md</code>. For example:</p>
+<pre><code class="language-markdown">Every exported name gets a doc comment that starts with the name.
+Never edit files ending in _test.go unless I ask.
+Error messages start with a lowercase letter and don&#39;t end with punctuation.</code></pre></li>
+<li><p><strong>Specify a small feature</strong>: a <code>Count() int</code> method on <code>Tracker</code> that returns how many expenses it holds. Write its test in <code>ledger_test.go</code> first, and watch it fail. Then commit your failing test before you ask the AI (<code>git add .</code> then <code>git commit -m "Add Count test"</code>). That way, a test file in <code>git status</code> really means the AI touched it, and <code>git restore</code> only undoes the AI’s work.</p></li>
+<li><p><strong>Use the AI as implementer</strong>: ask it to add <code>Count</code> so the tests pass, without mentioning your rules.</p></li>
+<li><p><strong>Review against your rules.</strong> Does <code>Count</code> have a doc comment starting with <code>Count</code>? Did <code>git status</code> show only non-test files changed? If the AI broke a rule, reword the rule to be clearer, undo the change with <code>git restore</code>, and ask again.</p></li>
+</ol>
+<p>You’re done when the AI follows all three rules without being reminded. If one rule keeps failing, that tells you something too: some rules need to be checked by you, every time.</p>
+<p class="gwa-answer-link">Tried it? Compare with the <a href="/go-with-ai/answers/#chapter-5">worked answer for Chapter 5</a>.</p>
+<h2 id="what-youve-done">What you’ve done<a class="anchor" href="#what-youve-done" aria-label="Link to this section"></a></h2>
+<p>You turned one crowded package into three focused ones, decided what each shows to the world, and used an interface so the same Tracker works with a file or with memory. One set of tests checks every storage. You also handed the keyboard to the AI for the first time, and reviewed its work the way a senior developer would: scope first, then Go’s checks, then every line.</p>
+<p>In Chapter 6, Tracker becomes a web API. The AI stays the implementer, building the HTTP handlers from your tests, and you’ll add one <code>check</code> command that runs all of Review in one go.</p>
+
+<footer class="guide-nav">
+  <div class="prev"><span class="label">Previous</span><a href="/go-with-ai/go-structs-methods-errors/" rel="prev">Chapter 4: Modeling Data and Handling Errors</a></div>
+  <div class="next"><span class="label">Next</span><a href="/go-with-ai/go-web-api-net-http/" rel="next">Chapter 6: From Command Line to Web</a></div>
+</footer>
+<nav class="gwa-allpages" aria-label="Go with AI contents"><p class="onpage-h">Go with AI: all chapters</p><ol class="gwa-contents"><li><a href="/go-with-ai/introduction/">Introduction</a></li><li><a href="/go-with-ai/learn-to-code-with-ai/">Chapter 1: Learning to Code When AI Can Code</a></li><li><a href="/go-with-ai/first-go-program-and-test/">Chapter 2: Your First Program and Your First Test</a></li><li><a href="/go-with-ai/go-slices-maps-loops/">Chapter 3: Lists, Lookups and Loops</a></li><li><a href="/go-with-ai/go-structs-methods-errors/">Chapter 4: Modeling Data and Handling Errors</a></li><li><a href="/go-with-ai/go-packages-interfaces/" aria-current="page">Chapter 5: Organizing Code: Packages and Interfaces</a></li><li><a href="/go-with-ai/go-web-api-net-http/">Chapter 6: From Command Line to Web</a></li><li><a href="/go-with-ai/go-goroutines-race-detector/">Chapter 7: A Taste of Goroutines</a></li><li><a href="/go-with-ai/setup-ai-coding-assistant/">Appendix A: Setting up your AI assistant</a></li><li><a href="/go-with-ai/git-basics/">Appendix B: Just enough Git</a></li><li><a href="/go-with-ai/sure-loop/">Appendix C: The SURE loop at a glance</a></li><li><a href="/go-with-ai/review-checklists/">Appendix D: Review checklists</a></li><li><a href="/go-with-ai/answers/">Practice answers</a></li></ol></nav>
+</article>
+</div>
+
+<!-- @footer -->
+
+</body>
+</html>

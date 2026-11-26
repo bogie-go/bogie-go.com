@@ -33,6 +33,25 @@ Every guide as plain Markdown, generated from the same source as the HTML:
 
 <!-- @markdown-copies -->
 
+## Go with AI (free to read online)
+
+Go with AI: Learn Go with Human Mind and Assisted AI, by Roonglit Chareonsupkul. A book, free to read online, that teaches Go to beginners with an AI assistant, using only the standard library and the SURE loop (Specify, Use the AI, Review, Explain). The whole book is free to read online, one page per chapter.
+
+- [Go with AI](https://bogie-go.com/go-with-ai/): the book, its table of contents, editions and prices (free to read online; ebook $0.99 on Kindle and Leanpub and paperback $9.99, coming soon) and a short FAQ.
+- [Introduction](https://bogie-go.com/go-with-ai/introduction/): Why learn Go yourself when an AI can write it? The introduction to Go with AI, a book for beginners that's free to read online: who it's for, what you'll build, and the SURE loop for learning Go with AI.
+- [Chapter 1: Learning to Code When AI Can Code](https://bogie-go.com/go-with-ai/learn-to-code-with-ai/): How do you start learning Go with an AI assistant? Install Go, set up your project and AI rules file, and write and commit your first Go program, the beginner-friendly way.
+- [Chapter 2: Your First Program and Your First Test](https://bogie-go.com/go-with-ai/first-go-program-and-test/): How do you write a test in Go? Turn a plain-English spec into a go test, write your first functions, use a table-driven test, and learn why money is stored in whole cents.
+- [Chapter 3: Lists, Lookups and Loops](https://bogie-go.com/go-with-ai/go-slices-maps-loops/): How do slices, maps and loops work in Go? Learn them by building category totals, see why map order is random, and use the AI as a pair programmer that reviews your code.
+- [Chapter 4: Modeling Data and Handling Errors](https://bogie-go.com/go-with-ai/go-structs-methods-errors/): How do structs and error handling work in Go? Model data with structs and methods, save and load JSON files, and wrap errors with fmt.Errorf and %w instead of ignoring them.
+- [Chapter 5: Organizing Code: Packages and Interfaces](https://bogie-go.com/go-with-ai/go-packages-interfaces/): How do packages and interfaces work in Go? Split a program into packages, define a Storage interface with file and memory versions, and refactor safely with tests while the AI implements.
+- [Chapter 6: From Command Line to Web](https://bogie-go.com/go-with-ai/go-web-api-net-http/): How do you build a web API in Go with only the standard library? Write request tests with httptest, let the AI implement a JSON API on net/http, and review its diff line by line.
+- [Chapter 7: A Taste of Goroutines](https://bogie-go.com/go-with-ai/go-goroutines-race-detector/): What is a data race in Go, and how do you find one? Send many requests at once, read a race detector report, fix it with a mutex, and build a concurrent import with goroutines.
+- [Appendix A: Setting up your AI assistant](https://bogie-go.com/go-with-ai/setup-ai-coding-assistant/): How do you set up Go with an AI coding assistant? Install the Go tools, fix your PATH, pick an editor, install Claude Code, make it read AGENTS.md, and choose safe privacy settings.
+- [Appendix B: Just enough Git](https://bogie-go.com/go-with-ai/git-basics/): Which Git commands does a beginner really need? Set up Git, commit each step with a Learned: line, see exactly what the AI changed, and undo changes you don't want.
+- [Appendix C: The SURE loop at a glance](https://bogie-go.com/go-with-ai/sure-loop/): What is the SURE loop? A one-page cheat sheet for coding with AI: Specify, Use the AI, Review and Explain, with the check command and how to commit.
+- [Appendix D: Review checklists](https://bogie-go.com/go-with-ai/review-checklists/): How do you review code an AI wrote? Every review checklist and 'Where AI gets Go wrong' box from the book in one place, plus how to decide on each AI suggestion.
+- [Practice answers](https://bogie-go.com/go-with-ai/answers/): Worked answers to the Go with AI practice exercises: fixing compile errors, slices and maps, error handling, interfaces, a net/http endpoint and a data race, all run on Go 1.27.4.
+
 ## Source and design
 
 - [The book](https://bogie-go.com/book.html): Bogie: How to Go from Zero to Production, by Roonglit Chareonsupkul. Kindle and paperback on Amazon.

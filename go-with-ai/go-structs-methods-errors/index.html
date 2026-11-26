@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Go Structs, Methods and Error Handling (with JSON) | Chapter 4, Go with AI</title>
+<meta name="description" content="How do structs and error handling work in Go? Model data with structs and methods, save and load JSON files, and wrap errors with fmt.Errorf and %w instead of ignoring them.">
+<meta name="author" content="Roonglit Chareonsupkul">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="stylesheet" href="/fonts.css">
+<link rel="stylesheet" href="/style.css">
+<link rel="canonical" href="https://bogie-go.com/go-with-ai/go-structs-methods-errors/">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Bogie">
+<meta property="og:title" content="Go Structs, Methods and Error Handling (with JSON) | Chapter 4, Go with AI">
+<meta property="og:description" content="How do structs and error handling work in Go? Model data with structs and methods, save and load JSON files, and wrap errors with fmt.Errorf and %w instead of ignoring them.">
+<meta property="og:url" content="https://bogie-go.com/go-with-ai/go-structs-methods-errors/">
+<meta property="og:image" content="https://bogie-go.com/go-with-ai/cover.jpg">
+<meta property="og:image:width" content="560">
+<meta property="og:image:height" content="687">
+<meta property="og:image:alt" content="Cover of Go with AI by Roonglit Chareonsupkul">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Go Structs, Methods and Error Handling (with JSON) | Chapter 4, Go with AI">
+<meta name="twitter:description" content="How do structs and error handling work in Go? Model data with structs and methods, save and load JSON files, and wrap errors with fmt.Errorf and %w instead of ignoring them.">
+<meta name="twitter:image" content="https://bogie-go.com/go-with-ai/cover.jpg">
+<script type="application/ld+json">{"@context": "https://schema.org","@graph": [{"@type": "Article","headline": "Chapter 4: Modeling Data and Handling Errors","name": "Go Structs, Methods and Error Handling (with JSON) | Chapter 4, Go with AI","description": "How do structs and error handling work in Go? Model data with structs and methods, save and load JSON files, and wrap errors with fmt.Errorf and %w instead of ignoring them.","url": "https://bogie-go.com/go-with-ai/go-structs-methods-errors/","inLanguage": "en","author": {"@type": "Person","name": "Roonglit Chareonsupkul"},"datePublished": "2026-11-25","dateModified": "2026-11-25","image": "https://bogie-go.com/go-with-ai/cover.jpg","keywords": "golang struct, go error handling, go json","isPartOf": {"@id": "https://bogie-go.com/go-with-ai/#book"},"mainEntityOfPage": "https://bogie-go.com/go-with-ai/go-structs-methods-errors/"},{"@type": "BreadcrumbList","itemListElement": [{"@type": "ListItem","position": 1,"name": "Bogie","item": "https://bogie-go.com/"},{"@type": "ListItem","position": 2,"name": "Go with AI","item": "https://bogie-go.com/go-with-ai/"},{"@type": "ListItem","position": 3,"name": "Chapter 4: Modeling Data and Handling Errors","item": "https://bogie-go.com/go-with-ai/go-structs-methods-errors/"}]}]}</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-MPVQ83E1Z9');
+</script>
+</head>
+<body>
+<!-- @header -->
+
+<div class="measure">
+<article class="book-sample gwa-chapter">
+<p class="guide-eyebrow"><a href="/go-with-ai/">Go with AI</a> · <span>Free online book</span></p>
+<h1>Chapter 4: Modeling Data and Handling Errors</h1>
+<p class="gwa-summary"><span class="gwa-summary-h">In short:</span> Chapter 4 gives Tracker a proper shape with a struct and methods, and makes it remember your expenses in a JSON file. Because saving to a file can fail, you also learn Go&#x27;s error handling: returning errors, wrapping them with %w and never ignoring them.</p>
+<nav class="chapter-nav gwa-onpage" aria-label="On this page"><p class="onpage-h">On this page</p><ol><li><a href="#mission">Mission</a></li><li><a href="#must-know">Must know</a></li><li><a href="#specify">Specify</a></li><li><a href="#use-the-ai">Use the AI</a></li><li><a href="#review">Review</a></li><li><a href="#explain">Explain</a></li><li><a href="#practice-optional">Practice (optional)</a></li><li><a href="#what-youve-done">What you’ve done</a></li></ol></nav>
+<p>Close Tracker, and your expenses are gone. Every run starts from the same four hard-coded amounts. A tracker that forgets everything isn’t much of a tracker.</p>
+<p>In this chapter, Tracker learns to remember. You’ll give expenses a proper shape with a <strong>struct</strong>, which is the suggestion the AI kept making in Chapter 3. You’ll give Tracker <strong>methods</strong> that add, total, save and load expenses. And because saving to a file is the first thing in this book that can fail for reasons outside your code (a missing folder, a broken file), you’ll learn how Go handles <strong>errors</strong>.</p>
+<p>The AI is your <strong>pair</strong> for this whole chapter. The book gives you the first part of the new code. Then you write the rest yourself, ask the AI for a review, and decide what to keep, using the same three questions as Chapter 3. It’s the same SURE loop, with more of it in your hands.</p>
+<h2 id="mission">Mission<a class="anchor" href="#mission" aria-label="Link to this section"></a></h2>
+<p>By the end of this chapter, you’ll have:</p>
+<ul>
+<li>An <code>Expense</code> struct and a <code>Tracker</code> type with methods</li>
+<li>Tracker saving your expenses to <code>expenses.json</code> and loading them on the next run</li>
+<li>A command to add expenses: <code>go run . add Food 350</code></li>
+<li>Clear error messages for bad input, instead of crashes or silent mistakes</li>
+<li>A commit with a <code>Learned:</code> line</li>
+</ul>
+<h2 id="must-know">Must know<a class="anchor" href="#must-know" aria-label="Link to this section"></a></h2>
+<ol type="1">
+<li><strong>A struct groups named fields into one type.</strong> <code>type Expense struct { Category string; Cents int }</code> describes every expense. Fields that start with a capital letter are <strong>exported</strong>, and <code>encoding/json</code> only sees exported fields. (Chapter 5 covers exported names properly.)</li>
+<li><strong>A method is a function attached to a type.</strong> <code>func (tr *Tracker) Add(...)</code> is a method on <code>Tracker</code>. You call it with a dot: <code>tracker.Add("Food", 350)</code>.</li>
+<li><strong>A pointer lets a function change the original instead of a copy.</strong> <code>*Tracker</code> means “a pointer to a Tracker,” and <code>&amp;x</code> gives you a pointer to <code>x</code>. A method that changes its value needs a pointer receiver, <code>(tr *Tracker)</code>. Otherwise it changes a copy, and the change disappears.</li>
+<li><strong>Errors are values.</strong> A function that can fail returns an <code>error</code> as its last result. <code>nil</code> means it worked. You check every error: <code>if err != nil { ... }</code>.</li>
+<li><strong>Wrap errors to add context.</strong> <code>fmt.Errorf("save expenses: %w", err)</code> adds what you were doing to the error. Later, <code>errors.Is(err, target)</code> can still look inside the wrapping. The <code>%w</code> is what makes that work.</li>
+</ol>
+<h2 id="specify">Specify<a class="anchor" href="#specify" aria-label="Link to this section"></a></h2>
+<p>Replace <code>SPEC.md</code> with the new behavior:</p>
+<pre><code class="language-markdown">1. `go run .` prints the welcome sentence, then one line per
+   category with its total, sorted by name. With no expenses,
+   it prints &quot;No expenses yet.&quot; under the welcome sentence.
+2. `go run . add Food 350` adds an expense of 3.50 to Food,
+   saves it, and prints: Added Food: 3.50
+3. Expenses are saved in expenses.json and are still there on
+   the next run.
+4. If expenses.json doesn&#39;t exist yet, Tracker starts empty.
+   That&#39;s not an error.
+5. An amount that isn&#39;t a whole number, or is zero or less, gives
+   a clear error, and nothing is saved.</code></pre>
+<p>Amounts are still whole cents, so <code>350</code> means 3.50. A friendlier input like <code>3.50</code> would need its own parsing code, and that can wait.</p>
+<p>The new code will live in a new file, <code>tracker.go</code>, so its tests go in a new file too. Create <code>tracker_test.go</code> next to <code>main.go</code>:</p>
+<pre><code class="language-go">package main
+
+import (
+    &quot;errors&quot;
+    &quot;maps&quot;
+    &quot;os&quot;
+    &quot;path/filepath&quot;
+    &quot;slices&quot;
+    &quot;testing&quot;
+)
+
+func TestTrackerAdd(t *testing.T) {
+    tests := []struct {
+        name     string
+        category string
+        cents    int
+        wantErr  error
+        wantLen  int
+    }{
+        {&quot;valid&quot;, &quot;Food&quot;, 350, nil, 1},
+        {&quot;zero&quot;, &quot;Food&quot;, 0, ErrInvalidAmount, 0},
+        {&quot;negative&quot;, &quot;Food&quot;, -100, ErrInvalidAmount, 0},
+    }
+    for _, tt := range tests {
+        var tr Tracker
+        err := tr.Add(tt.category, tt.cents)
+        if !errors.Is(err, tt.wantErr) {
+            t.Errorf(&quot;%s: Add() error = %v, want %v&quot;, tt.name, err, tt.wantErr)
+        }
+        if len(tr.expenses) != tt.wantLen {
+            t.Errorf(&quot;%s: %d expenses after Add, want %d&quot;, tt.name, len(tr.expenses), tt.wantLen)
+        }
+    }
+}
+
+func TestTrackerTotals(t *testing.T) {
+    tr := Tracker{expenses: []Expense{
+        {Category: &quot;Food&quot;, Cents: 350},
+        {Category: &quot;Transport&quot;, Cents: 1200},
+        {Category: &quot;Food&quot;, Cents: 99},
+    }}
+    got := tr.Totals()
+    want := map[string]int{&quot;Food&quot;: 449, &quot;Transport&quot;: 1200}
+    if !maps.Equal(got, want) {
+        t.Errorf(&quot;Totals() = %v, want %v&quot;, got, want)
+    }
+}
+
+func TestSaveAndLoad(t *testing.T) {
+    path := filepath.Join(t.TempDir(), &quot;expenses.json&quot;)
+    saved := Tracker{expenses: []Expense{
+        {Category: &quot;Food&quot;, Cents: 350},
+        {Category: &quot;Fun&quot;, Cents: 1500},
+    }}
+    if err := saved.Save(path); err != nil {
+        t.Fatalf(&quot;Save() error = %v&quot;, err)
+    }
+    loaded, err := Load(path)
+    if err != nil {
+        t.Fatalf(&quot;Load() error = %v&quot;, err)
+    }
+    if !slices.Equal(loaded.expenses, saved.expenses) {
+        t.Errorf(&quot;loaded %v, want %v&quot;, loaded.expenses, saved.expenses)
+    }
+}
+
+func TestLoadMissingFile(t *testing.T) {
+    path := filepath.Join(t.TempDir(), &quot;missing.json&quot;)
+    tr, err := Load(path)
+    if err != nil {
+        t.Fatalf(&quot;Load() error = %v, want nil&quot;, err)
+    }
+    if len(tr.expenses) != 0 {
+        t.Errorf(&quot;Load() has %d expenses, want 0&quot;, len(tr.expenses))
+    }
+}
+
+func TestLoadBrokenFile(t *testing.T) {
+    path := filepath.Join(t.TempDir(), &quot;expenses.json&quot;)
+    if err := os.WriteFile(path, []byte(&quot;not json&quot;), 0o644); err != nil {
+        t.Fatal(err)
+    }
+    if _, err := Load(path); err == nil {
+        t.Error(&quot;Load() error = nil, want an error for a broken file&quot;)
+    }
+}</code></pre>
+<p>Three new testing tools appear here:</p>
+<ul>
+<li><strong><code>errors.Is(err, tt.wantErr)</code></strong> checks whether an error is, or wraps, a specific error. When <code>wantErr</code> is <code>nil</code>, it checks that there was no error at all.</li>
+<li><strong><code>t.TempDir()</code></strong> gives each test a fresh, empty folder that Go deletes afterwards, so tests never touch your real <code>expenses.json</code>.</li>
+<li><strong><code>t.Fatalf</code></strong> reports a failure and stops that test immediately. Use it when there’s no point going on: if <code>Save</code> failed, there’s nothing to <code>Load</code>.</li>
+</ul>
+<p>Notice that <code>TestTrackerTotals</code> builds its <code>Tracker</code> directly with the expenses inside, instead of calling <code>Add</code>. That keeps it from ignoring <code>Add</code>’s errors, and ignoring errors is exactly what this chapter teaches you not to do.</p>
+<p>Run the tests:</p>
+<pre><code class="language-bash">go test ./...</code></pre>
+<pre><code class="language-text"># tracker [tracker.test]
+./tracker_test.go:21:23: undefined: ErrInvalidAmount
+./tracker_test.go:22:30: undefined: ErrInvalidAmount
+./tracker_test.go:25:10: undefined: Tracker
+./tracker_test.go:37:8: undefined: Tracker
+./tracker_test.go:37:28: undefined: Expense
+./tracker_test.go:51:11: undefined: Tracker
+./tracker_test.go:51:31: undefined: Expense
+./tracker_test.go:58:17: undefined: Load
+./tracker_test.go:69:13: undefined: Load
+./tracker_test.go:83:15: undefined: Load
+./tracker_test.go:83:15: too many errors
+FAIL    tracker [build failed]
+FAIL</code></pre>
+<p>“Too many errors” means Go stopped listing after ten. Your to-do list is longer than it shows.</p>
+<h2 id="use-the-ai">Use the AI<a class="anchor" href="#use-the-ai" aria-label="Link to this section"></a></h2>
+<h3 id="learn-the-new-ideas">Learn the new ideas<a class="anchor" href="#learn-the-new-ideas" aria-label="Link to this section"></a></h3>
+<p>Your AI is a pair now, but you can always ask it to explain. Start with:</p>
+<pre><code class="language-text">Explain Go structs, methods and pointer receivers to a beginner.
+Why would a method need (tr *Tracker) instead of (tr Tracker)?
+Don&#39;t write code for my project.</code></pre>
+<p>Then:</p>
+<pre><code class="language-text">How do errors work in Go? What does fmt.Errorf with %w do, and how
+does errors.Is use it? Use a small example that isn&#39;t about money.</code></pre>
+<h3 id="type-the-first-part">Type the first part<a class="anchor" href="#type-the-first-part" aria-label="Link to this section"></a></h3>
+<p>Create <code>tracker.go</code> and type this:</p>
+<pre><code class="language-go">package main
+
+import (
+    &quot;errors&quot;
+    &quot;fmt&quot;
+)
+
+// Expense is one thing you spent money on.
+type Expense struct {
+    Category string `json:&quot;category&quot;`
+    Cents    int    `json:&quot;cents&quot;`
+}
+
+// Tracker holds all your expenses.
+type Tracker struct {
+    expenses []Expense
+}
+
+// ErrInvalidAmount means an expense amount was zero or negative.
+var ErrInvalidAmount = errors.New(&quot;amount must be more than zero&quot;)
+
+// Add records one expense.
+func (tr *Tracker) Add(category string, cents int) error {
+    if cents &lt;= 0 {
+        return fmt.Errorf(&quot;add %q: %w&quot;, category, ErrInvalidAmount)
+    }
+    tr.expenses = append(tr.expenses, Expense{Category: category, Cents: cents})
+    return nil
+}</code></pre>
+<p>Things to notice:</p>
+<ul>
+<li>The text after each field, like <code>`json:"category"`</code>, is a <strong>struct tag</strong>. It tells <code>encoding/json</code> to write the field as <code>"category"</code> in the file instead of <code>"Category"</code>.</li>
+<li><code>Expense{Category: category, Cents: cents}</code> in <code>Add</code> builds an expense with <strong>named fields</strong>: each field’s name, a colon, then its value. You read or set a field with a dot: if <code>e</code> is an <code>Expense</code>, <code>e.Category</code> is its category, and <code>e.Cents = 500</code> changes its amount.</li>
+<li>Any field you leave out gets its <strong>zero value</strong>, the rule from Chapter 3: <code>Expense{Category: "Food"}</code> has <code>Cents</code> set to <code>0</code>, and <code>var e Expense</code> has <code>Category</code> <code>""</code> and <code>Cents</code> <code>0</code>.</li>
+<li><code>expenses</code> starts with a lowercase letter, so it’s private to this package. Other code goes through <code>Add</code> and the other methods rather than touching the slice directly.</li>
+<li><code>ErrInvalidAmount</code> is a <strong>sentinel error</strong>: a named error that callers can check for with <code>errors.Is</code>. <code>Add</code> wraps it with the category, so the message says what went wrong <em>and</em> where.</li>
+<li><code>Add</code> returns <code>nil</code> when everything worked. Every path through a function that returns <code>error</code> ends with an error or <code>nil</code>.</li>
+</ul>
+<p>Run <code>go test ./...</code> again:</p>
+<pre><code class="language-text"># tracker [tracker.test]
+./tracker_test.go:42:12: tr.Totals undefined (type Tracker has no field or method Totals)
+./tracker_test.go:55:18: saved.Save undefined (type Tracker has no field or method Save)
+./tracker_test.go:58:17: undefined: Load
+./tracker_test.go:69:13: undefined: Load
+./tracker_test.go:83:15: undefined: Load
+FAIL    tracker [build failed]
+FAIL</code></pre>
+<p>Three items left: <code>Totals</code>, <code>Save</code> and <code>Load</code>. These are yours.</p>
+<h3 id="your-turn-totals-save-and-load">Your turn: Totals, Save and Load<a class="anchor" href="#your-turn-totals-save-and-load" aria-label="Link to this section"></a></h3>
+<p>Add these to the end of <code>tracker.go</code>. Your tests say exactly what each must do.</p>
+<p><strong><code>func (tr *Tracker) Totals() map[string]int</code></strong> returns the total for each category. Loop over <code>tr.expenses</code> and add each expense’s <code>Cents</code> to its category in a new map. You did almost the same thing in Chapter 3.</p>
+<p><strong><code>func (tr *Tracker) Save(path string) error</code></strong> writes all expenses to a file:</p>
+<ul>
+<li><code>json.MarshalIndent(tr.expenses, "", "  ")</code> turns the slice into JSON text, indented with two spaces. It returns the text and an error.</li>
+<li><code>os.WriteFile(path, data, 0o644)</code> writes the text to the file. <code>0o644</code> sets the file’s permissions: you can read and write it, and others can only read it.</li>
+<li>Check both errors, and wrap each with <code>fmt.Errorf("save expenses: %w", err)</code>.</li>
+</ul>
+<p><strong><code>func Load(path string) (*Tracker, error)</code></strong> is a plain function, not a method, because there’s no Tracker yet when you load one. It reads the file and returns a new Tracker:</p>
+<ul>
+<li><code>os.ReadFile(path)</code> returns the file’s contents and an error.</li>
+<li>If the file doesn’t exist, <code>errors.Is(err, os.ErrNotExist)</code> is true. That’s not a failure: return an empty <code>&amp;Tracker{}</code> and <code>nil</code>.</li>
+<li>Any other error: return <code>nil</code> and the error wrapped with <code>"load expenses: %w"</code>.</li>
+<li><code>json.Unmarshal(data, &amp;tr.expenses)</code> fills the slice from the JSON text. It needs a pointer (<code>&amp;</code>) so it can change the slice. Check its error too.</li>
+</ul>
+<p>You’ll need two more imports in <code>tracker.go</code>: <code>"encoding/json"</code> and <code>"os"</code>. Then write, run <code>go test ./...</code>, read the errors, and repeat until you see <code>ok</code>. If you’re stuck, ask the AI to explain an error message, not to write the method.</p>
+<h3 id="ask-for-a-review">Ask for a review<a class="anchor" href="#ask-for-a-review" aria-label="Link to this section"></a></h3>
+<pre><code class="language-text">Review the Totals, Save and Load methods in tracker.go. List
+problems and suggestions, each with a one-line reason. Don&#39;t
+rewrite my code; I&#39;ll decide what to change.</code></pre>
+<p>Decide on each suggestion with the same three questions as Chapter 3:</p>
+<ol type="1">
+<li><strong>Do I understand it?</strong> If you can’t explain it, you can’t keep it.</li>
+<li><strong>Does it fit this project?</strong> It must follow your rules: <code>AGENTS.md</code> (Go 1.27, standard library only) and the book’s Must know points, like money in cents.</li>
+<li><strong>Do the tests still pass?</strong> One change at a time, then <code>go test ./...</code>.</li>
+</ol>
+<p>Here are example suggestions (not real AI output) and how the questions sort them:</p>
+<div class="table-wrap"><table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Suggestion</th>
+<th>Keep?</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Write to a temporary file, then rename it, so a crash can’t leave a half-written file</td>
+<td>Your call</td>
+<td>A real improvement. Keep it if you can explain why the rename helps; otherwise note it for later.</td>
+</tr>
+<tr>
+<td>Call <code>log.Fatal(err)</code> inside <code>Load</code> instead of returning the error</td>
+<td>Reject</td>
+<td>It would end the whole program from deep inside. Functions return errors; only <code>main</code> decides to stop.</td>
+</tr>
+<tr>
+<td>Use <code>json.NewEncoder</code> with an open file instead of <code>MarshalIndent</code></td>
+<td>Skip for now</td>
+<td>It works, but it brings in opening and closing files. Same result, more to explain.</td>
+</tr>
+<tr>
+<td>Store amounts as <code>float64</code> in the JSON, like <code>"amount": 3.5</code></td>
+<td>Reject</td>
+<td>Money is whole cents. That’s a Must know point, not a style choice.</td>
+</tr>
+</tbody>
+</table></div>
+<h3 id="compare-with-the-books-version">Compare with the book’s version<a class="anchor" href="#compare-with-the-books-version" aria-label="Link to this section"></a></h3>
+<p>Here’s one version that passes the tests. Yours may differ; that’s fine if your tests pass and you can explain every line.</p>
+<pre><code class="language-go">// Totals returns the total in cents for each category.
+func (tr *Tracker) Totals() map[string]int {
+    totals := make(map[string]int)
+    for _, e := range tr.expenses {
+        totals[e.Category] += e.Cents
+    }
+    return totals
+}
+
+// Save writes all expenses to the JSON file at path.
+func (tr *Tracker) Save(path string) error {
+    data, err := json.MarshalIndent(tr.expenses, &quot;&quot;, &quot;  &quot;)
+    if err != nil {
+        return fmt.Errorf(&quot;save expenses: %w&quot;, err)
+    }
+    if err := os.WriteFile(path, data, 0o644); err != nil {
+        return fmt.Errorf(&quot;save expenses: %w&quot;, err)
+    }
+    return nil
+}
+
+// Load reads expenses from the JSON file at path.
+// A missing file means there are no expenses yet.
+func Load(path string) (*Tracker, error) {
+    data, err := os.ReadFile(path)
+    if errors.Is(err, os.ErrNotExist) {
+        return &amp;Tracker{}, nil
+    }
+    if err != nil {
+        return nil, fmt.Errorf(&quot;load expenses: %w&quot;, err)
+    }
+    tr := &amp;Tracker{}
+    if err := json.Unmarshal(data, &amp;tr.expenses); err != nil {
+        return nil, fmt.Errorf(&quot;load expenses: %w&quot;, err)
+    }
+    return tr, nil
+}</code></pre>
+<p><code>if err := os.WriteFile(...); err != nil</code> is a common Go shape: the <code>if</code> runs a statement first, then checks the condition. The <code>err</code> it creates only exists inside that <code>if</code>.</p>
+<h3 id="connect-tracker-to-main">Connect Tracker to main<a class="anchor" href="#connect-tracker-to-main" aria-label="Link to this section"></a></h3>
+<p>The old map-based code is replaced, so remove it:</p>
+<ul>
+<li>In <code>main.go</code>, delete the <code>addExpense</code> and <code>totalsByCategory</code> functions. <code>Tracker</code> does their jobs now.</li>
+<li>In <code>main_test.go</code>, delete <code>TestTotalsByCategory</code>, and remove <code>"maps"</code> from its imports. Nothing else in that file uses <code>maps</code>, and Go refuses unused imports.</li>
+</ul>
+<p>Then, in <code>main.go</code>, replace the import block and the whole <code>main</code> function with this:</p>
+<pre><code class="language-go">import (
+    &quot;errors&quot;
+    &quot;fmt&quot;
+    &quot;os&quot;
+    &quot;slices&quot;
+    &quot;strconv&quot;
+)
+
+const dataFile = &quot;expenses.json&quot;
+
+func main() {
+    if err := run(os.Args[1:]); err != nil {
+        fmt.Fprintln(os.Stderr, &quot;Error:&quot;, err)
+        os.Exit(1)
+    }
+}
+
+func run(args []string) error {
+    tracker, err := Load(dataFile)
+    if err != nil {
+        return err
+    }
+
+    if len(args) == 0 {
+        fmt.Println(welcome())
+        totals := tracker.Totals()
+        if len(totals) == 0 {
+            fmt.Println(&quot;No expenses yet.&quot;)
+        }
+        for _, category := range sortedCategories(totals) {
+            fmt.Println(describeCategory(totals, category))
+        }
+        return nil
+    }
+
+    if len(args) == 3 &amp;&amp; args[0] == &quot;add&quot; {
+        category := args[1]
+        cents, err := strconv.Atoi(args[2])
+        if err != nil {
+            return fmt.Errorf(&quot;amount must be whole cents: %w&quot;, err)
+        }
+        if err := tracker.Add(category, cents); err != nil {
+            return err
+        }
+        if err := tracker.Save(dataFile); err != nil {
+            return err
+        }
+        fmt.Println(&quot;Added&quot;, formatExpense(category, cents))
+        return nil
+    }
+
+    return errors.New(&quot;usage: go run . [add CATEGORY CENTS]&quot;)
+}</code></pre>
+<p>This is the pattern for every error in a Go program. <code>run</code> does the work and returns any error it meets, and only <code>main</code> decides what to do about it: print it and stop. <code>os.Args</code> holds the words typed after the program’s name, <code>strconv.Atoi</code> turns text like <code>"350"</code> into the number <code>350</code>, and <code>fmt.Fprintln(os.Stderr, ...)</code> prints to the terminal’s error output.</p>
+<p>Now try it. Start with no data file:</p>
+<pre><code class="language-bash">go run .</code></pre>
+<pre><code class="language-text">Welcome to Tracker. Let&#39;s see where your money goes.
+No expenses yet.</code></pre>
+<p>Add the expenses from Chapter 3, one command at a time:</p>
+<pre><code class="language-bash">go run . add Food 350
+go run . add Transport 1200
+go run . add Food 99
+go run . add Fun 1500</code></pre>
+<pre><code class="language-text">Added Food: 3.50
+Added Transport: 12.00
+Added Food: 0.99
+Added Fun: 15.00</code></pre>
+<p>Now run the report. Every <code>go run</code> is a fresh program, so these totals came from the file:</p>
+<pre><code class="language-bash">go run .</code></pre>
+<pre><code class="language-text">Welcome to Tracker. Let&#39;s see where your money goes.
+Food: 4.49
+Fun: 15.00
+Transport: 12.00</code></pre>
+<p>Open <code>expenses.json</code> in your editor. It’s plain text you can read:</p>
+<pre><code class="language-json">[
+  {
+    &quot;category&quot;: &quot;Food&quot;,
+    &quot;cents&quot;: 350
+  },
+  {
+    &quot;category&quot;: &quot;Transport&quot;,
+    &quot;cents&quot;: 1200
+  },
+  {
+    &quot;category&quot;: &quot;Food&quot;,
+    &quot;cents&quot;: 99
+  },
+  {
+    &quot;category&quot;: &quot;Fun&quot;,
+    &quot;cents&quot;: 1500
+  }
+]</code></pre>
+<p>Remember “What not to give the AI” from Chapter 1: your assistant can read this file. Keep using made-up expenses.</p>
+<p>Finally, try some bad input:</p>
+<pre><code class="language-bash">go run . add Food 3.50
+go run . add Food 0
+go run . add</code></pre>
+<pre><code class="language-text">Error: amount must be whole cents: strconv.Atoi: parsing &quot;3.50&quot;: invalid syntax
+exit status 1
+Error: add &quot;Food&quot;: amount must be more than zero
+exit status 1
+Error: usage: go run . [add CATEGORY CENTS]
+exit status 1</code></pre>
+<p>Read the first message from left to right. Each <code>:</code> is one layer of wrapping: your context first, then <code>strconv</code>’s own error. That’s what <code>%w</code> buys you. <code>exit status 1</code> comes from <code>go run</code>, telling you the program stopped with an error.</p>
+<h2 id="review">Review<a class="anchor" href="#review" aria-label="Link to this section"></a></h2>
+<h3 id="let-go-check-first">Let Go check first<a class="anchor" href="#let-go-check-first" aria-label="Link to this section"></a></h3>
+<pre><code class="language-bash">gofmt -l .
+go vet ./...
+go test ./...</code></pre>
+<p>Silence, silence, <code>ok</code>.</p>
+<h3 id="break-it-on-purpose">Break it on purpose<a class="anchor" href="#break-it-on-purpose" aria-label="Link to this section"></a></h3>
+<p><strong>Break 1: lose the pointer.</strong> In <code>tracker.go</code>, change <code>func (tr *Tracker) Add</code> to <code>func (tr Tracker) Add</code>, removing one <code>*</code>. It compiles, and <code>go vet</code> stays silent. Now run <code>go test ./...</code>:</p>
+<pre><code class="language-text">--- FAIL: TestTrackerAdd (0.00s)
+    tracker_test.go:31: valid: 0 expenses after Add, want 1
+FAIL
+FAIL    tracker 0.003s
+FAIL</code></pre>
+<p>Without the pointer, <code>Add</code> appends to a <em>copy</em> of the Tracker, and the copy disappears when <code>Add</code> returns. No error, no crash, just a lost expense. Only the test caught it, because it checks the count. Put the <code>*</code> back.</p>
+<p><strong>Break 2: <code>%v</code> instead of <code>%w</code>.</strong> In <code>Add</code>, change <code>%w</code> to <code>%v</code> and run <code>go test ./...</code>:</p>
+<pre><code class="language-text">--- FAIL: TestTrackerAdd (0.00s)
+    tracker_test.go:28: zero: Add() error = add &quot;Food&quot;: amount must be more than zero, want amount must be more than zero
+    tracker_test.go:28: negative: Add() error = add &quot;Food&quot;: amount must be more than zero, want amount must be more than zero
+FAIL
+FAIL    tracker 0.004s
+FAIL</code></pre>
+<p>The message looks identical, but <code>errors.Is</code> can’t find <code>ErrInvalidAmount</code> inside it anymore. <code>%v</code> copies the error’s <em>text</em>; <code>%w</code> keeps the error itself inside. Put <code>%w</code> back.</p>
+<h3 id="check-it-yourself">Check it yourself<a class="anchor" href="#check-it-yourself" aria-label="Link to this section"></a></h3>
+<ul class="task-list">
+<li><label><input type="checkbox" /><code>go run .</code> shows your saved expenses, sorted by category, even after you close the terminal.</label></li>
+<li><label><input type="checkbox" />Bad input prints a clear error and adds nothing to <code>expenses.json</code>.</label></li>
+<li><label><input type="checkbox" /><code>gofmt -l .</code> and <code>go vet ./...</code> print nothing, and <code>go test ./...</code> prints <code>ok</code>.</label></li>
+<li><label><input type="checkbox" />You can explain why <code>Add</code> needs <code>*Tracker</code>, and what <code>%w</code> does that <code>%v</code> doesn’t.</label></li>
+<li><label><input type="checkbox" />For each review suggestion, you decided keep, skip or reject, and can say why.</label></li>
+</ul>
+<p>Be SURE you can explain it, including the <code>if err := ...; err != nil</code> lines.</p>
+<aside class="book-box">
+<p class="box-label">Where AI gets Go wrong: errors and data</p>
+<ul>
+<li><strong>Ignoring errors.</strong> AI-written code sometimes throws errors away with <code>_</code> (<code>data, _ := os.ReadFile(path)</code>) or doesn’t look at them at all (<code>os.WriteFile(path, data, 0o644)</code> on a line by itself). It compiles, <code>go vet</code> doesn’t complain, and the program carries on with bad data. The Practice exercise is all about spotting this.</li>
+<li><strong><code>%v</code> where <code>%w</code> belongs.</strong> As Break 2 showed, the message looks the same, and <code>errors.Is</code> silently stops working.</li>
+<li><strong>Comparing error text.</strong> Code like <code>if err.Error() == "amount must be more than zero"</code> breaks the moment anyone wraps the error or rewords the message. Use <code>errors.Is</code>.</li>
+<li><strong>Lowercase fields with JSON tags.</strong> A field like <code>category string `json:"category"`</code> is unexported, so <code>encoding/json</code> skips it without any error. The file just lacks that field. <code>go vet</code> catches this one: <code>struct field category has json tag but is not exported</code>.</li>
+<li><strong>Stopping the program from deep inside.</strong> <code>log.Fatal</code> or <code>panic</code> inside a function like <code>Load</code> takes the decision away from <code>main</code>. Return the error instead.</li>
+</ul>
+</aside>
+<h2 id="explain">Explain<a class="anchor" href="#explain" aria-label="Link to this section"></a></h2>
+<h3 id="say-it-in-your-own-words">Say it in your own words<a class="anchor" href="#say-it-in-your-own-words" aria-label="Link to this section"></a></h3>
+<p>Write a few sentences about how Tracker remembers expenses and handles mistakes. For example:</p>
+<aside class="book-box">
+<p>An Expense is a struct with a category and an amount in cents. Tracker’s methods use a pointer receiver so they change the real Tracker, not a copy. Save turns the expenses into JSON and writes the file; Load reads it back, and a missing file just means no expenses yet. Every error gets wrapped with context and returned, and only main prints it and stops.</p>
+</aside>
+<h3 id="let-the-ai-quiz-you">Let the AI quiz you<a class="anchor" href="#let-the-ai-quiz-you" aria-label="Link to this section"></a></h3>
+<pre><code class="language-text">Ask me two questions about structs, pointers or errors, using my
+code in tracker.go. Wait for my answers before you tell me if I&#39;m right.</code></pre>
+<h3 id="write-a-learned-line-in-your-commit">Write a <code>Learned:</code> line in your commit<a class="anchor" href="#write-a-learned-line-in-your-commit" aria-label="Link to this section"></a></h3>
+<pre><code class="language-bash">git add .
+git commit -m &quot;Save and load expenses with a Tracker type&quot; -m &quot;Learned: a method needs a pointer receiver to change its value, or it only changes a copy.&quot;</code></pre>
+<p><code>expenses.json</code> is included in this commit. Since your expenses are made up, that’s fine. In a real project, you’d usually keep personal data out of Git.</p>
+<h3 id="update-agents.md-if-something-surprised-you">Update AGENTS.md if something surprised you<a class="anchor" href="#update-agents.md-if-something-surprised-you" aria-label="Link to this section"></a></h3>
+<p>Did the AI’s review suggest <code>log.Fatal</code>, <code>float64</code> or ignoring an error? Add a rule, such as:</p>
+<pre><code class="language-markdown">Always check and wrap errors with fmt.Errorf and %w; never ignore them with _.</code></pre>
+<p>Commit the change.</p>
+<h2 id="practice-optional">Practice (optional)<a class="anchor" href="#practice-optional" aria-label="Link to this section"></a></h2>
+<p>Here’s a short program an AI might write to back up expenses. It compiles, <code>go vet</code> is silent, and it even prints a cheerful message. It also has <strong>four</strong> ignored errors. Save it as <code>ignored.go</code> in your <code>practice</code> folder and run it with <code>go run ignored.go</code>:</p>
+<pre><code class="language-go">package main
+
+import (
+    &quot;encoding/json&quot;
+    &quot;fmt&quot;
+    &quot;os&quot;
+)
+
+type Expense struct {
+    Category string `json:&quot;category&quot;`
+    Cents    int    `json:&quot;cents&quot;`
+}
+
+func save(path string, expenses []Expense) {
+    data, _ := json.MarshalIndent(expenses, &quot;&quot;, &quot;  &quot;)
+    os.WriteFile(path, data, 0o644)
+}
+
+func load(path string) []Expense {
+    data, _ := os.ReadFile(path)
+    var expenses []Expense
+    json.Unmarshal(data, &amp;expenses)
+    return expenses
+}
+
+func main() {
+    expenses := []Expense{
+        {Category: &quot;Food&quot;, Cents: 350},
+        {Category: &quot;Fun&quot;, Cents: 1500},
+    }
+    save(&quot;backup/expenses.json&quot;, expenses)
+    fmt.Println(&quot;Saved&quot;, len(expenses), &quot;expenses&quot;)
+
+    loaded := load(&quot;backup/expenses.json&quot;)
+    fmt.Println(&quot;Loaded&quot;, len(loaded), &quot;expenses&quot;)
+}</code></pre>
+<p>It prints:</p>
+<pre><code class="language-text">Saved 2 expenses
+Loaded 0 expenses</code></pre>
+<p>Two expenses saved, zero loaded, and no error anywhere. The <code>backup</code> folder doesn’t exist, so the save failed, but nothing told you.</p>
+<p>Your job: find all four ignored errors. Then make <code>save</code> and <code>load</code> return errors, wrapped with <code>%w</code>, and make <code>main</code> print the error and stop, the way Tracker’s <code>main</code> does. When you’re done, running it should print an error that mentions <code>backup/expenses.json</code> and says the file or folder doesn’t exist (the exact wording differs on Windows). Use the SURE loop, and ask the AI for a review when your version works.</p>
+<p class="gwa-answer-link">Tried it? Compare with the <a href="/go-with-ai/answers/#chapter-4">worked answer for Chapter 4</a>.</p>
+<h2 id="what-youve-done">What you’ve done<a class="anchor" href="#what-youve-done" aria-label="Link to this section"></a></h2>
+<p>Tracker now has a real data model, remembers your expenses between runs, and turns bad input into clear messages instead of crashes or silent mistakes. You wrote three methods yourself, used pointers and saw what happens without them, and learned why <code>%w</code> matters even when the message looks the same.</p>
+<p>Tracker is getting crowded, though: everything lives in package <code>main</code>. In Chapter 5, you’ll split it into packages and give storage an interface, so Tracker can save to a file or keep everything in memory. That’s also where the AI’s role shifts again: from pair to implementer.</p>
+
+<footer class="guide-nav">
+  <div class="prev"><span class="label">Previous</span><a href="/go-with-ai/go-slices-maps-loops/" rel="prev">Chapter 3: Lists, Lookups and Loops</a></div>
+  <div class="next"><span class="label">Next</span><a href="/go-with-ai/go-packages-interfaces/" rel="next">Chapter 5: Organizing Code: Packages and Interfaces</a></div>
+</footer>
+<nav class="gwa-allpages" aria-label="Go with AI contents"><p class="onpage-h">Go with AI: all chapters</p><ol class="gwa-contents"><li><a href="/go-with-ai/introduction/">Introduction</a></li><li><a href="/go-with-ai/learn-to-code-with-ai/">Chapter 1: Learning to Code When AI Can Code</a></li><li><a href="/go-with-ai/first-go-program-and-test/">Chapter 2: Your First Program and Your First Test</a></li><li><a href="/go-with-ai/go-slices-maps-loops/">Chapter 3: Lists, Lookups and Loops</a></li><li><a href="/go-with-ai/go-structs-methods-errors/" aria-current="page">Chapter 4: Modeling Data and Handling Errors</a></li><li><a href="/go-with-ai/go-packages-interfaces/">Chapter 5: Organizing Code: Packages and Interfaces</a></li><li><a href="/go-with-ai/go-web-api-net-http/">Chapter 6: From Command Line to Web</a></li><li><a href="/go-with-ai/go-goroutines-race-detector/">Chapter 7: A Taste of Goroutines</a></li><li><a href="/go-with-ai/setup-ai-coding-assistant/">Appendix A: Setting up your AI assistant</a></li><li><a href="/go-with-ai/git-basics/">Appendix B: Just enough Git</a></li><li><a href="/go-with-ai/sure-loop/">Appendix C: The SURE loop at a glance</a></li><li><a href="/go-with-ai/review-checklists/">Appendix D: Review checklists</a></li><li><a href="/go-with-ai/answers/">Practice answers</a></li></ol></nav>
+</article>
+</div>
+
+<!-- @footer -->
+
+</body>
+</html>

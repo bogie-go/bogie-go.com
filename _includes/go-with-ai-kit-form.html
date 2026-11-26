@@ -1,0 +1,49 @@
+<!-- Go with AI Kit sign-up (not included in the site yet).
+
+The form is off until Mac creates the Kit form and sends its id and uid.
+_includes/ is skipped by build.py, so this file is not deployed.
+
+To turn it back on:
+1. In Kit, create the "Go with AI download" form (or reuse the existing one).
+2. Replace KIT_FORM_ID and KIT_FORM_UID below with the form's id and uid.
+3. Paste the <script src="https://f.convertkit.com/ckjs/ck.5.js" defer></script>
+   block into the <head> of go-with-ai/index.html (just before </head>).
+4. Paste the <section class="gwa-download" ...> into go-with-ai/index.html
+   after the "Get the book" list.
+5. Restore the landing-page copy that points at the form:
+   - hero button: <a class="btn btn-outline" href="#download">Get the free PDF</a>
+   - formats list item: <li><strong>PDF and EPUB by email:</strong> free, <a href="#download">sign up below</a>.</li>
+   - FAQ "Is the Go with AI book free?": add "and you can get the PDF and EPUB free by email"
+     (keep the JSON-LD FAQ answer in sync).
+   - JSON-LD workExample: the "Go with AI (free PDF and EPUB by email)" offer at #download.
+   - llms.txt: mention "free PDF and EPUB by email" again on the landing-page line.
+6. The .gwa-download styles in style.css are already in place.
+7. Run python3 build.py; it will fail if any KIT_FORM_ placeholder is still in a built page.
+
+Leave PR #48 (the original Kit draft) alone; this snippet was copied from #49.
+-->
+<!-- Kit (kit.com) form script: sends the sign-up without leaving the page,
+     and shows Kit's spam check if it asks for one. Without it, the form still posts to Kit.
+<script src="https://f.convertkit.com/ckjs/ck.5.js" defer></script>
+-->
+<section class="gwa-download" id="download" aria-labelledby="download-h">
+  <h2 id="download-h">Get the free PDF by email<a class="anchor" href="#download" aria-label="Link to this section"></a></h2>
+  <p>Every chapter is free to read on this site. If you'd rather read offline, enter your email and we'll send you the PDF and EPUB, free.</p>
+  <!-- Kit form "Go with AI download". Kit emails the download link after the reader
+       confirms (the form's incentive email), so the files are never linked from this page.
+       Swap KIT_FORM_ID / KIT_FORM_UID for the form's id and uid; build.py refuses to build until you do. -->
+  <form class="gwa-form formkit-form" action="https://app.kit.com/forms/KIT_FORM_ID/subscriptions" method="post"
+        data-sv-form="KIT_FORM_ID" data-uid="KIT_FORM_UID" data-format="inline" data-version="5"
+        data-options='{"settings":{"after_subscribe":{"action":"message","success_message":"Almost there. Check your inbox and click the button in our email to confirm, and the download link comes right after. Can&#39;t find it? Look in Promotions or Spam.","redirect_url":""},"recaptcha":{"enabled":false},"return_visitor":{"action":"show","custom_content":""},"powered_by":{"show":false}},"version":"5"}'>
+    <ul class="formkit-alert formkit-alert-error gwa-errors" data-element="errors" data-group="alert"></ul>
+    <div class="gwa-fields" data-element="fields">
+      <label class="gwa-label" for="gwa-email">Email</label>
+      <div class="gwa-row">
+        <input class="gwa-input" id="gwa-email" name="email_address" type="email" autocomplete="email" placeholder="you@example.com" required>
+        <input type="hidden" name="tags[]" value="26395151">
+        <button class="btn btn-primary gwa-submit" type="submit" data-element="submit">Send me the book</button>
+      </div>
+      <p class="gwa-fine">We'll email you to confirm, then send the download link. You'll also get the occasional email about the book and Bogie; unsubscribe any time.</p>
+    </div>
+  </form>
+</section>

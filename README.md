@@ -15,6 +15,9 @@ by `.github/workflows/pages.yml`.
     CNAME           bogie-go.com
     _includes/      the shared header and footer
     sponsors.json   book sponsors for the homepage Supporters section
+    go-with-ai/     the book Go with AI (free to read online), one page per chapter plus the practice
+                    answers. Generated from the book sources by gen_site.py (kept with the
+                    book, outside this repo); edit the book, not these pages.
     build.py        fills the pages in and writes _site/
 
 ## Building
