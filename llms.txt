@@ -37,7 +37,7 @@ Every guide as plain Markdown, generated from the same source as the HTML:
 
 Go with AI: Learn Go with Human Mind and Assisted AI, by Roonglit Chareonsupkul. A book, free to read online, that teaches Go to beginners with an AI assistant, using only the standard library and the SURE loop (Specify, Use the AI, Review, Explain). The whole book is free to read online, one page per chapter.
 
-- [Go with AI](https://bogie-go.com/go-with-ai/): the book, its table of contents, editions and prices (free to read online; Leanpub PDF and EPUB $0.99; paperback $9.99 on Amazon; Kindle ebook $0.99, link coming soon) and a short FAQ.
+- [Go with AI](https://bogie-go.com/go-with-ai/): the book, its table of contents, editions and prices (free to read online; Kindle ebook $0.99 on Amazon; Leanpub PDF and EPUB $0.99; paperback $9.99 on Amazon) and a short FAQ.
 - [Introduction](https://bogie-go.com/go-with-ai/introduction/): Why learn Go yourself when an AI can write it? The introduction to Go with AI, a book for beginners that's free to read online: who it's for, what you'll build, and the SURE loop for learning Go with AI.
 - [Chapter 1: Learning to Code When AI Can Code](https://bogie-go.com/go-with-ai/learn-to-code-with-ai/): How do you start learning Go with an AI assistant? Install Go, set up your project and AI rules file, and write and commit your first Go program, the beginner-friendly way.
 - [Chapter 2: Your First Program and Your First Test](https://bogie-go.com/go-with-ai/first-go-program-and-test/): How do you write a test in Go? Turn a plain-English spec into a go test, write your first functions, use a table-driven test, and learn why money is stored in whole cents.
