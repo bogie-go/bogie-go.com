@@ -6,7 +6,8 @@ by `.github/workflows/pages.yml`.
 
     index.html      the front page
     book.html       the book, Bogie: How to Go from Zero to Production
-    docs/           the guides, one page each; docs/index.html lists them
+    docs/           the docs, one page each; docs/index.html lists them
+    guides/         step-by-step guides, one page each; guides/index.html lists them
     style.css       the one stylesheet, shared by every page
     fonts.css       the three self-hosted families under fonts/ (all OFL-licensed)
     bogie.webp      the mascot; favicon.png is the small one
@@ -28,6 +29,10 @@ Pages are still plain HTML, with a few markers that `build.py` fills in:
 - `<!-- @docs-start -->` / `<!-- @docs-end -->` around a guide's `<article>`:
   the left-hand guide menu and the previous/next links. The menu order and
   groups live in `NAV` at the top of `build.py`; add a new guide there.
+- `<!-- @guide-start -->` / `<!-- @guide-end -->` around a page's `<article>` in
+  `guides/`: the same anchors, "On this page", highlighting and Markdown copy as
+  docs, without the sidebar or previous/next. Add a new guide to `GUIDES` in
+  `build.py` (for llms.txt) and to `guides/index.html`.
 - `{{VERSION}}` (e.g. `v0.2.3`), `{{VERSION_NUM}}` (`0.2.3`), `{{SECTION}}`
 - `<!-- @supporters -->` on the homepage, directly under the book mention:
   the Supporters block, built from `sponsors.json`. An empty list leaves
@@ -45,7 +50,8 @@ The workflow builds and deploys on every push to `main`, once a day (so a new
 Bogie release shows up within a day), and on demand from the Actions tab.
 The build fails if any marker is left unfilled.
 
-Each docs page also gets a Markdown copy (`_site/docs/<slug>.md`), converted by
+Each docs and guides page also gets a Markdown copy (`_site/docs/<slug>.md`,
+`_site/guides/<slug>.md`), converted by
 `build.py` from the rendered article, so it never drifts from the HTML. The
 copies are not in `sitemap.xml`; `llms.txt` lists them at its
 `<!-- @markdown-copies -->` marker, and the build checks them for stray tags.

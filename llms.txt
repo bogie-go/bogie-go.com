@@ -6,7 +6,12 @@ Install: `go install github.com/bogie-go/bogie@latest`. Then `bogie new blog && 
 
 Every generated app follows six rules: ctx first on anything doing I/O; interfaces declared where they are consumed; the models package imports nothing third-party; constructors return (T, error); *gin.Context never travels below the controllers; no util, helpers or common packages. Each app ships an AGENTS.md with the rules, the commands and a recipe per task.
 
-## Guides
+## Step-by-step guides
+
+- [Guides](https://bogie-go.com/guides/): task-first walkthroughs, every command and output from a real run.
+- [Build a REST API with Go and Postgres](https://bogie-go.com/guides/go-rest-api-postgres.html): Go web development, step by step: create a JSON REST API on Postgres with full CRUD and tests. One command starts the app, and the plain Go code is yours.
+
+## Docs
 
 - [Getting started](https://bogie-go.com/docs/getting-started.html): Install Bogie, generate a new service, and get it migrating, seeded and serving.
 - [Models and migrations](https://bogie-go.com/docs/models.html): Add a table with g model, change one with g migration, and run it through db:*.
@@ -29,7 +34,7 @@ Every generated app follows six rules: ctx first on anything doing I/O; interfac
 
 ## Markdown copies
 
-Every guide as plain Markdown, generated from the same source as the HTML:
+Every docs page and guide as plain Markdown, generated from the same source as the HTML:
 
 <!-- @markdown-copies -->
 

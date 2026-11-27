@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Build a REST API with Go and Postgres (CRUD in Minutes)</title>
+<meta name="description" content="Go web development, step by step: create a JSON REST API on Postgres with full CRUD and tests. One command starts the app, and the plain Go code is yours.">
+<link rel="icon" type="image/png" href="../favicon.png">
+<link rel="stylesheet" href="../fonts.css">
+<link rel="stylesheet" href="../style.css">
+<link rel="canonical" href="https://bogie-go.com/guides/go-rest-api-postgres.html">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Bogie">
+<meta property="og:title" content="Build a REST API with Go and Postgres (CRUD in Minutes)">
+<meta property="og:description" content="Go web development, step by step: create a JSON REST API on Postgres with full CRUD and tests. One command starts the app, and the plain Go code is yours.">
+<meta property="og:url" content="https://bogie-go.com/guides/go-rest-api-postgres.html">
+<meta property="og:image" content="https://bogie-go.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Build a REST API with Go and Postgres (CRUD in Minutes)">
+<meta name="twitter:description" content="Go web development, step by step: create a JSON REST API on Postgres with full CRUD and tests. One command starts the app, and the plain Go code is yours.">
+<meta name="twitter:image" content="https://bogie-go.com/og.png">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Article", "headline": "Build a REST API with Go and Postgres", "name": "Build a REST API with Go and Postgres (CRUD in Minutes)", "description": "Go web development, step by step: create a JSON REST API on Postgres with full CRUD and tests. One command starts the app, and the plain Go code is yours.", "url": "https://bogie-go.com/guides/go-rest-api-postgres.html", "datePublished": "2026-11-27", "dateModified": "2026-11-27", "inLanguage": "en", "author": {"@type": "Person", "name": "Roonglit Chareonsupkul"}, "publisher": {"@type": "Organization", "name": "Bogie", "url": "https://bogie-go.com/"}, "image": "https://bogie-go.com/og.png", "keywords": "go rest api, golang crud api postgres, gin postgres tutorial, go web development", "isPartOf": {"@id": "https://bogie-go.com/#site"}, "about": {"@id": "https://bogie-go.com/#app"}, "mainEntityOfPage": "https://bogie-go.com/guides/go-rest-api-postgres.html", "proficiencyLevel": "Beginner"}, {"@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "Is Go good for web development?", "acceptedAnswer": {"@type": "Answer", "text": "Yes, for APIs and backends. The standard library ships an HTTP server (net/http) and JSON encoding, the compiler catches type mistakes before you run anything, and a Go program builds to a single binary you can copy to a server. Go is a common choice for JSON APIs like the one in this guide."}}, {"@type": "Question", "name": "Do I need a framework?", "acceptedAnswer": {"@type": "Answer", "text": "No. Go's standard library net/http is enough to build a JSON API, and the free Go with AI book builds one that way. A generator like Bogie saves the setup: it writes the routes, migrations, queries, validation hook and tests for you. What it writes is plain Go using Gin, pgx, sqlc and goose, and the app never imports Bogie, so you can change or drop any of it."}}, {"@type": "Question", "name": "Which Postgres driver should I use?", "acceptedAnswer": {"@type": "Answer", "text": "pgx (github.com/jackc/pgx/v5) is the usual choice for Postgres in Go, and it is what this app uses. sqlc sits on top: you write plain SQL queries, and sqlc generates typed Go functions that call them through pgx."}}]}, {"@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "Bogie", "item": "https://bogie-go.com/"}, {"@type": "ListItem", "position": 2, "name": "Guides", "item": "https://bogie-go.com/guides/"}, {"@type": "ListItem", "position": 3, "name": "Build a REST API with Go and Postgres", "item": "https://bogie-go.com/guides/go-rest-api-postgres.html"}]}]}</script>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-MPVQ83E1Z9"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-MPVQ83E1Z9');
+</script>
+</head>
+<body>
+<!-- @header -->
+
+<!-- @guide-start -->
+<article>
+<p class="guide-eyebrow"><a href="/guides/">Guides</a></p>
+<h1>Build a REST API with Go and Postgres</h1>
+
+<p>In this guide you build a JSON REST API in Go, backed by Postgres, with create, list, update and delete, and tests that pass. Bogie writes the starting code, so it is fast to build, but everything it writes is plain Go you can read and change: Gin for HTTP, pgx for Postgres, sqlc for typed queries and goose for migrations. Those are the skills you keep.</p>
+
+<h2>What you'll build</h2>
+<p>A small shop API with one resource, <code>products</code>, each with a <code>name</code> and a <code>price_cents</code>. By the end it answers these routes, with JSON in and out:</p>
+<pre><code>GET    /products
+POST   /products
+GET    /products/:id
+PATCH  /products/:id
+DELETE /products/:id</code></pre>
+<p>You need Go 1.26 or newer and Docker with Compose v2, which runs Postgres for you. Every command and every output on this page was captured from a real run with Bogie v1.0.1 and Go 1.27; your ids, timestamps and migration names will differ.</p>
+
+<h2>Create the app with bogie new</h2>
+<p>Install the Bogie command-line tool, then check it:</p>
+<pre><code class="language-sh">go install github.com/bogie-go/bogie@latest
+bogie version</code></pre>
+<pre><code>v1.0.1</code></pre>
+<p>If your shell says <strong>command not found: bogie</strong>, add Go's bin folder to your <code>PATH</code>: <code>export PATH="$PATH:$(go env GOPATH)/bin"</code>.</p>
+<p>Now create the app. <code>bogie new</code> writes a Go service, runs <code>go mod tidy</code> and prints the next steps (the long list of <code>create</code> lines is trimmed):</p>
+<pre><code class="language-sh">bogie new shop</code></pre>
+<pre><code>      create  shop/AGENTS.md
+      create  shop/CLAUDE.md
+      create  shop/Dockerfile
+      create  shop/Makefile
+...
+      create  shop/config/master.key
+      create  shop/config/credentials.yml.enc
+         run  go mod tidy
+
+Next:
+  cd shop
+  make up             # postgres on :5440, via docker compose
+  bogie db:prepare    # create, migrate, seed
+  bogie server
+  curl localhost:8080/healthz</code></pre>
+<p>Start Postgres and prepare the database. <code>make up</code> runs Postgres in Docker on port 5440, so it does not clash with a Postgres you may already run on 5432:</p>
+<pre><code class="language-sh">cd shop
+make up
+bogie db:prepare</code></pre>
+<pre><code>docker compose up -d --wait
+...
+ Container shop-db  Healthy
+ready: postgres on :5440
+time=2026-11-27T17:46:22.722+07:00 level=INFO msg="database already exists" service=shop database=shop_development
+time=2026-11-27T17:46:22.722+07:00 level=INFO msg="schema: nothing to apply" service=shop dir=migrate</code></pre>
+<p>"database already exists" is fine: the Docker container creates <code>shop_development</code> when it starts. There are no tables yet, so there is nothing to apply.</p>
+
+<h2>Scaffold a resource</h2>
+<p>One command writes the whole <code>products</code> resource and wires it in:</p>
+<pre><code class="language-sh">bogie g scaffold product name:string price_cents:integer</code></pre>
+<pre><code>      create  db/migrate/20261127104622_create_products.sql
+      create  db/queries/products.sql
+      create  app/models/product.go
+      create  app/models/product_test.go
+      create  db/adapter/products.go
+      create  db/adapter/products_test.go
+      create  test/factories/products.go
+      create  app/views/products.go
+      create  app/controllers/products_controller.go
+      create  app/controllers/products_controller_test.go
+      insert  app/controllers/application.go: Products *ProductsController
+      insert  app/application.go: server.Products = controllers.NewProductsController(store, log)
+      insert  app/controllers/routes.go: s.Products.SetupRoutes(&amp;r.RouterGroup)
+         run  sqlc generate</code></pre>
+<p>Apply the migration to create the table:</p>
+<pre><code class="language-sh">bogie db:migrate</code></pre>
+<pre><code>time=2026-11-27T17:46:42.941+07:00 level=INFO msg="schema applied" service=shop from=0 to=20261127104622</code></pre>
+<p>The scaffold accepts any product until you add rules. Open <code>app/models/product.go</code> and make the name required (add <code>"fmt"</code> to the imports). This is the only Go you write by hand in this guide:</p>
+<pre><code class="language-go">func (p Product) Validate() error {
+	if p.Name == "" {
+		return fmt.Errorf("%w: name is required", ErrInvalid)
+	}
+	return nil
+}</code></pre>
+<p>Start the server. It runs on port 8080 and reloads when you save a file:</p>
+<pre><code class="language-sh">bogie server</code></pre>
+<pre><code>shop: env=development settings="config/credentials.yml.enc" key="config/master.key"
+shop: addr=:8080 log_level=debug shutdown_grace=10s database=postgres://postgres:xxxxx@localhost:5440/shop_development?sslmode=disable migrate_at_boot=true
+time=2026-11-27T17:46:54.988+07:00 level=INFO msg="schema up to date" service=shop version=20261127104622
+...
+[GIN-debug] GET    /products                 --&gt; shop/app/controllers.(*ProductsController).Index-fm (4 handlers)
+[GIN-debug] POST   /products                 --&gt; shop/app/controllers.(*ProductsController).Create-fm (4 handlers)
+[GIN-debug] GET    /products/:id             --&gt; shop/app/controllers.(*ProductsController).Show-fm (4 handlers)
+[GIN-debug] PATCH  /products/:id             --&gt; shop/app/controllers.(*ProductsController).Update-fm (4 handlers)
+[GIN-debug] DELETE /products/:id             --&gt; shop/app/controllers.(*ProductsController).Destroy-fm (4 handlers)
+time=2026-11-27T17:46:54.992+07:00 level=INFO msg="http listening" service=shop addr=:8080 env=development</code></pre>
+
+<h2>Create, list, update and delete with curl</h2>
+<p>In a second terminal, call the API. Each response below is real; the headers are trimmed to the status line.</p>
+<h3>Create</h3>
+<p>A blank name is refused with a 422, from the rule you just wrote. A good product is created with a 201:</p>
+<pre><code>$ curl -i -X POST localhost:8080/products \
+    -H "Content-Type: application/json" -d '{"name":""}'
+HTTP/1.1 422 Unprocessable Entity
+
+{"status":"error","error":"invalid: name is required"}
+
+$ curl -i -X POST localhost:8080/products \
+    -H "Content-Type: application/json" -d '{"name":"Blue mug","price_cents":1250}'
+HTTP/1.1 201 Created
+
+{"id":1,"name":"Blue mug","price_cents":1250,"created_at":"2026-11-27T17:48:55.75735+07:00","updated_at":"2026-11-27T17:48:55.75735+07:00"}</code></pre>
+<h3>List</h3>
+<pre><code>$ curl localhost:8080/products
+{"products":[{"id":1,"name":"Blue mug","price_cents":1250,"created_at":"2026-11-27T17:48:55.75735+07:00","updated_at":"2026-11-27T17:48:55.75735+07:00"}]}</code></pre>
+<h3>Update</h3>
+<p><code>PATCH</code> changes only the fields you send. The name stays, the price changes, and <code>updated_at</code> moves:</p>
+<pre><code>$ curl -i -X PATCH localhost:8080/products/1 \
+    -H "Content-Type: application/json" -d '{"price_cents":990}'
+HTTP/1.1 200 OK
+
+{"id":1,"name":"Blue mug","price_cents":990,"created_at":"2026-11-27T17:48:55.75735+07:00","updated_at":"2026-11-27T17:48:55.827179+07:00"}</code></pre>
+<h3>Delete</h3>
+<p>A delete answers 204 with no body. After it, the list is empty and the product is a 404:</p>
+<pre><code>$ curl -i -X DELETE localhost:8080/products/1
+HTTP/1.1 204 No Content
+
+$ curl localhost:8080/products
+{"products":[]}
+
+$ curl -i localhost:8080/products/1
+HTTP/1.1 404 Not Found
+
+{"status":"error","error":"no such product"}</code></pre>
+<h3>Run the tests</h3>
+<p>The scaffold wrote tests for the model, the store and the controller. They run against their own database, <code>shop_test</code>, so your development data is safe. Create it once, then run the suite:</p>
+<pre><code class="language-sh">SHOP_ENV=test bogie db:prepare
+bogie test</code></pre>
+<p>Every package passed on this run (trimmed to the packages with tests):</p>
+<pre><code>ok  	shop/app/controllers	3.146s	coverage: 76.7% of statements
+ok  	shop/app/middlewares	1.029s	coverage: 0.0% of statements
+ok  	shop/app/models	1.038s	coverage: 66.7% of statements
+ok  	shop/app/services/database	1.025s	coverage: 43.4% of statements
+ok  	shop/app/services/migrate	1.025s	coverage: 2.9% of statements
+ok  	shop/config	1.038s	coverage: 73.1% of statements
+ok  	shop/db/adapter	1.612s	coverage: 63.3% of statements
+ok  	shop/test/requests	1.284s	coverage: [no statements]</code></pre>
+
+<h2>What got generated: Gin, pgx, sqlc and goose</h2>
+<p>Nothing here is magic, and the app never imports Bogie. Each piece is a standard Go tool you can use in any Go service:</p>
+<p><strong>goose</strong> runs the migration in <code>db/migrate/</code>, plain SQL with an up and a down:</p>
+<pre><code class="language-sql">-- +goose Up
+CREATE TABLE products (
+    id         bigserial   PRIMARY KEY,
+    name       varchar     NOT NULL DEFAULT '',
+    price_cents integer     NOT NULL DEFAULT 0,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- +goose Down
+DROP TABLE products;</code></pre>
+<p><strong>sqlc</strong> reads the named queries in <code>db/queries/products.sql</code> and generates typed Go for them in <code>db/sqlc/products.sql.go</code>. You edit the SQL, never the generated file:</p>
+<pre><code class="language-sql">-- name: ListProducts :many
+SELECT * FROM products ORDER BY created_at DESC, id DESC LIMIT $1;
+
+-- name: CreateProduct :one
+INSERT INTO products (name, price_cents) VALUES ($1, $2) RETURNING *;</code></pre>
+<p><strong>pgx</strong> is the Postgres driver those generated functions call. <code>db/adapter/products.go</code> is the store between them and your model.</p>
+<p><strong>Gin</strong> handles HTTP. <code>app/controllers/products_controller.go</code> mounts the five routes and turns requests into model calls:</p>
+<pre><code class="language-go">func (ctl *ProductsController) SetupRoutes(router *gin.RouterGroup) {
+	products := router.Group("/products")
+	products.GET("", ctl.Index)
+	products.POST("", ctl.Create)
+	products.GET("/:id", ctl.Show)
+	products.PATCH("/:id", ctl.Update)
+	products.DELETE("/:id", ctl.Destroy)
+}</code></pre>
+<p>The model in <code>app/models/product.go</code> is a plain struct with your <code>Validate</code> rule, and <code>app/views/products.go</code> holds the JSON request and response shapes. The tests use Ginkgo and Gomega. The <a href="/docs/controllers.html">controllers</a> and <a href="/docs/models.html">models</a> docs go through each file.</p>
+
+<h2>How the project is laid out</h2>
+<p>A Go REST API project needs a structure you can find your way around. Bogie lays the app out by role, so each file sits where its job says it should. This is the real tree from this guide's app, trimmed to the main folders:</p>
+<pre><code>app/
+  controllers/   HTTP: routes and handlers, with Gin
+  models/        your types and their Validate rules; imports nothing third-party
+  views/         the JSON request and response shapes
+  services/      logic with no HTTP in it (database and migrate ship built in)
+  middlewares/   request id, logging, recover
+config/          settings: encrypted credentials plus env, and Kamal's deploy.yml
+db/
+  migrate/       goose SQL migrations, one file per change
+  queries/       named SQL that sqlc compiles
+  sqlc/          Go generated by sqlc
+  adapter/       the store between your models and sqlc
+  seeds/         plain Go seed functions
+test/            what tests share: test database, factories, the whole app</code></pre>
+<p>Tests sit beside the code they test, such as <code>app/models/product_test.go</code>. Most of this is yours to edit: models, controllers, views, tests and factories. Three things belong to the generators: never edit <code>db/sqlc/</code> (change the SQL in <code>db/queries/</code>, then run <code>make sqlc</code>); don't edit a file whose header says "overwritten whole on the next run", such as <code>db/queries/products.sql</code> and <code>db/adapter/products.go</code>, but put your own code in a <code>products_extra</code> file beside it; and never edit a migration that has already run, but add a new one with <code>bogie g migration</code>. The <a href="/docs/conventions.html">Conventions and agents</a> doc explains why the layout is this way.</p>
+
+<h2>FAQ</h2>
+<h3>Is Go good for web development?</h3>
+<p>Yes, for APIs and backends. The standard library ships an HTTP server (net/http) and JSON encoding, the compiler catches type mistakes before you run anything, and a Go program builds to a single binary you can copy to a server. Go is a common choice for JSON APIs like the one in this guide.</p>
+<h3>Do I need a framework?</h3>
+<p>No. Go's standard library net/http is enough to build a JSON API, and the free <a href="/go-with-ai/go-web-api-net-http/">Go with AI</a> book builds one that way. A generator like Bogie saves the setup: it writes the routes, migrations, queries, validation hook and tests for you. What it writes is plain Go using Gin, pgx, sqlc and goose, and the app never imports Bogie, so you can change or drop any of it.</p>
+<h3>Which Postgres driver should I use?</h3>
+<p>pgx (github.com/jackc/pgx/v5) is the usual choice for Postgres in Go, and it is what this app uses. sqlc sits on top: you write plain SQL queries, and sqlc generates typed Go functions that call them through pgx.</p>
+
+<section class="sample-cta">
+<h2>What you built</h2>
+<p>A JSON REST API on Postgres with create, list, update and delete, a validation rule, a migration, typed queries and passing tests, all in plain Go you own.</p>
+<p>Full walkthrough in Chapter 1 and Chapter 3 of the <a href="/book.html">Bogie book</a>. For every command and flag, see <a href="/docs/getting-started.html">Getting started</a>.</p>
+<p>New to Go? <a href="/go-with-ai/">Read the free Go with AI book first</a>.</p>
+</section>
+</article>
+<!-- @guide-end -->
+
+<!-- @footer -->
+
+</body>
+</html>

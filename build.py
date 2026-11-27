@@ -4,17 +4,18 @@
 Pages are plain HTML with a few markers that this script fills in:
   <!-- @header --> / <!-- @footer -->     the shared _includes/*.html
   <!-- @docs-start --> ... <!-- @docs-end -->  docs pages: sidebar + prev/next
+  <!-- @guide-start --> ... <!-- @guide-end -->  guides/ pages: no sidebar, no prev/next
   <!-- @script -->                         the one inline script (SCRIPT below), in the footer
   <!-- @supporters -->                     homepage book sponsors, from sponsors.json
   {{VERSION}} / {{VERSION_NUM}} / {{SECTION}}
 
-Docs pages also get an id and a "#" link on every <h2>/<h3>, and an "On this
-page" list of the <h2>s, written into the HTML here (no JS needed for those).
+Docs and guides pages also get an id and a "#" link on every <h2>/<h3>, and an
+"On this page" list of the <h2>s, written into the HTML here (no JS needed for those).
 
 The version is the latest tag from the Go module proxy. If that fetch fails,
 BOGIE_VERSION or the last known version in FALLBACK_VERSION is used.
 
-Every docs page also gets a Markdown copy, _site/docs/<slug>.md, converted here
+Every docs and guides page also gets a Markdown copy, _site/<dir>/<slug>.md, converted here
 from the rendered <article> (so it can never drift from the HTML). The .md files
 are not in sitemap.xml; llms.txt lists them at its <!-- @markdown-copies --> marker.
 
@@ -62,6 +63,11 @@ NAV = [
                    ("from-rails", "Rails equivalents")]),
 ]
 FLAT = [(slug, title, sec) for sec, items in NAV for slug, title in items]
+
+# The guides/ section: task-first walkthroughs, one page each, listed on
+# guides/index.html. Same anchors, highlighting and Markdown copy as docs, but
+# no sidebar and no prev/next. Add a new guide here and to guides/index.html.
+GUIDES = [("go-rest-api-postgres", "Build a REST API with Go and Postgres")]
 
 
 # The one script on the site, inlined by the footer's <!-- @script --> marker.
@@ -801,6 +807,15 @@ def render(path, text, inc, version, supporters=""):
                       text, count=1)
         text = text.replace("<!-- @docs-end -->", f"{prevnext(slug)}\n</div>\n</div>", 1)
         text = text.replace("{{SECTION}}", section)
+    if "<!-- @guide-start -->" in text:
+        slug = path.stem
+        text = text.replace("<!-- @guide-start -->", '<div class="measure doc-main guide-main">', 1)
+        text = re.sub(r"<article>.*?</article>", lambda m: anchors(m.group(0), slug), text, count=1, flags=re.S)
+        text = re.sub(r"(<article>.*?</h1>)", lambda m: m.group(1) + "\n" + MD_LINK_IN % ("guides", slug), text, count=1, flags=re.S)
+        text = re.sub(r'(<link rel="canonical" href="[^"]*">)',
+                      lambda m: m.group(1) + '\n<link rel="alternate" type="text/markdown" href="%s/guides/%s.md">' % (SITE, slug),
+                      text, count=1)
+        text = text.replace("<!-- @guide-end -->", "</div>", 1)
     text = highlight_html(text)
     return text.replace("{{VERSION_NUM}}", version.lstrip("v")).replace("{{VERSION}}", version)
 
@@ -811,7 +826,8 @@ SITE = "https://bogie-go.com"
 VOID = {"br", "hr", "img", "meta", "link", "input"}
 BLOCK = {"p", "h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "pre", "table", "blockquote", "hr",
          "div", "section", "article", "header", "footer", "figure", "li", "dl", "dt", "dd"}
-MD_LINK = '<p class="guide-eyebrow"><a href="/docs/%s.md">Markdown version</a></p>'
+MD_LINK_IN = '<p class="guide-eyebrow"><a href="/%s/%s.md">Markdown version</a></p>'
+MD_LINK = MD_LINK_IN.replace("/%s/%s.md", "/docs/%s.md")
 
 
 class Node:
@@ -1025,7 +1041,7 @@ class Markdown:
         return "\n".join([line(grid[0]), "| " + " | ".join(["---"] * width) + " |"] + [line(r) for r in grid[1:]])
 
 
-def to_markdown(article, slug):
+def to_markdown(article, slug, section="docs"):
     """The rendered <article> -> Markdown text."""
     tree = Tree()
     tree.feed(article)
@@ -1041,8 +1057,8 @@ def to_markdown(article, slug):
                     find(k)
     find(tree.root)
     if not h1:
-        sys.exit(f"error: no <h1> in docs/{slug}.html")
-    url = f"{SITE}/docs/" if slug == "index" else f"{SITE}/docs/{slug}.html"  # the canonical URL
+        sys.exit(f"error: no <h1> in {section}/{slug}.html")
+    url = f"{SITE}/{section}/" if slug == "index" else f"{SITE}/{section}/{slug}.html"  # the canonical URL
     md = Markdown(url)
     title = md.para([md.inline(h1[0].kids)])
     body = md.blocks(tree.root.kids)
@@ -1061,7 +1077,10 @@ def check_markdown(rel, md):
 
 def markdown_copies_list():
     pages = [("index", "Working on a Bogie app")] + [(s, t) for s, t, _ in FLAT]
-    return "\n".join(f"- [{t}]({SITE}/docs/{s}.md)" for s, t in pages)
+    lines = [f"- [{t}]({SITE}/docs/{s}.md)" for s, t in pages]
+    guides = [("index", "Guides: step-by-step Go walkthroughs")] + GUIDES
+    lines += [f"- [{t}]({SITE}/guides/{s}.md)" for s, t in guides]
+    return "\n".join(lines)
 
 
 def main():
@@ -1070,6 +1089,9 @@ def main():
         sys.exit("error: index.html is missing <!-- @supporters -->")
     supporters = supporters_markup(load_sponsors())
     inc = {n: (ROOT / "_includes" / f"{n}.html").read_text().rstrip("\n") for n in ("header", "footer")}
+    for slug, _ in GUIDES:
+        if not (ROOT / "guides" / f"{slug}.html").is_file():
+            sys.exit(f"error: GUIDES lists guides/{slug}.html, which does not exist")
     if OUT.exists():
         shutil.rmtree(OUT)
     for src in ROOT.rglob("*"):
@@ -1086,11 +1108,11 @@ def main():
             if "KIT_FORM_" in out:  # placeholders in _includes/go-with-ai-kit-form.html; that file is skipped until the form is wired back in
                 sys.exit(f"error: {rel}: set the Kit form id and uid (KIT_FORM_ID / KIT_FORM_UID)")
             dst.write_text(out)
-            if rel.parts[0] == "docs":
+            if rel.parts[0] in ("docs", "guides"):
                 m = re.search(r"<article>.*?</article>", out, re.S)
                 if not m or 'rel="alternate" type="text/markdown"' not in out:
                     sys.exit(f"error: {rel}: no <article> or no Markdown alternate link")
-                md = to_markdown(m.group(0), src.stem)
+                md = to_markdown(m.group(0), src.stem, rel.parts[0])
                 check_markdown(rel.with_suffix(".md"), md)
                 dst.with_suffix(".md").write_text(md)
         elif rel == Path("sitemap.xml"):
