@@ -291,6 +291,10 @@ a.pill { text-decoration: none; color: inherit; }
   .docnav-toggle:checked ~ .docnav { display: block; }
 }
 
+/* guides/: the docs look without the sidebar, at the same reading width */
+.measure.guide-main { max-width: 824px; }
+@media (max-width: 600px) { .measure.guide-main { max-width: none; } }
+
 /* numbered rules list inside guide pages (the .rules grid is for the dark home band) */
 .guide-rules { padding-left: 1.4em; display: flex; flex-direction: column; gap: 12px; }
 .guide-rules li { padding-left: 4px; line-height: 1.6; }
