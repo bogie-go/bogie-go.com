@@ -138,6 +138,7 @@ ready: postgres on :5440</code></pre>
 <p>Running <code>bogie db:prepare</code> on a database that is already set up prints:</p>
 <pre><code>time=2026-11-05T08:56:23.386+07:00 level=INFO msg="database already exists" service=blog database=blog_development
 time=2026-11-05T08:56:23.386+07:00 level=INFO msg="schema: nothing to apply" service=blog dir=migrate</code></pre>
+<p><strong>database already exists</strong> can show up on a brand-new app too, and that's fine: the <code>POSTGRES_DB</code> setting in <code>docker-compose.yml</code> already created <code>blog_development</code> when <code>make up</code> started the container, so <code>bogie db:prepare</code> skips the create and goes on to migrate and seed.</p>
 <p><code>bogie server</code> prints the app's settings and then <code>http listening</code> (Air's banner and the route list are trimmed):</p>
 <pre><code>blog: env=development settings="config/credentials.yml.enc" key="config/master.key"
 blog: addr=:8080 log_level=debug shutdown_grace=10s database=postgres://postgres:xxxxx@localhost:5440/blog_development?sslmode=disable migrate_at_boot=true
