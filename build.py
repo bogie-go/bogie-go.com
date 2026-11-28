@@ -3,6 +3,8 @@
 
 Pages are plain HTML with a few markers that this script fills in:
   <!-- @header --> / <!-- @footer -->     the shared _includes/*.html
+  Learn Go with AI chapter pages also get _includes/go-with-ai-next-step.html
+  (injected here; no marker in the chapter source, so a regenerate still gets it)
   <!-- @docs-start --> ... <!-- @docs-end -->  docs pages: sidebar + prev/next
   <!-- @guide-start --> ... <!-- @guide-end -->  guides/ pages: no sidebar, no prev/next
   <!-- @script -->                         the one inline script (SCRIPT below), in the footer
@@ -787,11 +789,32 @@ def highlight_html(text: str) -> str:
     )
 
 
+def is_gwa_chapter(path):
+    """True for go-with-ai/<slug>/index.html, not the table of contents."""
+    rel = path.relative_to(ROOT) if path.is_absolute() else path
+    return len(rel.parts) == 3 and rel.parts[0] == "go-with-ai" and rel.name == "index.html"
+
+
+def inject_gwa_next_step(text, block):
+    """Place the next-step block after the chapter prev/next, before the contents list."""
+    if "gwa-next-step" in text:
+        return text
+    m = re.search(r'<nav class="gwa-allpages"', text)
+    if m:
+        return text[:m.start()] + block + "\n" + text[m.start():]
+    idx = text.rfind("</article>")
+    if idx == -1:
+        sys.exit("error: Learn Go with AI chapter has no </article> to attach the next-step block to")
+    return text[:idx] + block + "\n" + text[idx:]
+
+
 def render(path, text, inc, version, supporters=""):
     d = git_date(path.relative_to(ROOT))
     if d:  # same source as the sitemap's <lastmod>; the typed date is the fallback
         text = re.sub(r'"dateModified": "\d{4}-\d{2}-\d{2}"', f'"dateModified": "{d}"', text)
     text = text.replace("<!-- @header -->", inc["header"]).replace("<!-- @footer -->", inc["footer"])
+    if is_gwa_chapter(path):
+        text = inject_gwa_next_step(text, inc["go-with-ai-next-step"])
     text = text.replace("<!-- @script -->", SCRIPT)
     if path.name == "index.html":
         text = text.replace("<!-- @supporters -->", supporters)
@@ -1088,7 +1111,8 @@ def main():
     if "<!-- @supporters -->" not in (ROOT / "index.html").read_text(encoding="utf-8"):
         sys.exit("error: index.html is missing <!-- @supporters -->")
     supporters = supporters_markup(load_sponsors())
-    inc = {n: (ROOT / "_includes" / f"{n}.html").read_text().rstrip("\n") for n in ("header", "footer")}
+    inc = {n: (ROOT / "_includes" / f"{n}.html").read_text().rstrip("\n")
+           for n in ("header", "footer", "go-with-ai-next-step")}
     for slug, _ in GUIDES:
         if not (ROOT / "guides" / f"{slug}.html").is_file():
             sys.exit(f"error: GUIDES lists guides/{slug}.html, which does not exist")
@@ -1107,6 +1131,11 @@ def main():
                 sys.exit(f"error: unfilled {left} in {rel}")
             if "KIT_FORM_" in out:  # placeholders in _includes/go-with-ai-kit-form.html; that file is skipped until the form is wired back in
                 sys.exit(f"error: {rel}: set the Kit form id and uid (KIT_FORM_ID / KIT_FORM_UID)")
+            if is_gwa_chapter(src):
+                if "gwa-next-step" not in out or 'href="/book.html"' not in out:
+                    sys.exit(f"error: {rel}: missing the Bogie next-step block")
+            elif rel == Path("go-with-ai/index.html") and "gwa-next-step" in out:
+                sys.exit(f"error: {rel}: the next-step block belongs on chapter pages, not the table of contents")
             dst.write_text(out)
             if rel.parts[0] in ("docs", "guides"):
                 m = re.search(r"<article>.*?</article>", out, re.S)
