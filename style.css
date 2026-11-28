@@ -502,6 +502,17 @@ a.pill { text-decoration: none; color: inherit; }
 @media (max-width: 600px) { .gwa-onpage ol { columns: 1; } .gwa-landing .book-buy .btn { width: 100%; justify-content: center; } }
 .gwa-answer-link { font-weight: 600; border-left: 3px solid var(--rust); padding-left: 12px; }
 
+/* Injected at the end of each Learn Go with AI chapter by build.py. */
+.gwa-next-step { margin: 40px 0 0; padding: 24px 28px; background: var(--paper-2); border: 1.5px solid var(--line); border-radius: 4px; }
+.gwa-next-step-h { font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--rust); font-weight: 600; margin: 0 0 10px; }
+.gwa-next-step p { margin: 0 0 12px; }
+.gwa-next-step-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0 0; }
+.gwa-next-step-fine { margin: 10px 0 0; font-size: 15px; }
+@media (max-width: 600px) {
+  .gwa-next-step { padding: 20px 18px; }
+  .gwa-next-step-links .btn { width: 100%; justify-content: center; }
+}
+
 /* Go with AI (/go-with-ai/): styles for the Kit PDF/EPUB sign-up. The form itself is parked in _includes/go-with-ai-kit-form.html until the form ids are set. */
 .gwa-download { margin: 40px 0 8px; padding: 24px 28px; background: var(--paper-2); border: 1.5px solid var(--ink); border-radius: 4px; }
 .gwa-download h2 { margin-top: 0; }

@@ -14,7 +14,7 @@ by `.github/workflows/pages.yml`.
     design/         the design mockup the site is ported from (open Main.dc.html
                     over a local server); the values to match live in its styles
     CNAME           bogie-go.com
-    _includes/      the shared header and footer
+    _includes/      the shared header, footer, and the Learn Go with AI next-step block
     sponsors.json   book sponsors for the homepage Supporters section
     go-with-ai/     the book Learn Go with AI (free to read online), one page per chapter plus the practice
                     answers. Generated from the book sources by gen_site.py (kept with the
@@ -26,6 +26,10 @@ by `.github/workflows/pages.yml`.
 Pages are still plain HTML, with a few markers that `build.py` fills in:
 
 - `<!-- @header -->`, `<!-- @footer -->`: the files in `_includes/`
+- Each Learn Go with AI chapter page (`go-with-ai/<slug>/index.html`, not the
+  table of contents) also gets the next-step block from
+  `_includes/go-with-ai-next-step.html`, injected by `build.py` so a regenerate
+  of those pages still picks it up.
 - `<!-- @docs-start -->` / `<!-- @docs-end -->` around a guide's `<article>`:
   the left-hand guide menu and the previous/next links. The menu order and
   groups live in `NAV` at the top of `build.py`; add a new guide there.
